@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPA Shell</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; color: #333; }
+    .app-bar { background: #1976d2; color: white; padding: 12px 24px; display: flex; align-items: center; gap: 16px; }
+    .app-bar h1 { font-size: 20px; }
+    .nav-rail { display: flex; gap: 8px; padding: 8px 24px; background: #f5f5f5; border-bottom: 1px solid #e0e0e0; }
+    .nav-rail button { padding: 8px 16px; border: none; background: transparent; cursor: pointer; font-size: 14px; border-radius: 4px; }
+    .nav-rail button:hover { background: #e0e0e0; }
+    .content-area { padding: 24px; min-height: 400px; }
+    .card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .fab { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: #1976d2; color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <div id="app" data-framework="react" data-version="18.3">
+    <header class="app-bar" role="banner">
+      <button data-action="toggle-drawer" aria-label="Menu oeffnen">&#9776;</button>
+      <h1>SPA Dashboard</h1>
+      <button data-action="search" aria-label="Suche">&#128269;</button>
+    </header>
+
+    <nav class="nav-rail" data-route-container="true" aria-label="App Navigation">
+      <button data-route="/dashboard" data-active="true">Dashboard</button>
+      <button data-route="/analytics">Analytik</button>
+      <button data-route="/settings">Einstellungen</button>
+      <button data-route="/profile">Profil</button>
+    </nav>
+
+    <main class="content-area" data-page="dashboard">
+      <div class="card" data-component="stats-card">
+        <h2>Statistik-Uebersicht</h2>
+        <p>Hier werden dynamisch Statistiken geladen.</p>
+      </div>
+      <div class="card" data-component="recent-activity">
+        <h2>Letzte Aktivitaeten</h2>
+        <p>Aktivitaetsliste wird per API geladen.</p>
+        <button data-action="load-more">Mehr laden</button>
+      </div>
+      <div class="card" data-component="quick-actions">
+        <h3>Schnellaktionen</h3>
+        <button data-action="create-report">Bericht erstellen</button>
+        <button data-action="export-data">Daten exportieren</button>
+      </div>
+    </main>
+
+    <button class="fab" data-action="create-new" aria-label="Neu erstellen">+</button>
+  </div>
+
+  <script>
+    // Dieser Script-Block soll vom Pruner entfernt werden
+    console.log("SPA initialized");
+    document.getElementById("app").setAttribute("data-initialized", "true");
+  </script>
+  <script src="https://cdn.example.com/framework.js"></script>
+</body>
+</html>

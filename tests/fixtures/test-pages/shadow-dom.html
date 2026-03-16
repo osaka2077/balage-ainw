@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadow DOM Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; color: #333; padding: 24px; }
+    h1 { margin-bottom: 16px; }
+    .container { display: flex; flex-direction: column; gap: 16px; max-width: 600px; }
+    p { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Shadow DOM Testseite</h1>
+  </header>
+
+  <main>
+    <div class="container">
+      <p>Dies ist regulaerer DOM-Inhalt oberhalb der Web Components.</p>
+
+      <my-button></my-button>
+
+      <my-card>
+        <span slot="title">Karten-Titel</span>
+        <p slot="content">Dies ist der Slot-Inhalt der Karte, uebergeben aus dem Light DOM.</p>
+      </my-card>
+
+      <p>Dies ist regulaerer DOM-Inhalt unterhalb der Web Components.</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Shadow DOM Test</p>
+  </footer>
+
+  <script>
+    // Custom Element: my-button
+    class MyButton extends HTMLElement {
+      constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+        shadow.innerHTML = `
+          <style>
+            button {
+              padding: 10px 20px;
+              background: #3498db;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 16px;
+            }
+            button:hover { background: #2980b9; }
+          </style>
+          <button aria-label="Shadow Button">Click mich (Shadow DOM)</button>
+        `;
+      }
+    }
+    customElements.define('my-button', MyButton);
+
+    // Custom Element: my-card
+    class MyCard extends HTMLElement {
+      constructor() {
+        super();
+        const shadow = this.attachShadow({ mode: 'open' });
+        shadow.innerHTML = `
+          <style>
+            .card {
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              padding: 16px;
+              background: white;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #2c3e50; }
+            .card-body { line-height: 1.6; }
+          </style>
+          <div class="card" role="article">
+            <div class="card-title"><slot name="title">Default Titel</slot></div>
+            <div class="card-body"><slot name="content">Default Inhalt</slot></div>
+            <button aria-label="Karte schliessen">Schliessen</button>
+          </div>
+        `;
+      }
+    }
+    customElements.define('my-card', MyCard);
+  </script>
+</body>
+</html>

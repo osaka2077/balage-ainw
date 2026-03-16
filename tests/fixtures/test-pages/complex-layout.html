@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Komplexes Layout</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Georgia, serif; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+    .top-header { background: #1a1a2e; color: white; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 60px; }
+    .top-header h1 { font-size: 20px; }
+    .top-header .user-actions { display: flex; gap: 8px; }
+    .top-header .user-actions button { background: #16213e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+    .main-nav { background: #16213e; padding: 8px 24px; position: fixed; top: 60px; left: 0; right: 0; z-index: 99; }
+    .main-nav ul { list-style: none; display: flex; gap: 16px; }
+    .main-nav a { color: #e0e0e0; text-decoration: none; padding: 4px 8px; }
+    .page-layout { display: flex; flex: 1; margin-top: 100px; }
+    .sidebar-left { width: 220px; background: #f8f9fa; padding: 16px; border-right: 1px solid #ddd; min-height: calc(100vh - 100px); position: fixed; top: 100px; left: 0; }
+    .sidebar-left h3 { margin-bottom: 12px; font-size: 14px; text-transform: uppercase; color: #666; }
+    .sidebar-left ul { list-style: none; }
+    .sidebar-left li { margin-bottom: 4px; }
+    .sidebar-left a { color: #333; text-decoration: none; padding: 6px 8px; display: block; border-radius: 4px; }
+    .sidebar-left a:hover { background: #e9ecef; }
+    .main-content { flex: 1; padding: 24px; margin-left: 220px; margin-right: 280px; min-height: calc(100vh - 100px); }
+    .sidebar-right { width: 280px; padding: 16px; border-left: 1px solid #ddd; background: #fafafa; position: fixed; top: 100px; right: 0; min-height: calc(100vh - 100px); }
+    .sidebar-right h4 { margin-bottom: 8px; color: #666; }
+    article { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #eee; }
+    article h2 { margin-bottom: 8px; }
+    article .meta { color: #888; font-size: 12px; margin-bottom: 8px; }
+    article p { line-height: 1.6; margin-bottom: 8px; }
+    .ad-banner { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px; margin-bottom: 16px; text-align: center; }
+    .widget { background: white; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 16px; }
+    .widget h5 { margin-bottom: 8px; font-size: 13px; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 4px; }
+    .tag { background: #e9ecef; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+    .page-footer { background: #1a1a2e; color: #bbb; padding: 24px; }
+    .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 1200px; margin: 0 auto; }
+    .footer-col h4 { color: white; margin-bottom: 8px; font-size: 14px; }
+    .footer-col ul { list-style: none; }
+    .footer-col a { color: #bbb; text-decoration: none; font-size: 13px; }
+    .footer-bottom { text-align: center; padding-top: 16px; margin-top: 16px; border-top: 1px solid #333; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header class="top-header" role="banner">
+    <h1>TechNews Portal</h1>
+    <div class="user-actions">
+      <button aria-label="Benachrichtigungen">&#128276;</button>
+      <button aria-label="Profil">&#128100;</button>
+      <button aria-label="Einstellungen">&#9881;</button>
+    </div>
+  </header>
+
+  <nav class="main-nav" aria-label="Hauptnavigation">
+    <ul>
+      <li><a href="#home">Startseite</a></li>
+      <li><a href="#tech">Technologie</a></li>
+      <li><a href="#science">Wissenschaft</a></li>
+      <li><a href="#politics">Politik</a></li>
+      <li><a href="#sports">Sport</a></li>
+      <li><a href="#culture">Kultur</a></li>
+      <li><a href="#economy">Wirtschaft</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-layout">
+    <aside class="sidebar-left" aria-label="Seitennavigation">
+      <h3>Kategorien</h3>
+      <ul>
+        <li><a href="#ai">Kuenstliche Intelligenz</a></li>
+        <li><a href="#web">Web Development</a></li>
+        <li><a href="#mobile">Mobile</a></li>
+        <li><a href="#cloud">Cloud Computing</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#data">Data Science</a></li>
+        <li><a href="#devops">DevOps</a></li>
+        <li><a href="#ux">UX Design</a></li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <article>
+        <h2>Erster Artikel: KI-Revolution im Alltag</h2>
+        <div class="meta">Von Max Mustermann | 16. Maerz 2026 | 5 Min Lesezeit</div>
+        <p>Die kuenstliche Intelligenz durchdringt immer mehr Bereiche unseres taeglichen Lebens. Von smarten Assistenten bis hin zu autonomen Fahrzeugen veraendert KI die Art und Weise, wie wir leben und arbeiten.</p>
+        <p>Experten prognostizieren, dass bis 2030 nahezu jeder Arbeitsplatz durch KI beeinflusst sein wird.</p>
+      </article>
+
+      <article>
+        <h2>Zweiter Artikel: Quantencomputing macht Fortschritte</h2>
+        <div class="meta">Von Anna Schmidt | 15. Maerz 2026 | 7 Min Lesezeit</div>
+        <p>Neue Durchbrueche im Bereich Quantencomputing versprechen eine Revolution in der Datenverarbeitung. Forscher haben erstmals einen stabilen Quantenprozessor mit ueber 1000 Qubits demonstriert.</p>
+        <p>Die Implikationen fuer Kryptographie und Materialwissenschaft sind enorm.</p>
+      </article>
+
+      <article>
+        <h2>Dritter Artikel: Web3 und die Zukunft des Internets</h2>
+        <div class="meta">Von Lisa Weber | 14. Maerz 2026 | 4 Min Lesezeit</div>
+        <p>Dezentralisierte Technologien gewinnen weiter an Bedeutung. Neue Protokolle versprechen ein faireres und offeneres Internet fuer alle.</p>
+      </article>
+    </main>
+
+    <aside class="sidebar-right" role="complementary" aria-label="Seitenleiste">
+      <div class="ad-banner" role="banner">
+        <p>Anzeige: Entdecke die Zukunft der Technologie!</p>
+      </div>
+
+      <div class="widget">
+        <h5>Beliebte Tags</h5>
+        <div class="tag-list">
+          <span class="tag">KI</span>
+          <span class="tag">Quantum</span>
+          <span class="tag">Cloud</span>
+          <span class="tag">Security</span>
+          <span class="tag">React</span>
+          <span class="tag">TypeScript</span>
+          <span class="tag">Node.js</span>
+          <span class="tag">DevOps</span>
+        </div>
+      </div>
+
+      <div class="widget">
+        <h5>Meistgelesen</h5>
+        <ul>
+          <li><a href="#article1">KI-Revolution im Alltag</a></li>
+          <li><a href="#article2">Quantencomputing Fortschritte</a></li>
+          <li><a href="#article3">Web3 Zukunft</a></li>
+        </ul>
+      </div>
+
+      <div class="widget">
+        <h5>Newsletter</h5>
+        <form aria-label="Newsletter-Anmeldung">
+          <input type="email" placeholder="E-Mail eingeben" aria-label="E-Mail fuer Newsletter" style="width:100%;padding:6px;margin-bottom:8px;border:1px solid #ddd;border-radius:4px;">
+          <button type="submit" style="width:100%;padding:6px;background:#1a1a2e;color:white;border:none;border-radius:4px;cursor:pointer;">Abonnieren</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="page-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Unternehmen</h4>
+        <ul>
+          <li><a href="#about">Ueber uns</a></li>
+          <li><a href="#careers">Karriere</a></li>
+          <li><a href="#press">Presse</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Produkte</h4>
+        <ul>
+          <li><a href="#api">API</a></li>
+          <li><a href="#docs">Dokumentation</a></li>
+          <li><a href="#pricing">Preise</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#help">Hilfe</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#contact">Kontakt</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Rechtliches</h4>
+        <ul>
+          <li><a href="#privacy">Datenschutz</a></li>
+          <li><a href="#terms">AGB</a></li>
+          <li><a href="#imprint">Impressum</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 TechNews Portal. Alle Rechte vorbehalten.</p>
+    </div>
+  </footer>
+</body>
+</html>

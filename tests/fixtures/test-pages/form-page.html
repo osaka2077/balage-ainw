@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login-Formular</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; color: #333; background: #f5f5f5; }
+    header { background: #2c3e50; color: white; padding: 16px 24px; }
+    nav { background: #34495e; padding: 8px 24px; }
+    nav ul { list-style: none; display: flex; gap: 16px; }
+    nav a { color: #ecf0f1; text-decoration: none; }
+    .login-container { max-width: 400px; margin: 40px auto; padding: 24px; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .login-container h2 { margin-bottom: 16px; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 4px; font-weight: bold; }
+    .form-group input { width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .submit-btn { width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+    .register-link { text-align: center; margin-top: 12px; }
+    .register-link a { color: #3498db; }
+    footer { background: #2c3e50; color: #bdc3c7; padding: 16px 24px; text-align: center; position: fixed; bottom: 0; width: 100%; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MyApp</h1>
+  </header>
+
+  <nav aria-label="Hauptnavigation">
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#login">Login</a></li>
+      <li><a href="#register">Registrieren</a></li>
+    </ul>
+  </nav>
+
+  <div class="login-container">
+    <h2>Anmelden</h2>
+    <form action="/api/login" method="POST" id="login-form" aria-label="Login-Formular">
+      <div class="form-group">
+        <label for="email" id="email-label">E-Mail-Adresse</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          aria-label="E-Mail-Adresse"
+          aria-required="true"
+          required
+          placeholder="name@example.com"
+          autocomplete="email"
+        >
+      </div>
+      <div class="form-group">
+        <label for="password" id="password-label">Passwort</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          aria-label="Passwort"
+          aria-required="true"
+          required
+          placeholder="Passwort eingeben"
+          autocomplete="current-password"
+        >
+      </div>
+      <button type="submit" class="submit-btn">Einloggen</button>
+    </form>
+    <div class="register-link">
+      <p>Noch kein Konto? <a href="/register">Jetzt registrieren</a></p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 MyApp. Alle Rechte vorbehalten.</p>
+  </footer>
+</body>
+</html>
