@@ -1,0 +1,32 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+.vitest/
+.cache/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# Orchestrator state (auto-managed)
+.ai/orchestrator_state.json
+.ai/round_reports/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Temp
+tmp/
+*.tmp
