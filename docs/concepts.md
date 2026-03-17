@@ -10,13 +10,20 @@ BALAGE does not work with CSS selectors or XPaths directly. It identifies *what 
 
 ### Endpoint Types
 
+**Phase 1 (MVP)** — formularlastige Flows, aktiv optimiert:
+
 | Type | Description | Examples |
 |------|-------------|---------|
+| `auth` | Authentication flow | Login, signup, password reset |
 | `form` | Data input form | Contact form, survey, registration |
 | `checkout` | Purchase/payment flow | Shopping cart, payment form |
 | `support` | Help/support interaction | Chat widget, ticket form, FAQ |
+
+**Phase 2+** — erkannt aber nicht aktiv optimiert:
+
+| Type | Description | Examples |
+|------|-------------|---------|
 | `navigation` | Page navigation element | Menu, breadcrumbs, pagination |
-| `auth` | Authentication flow | Login, signup, password reset |
 | `search` | Search functionality | Search bar, filters, autocomplete |
 | `commerce` | E-commerce interaction | Product listing, wishlist, compare |
 | `content` | Content interaction | Article, video player, download |
@@ -24,6 +31,8 @@ BALAGE does not work with CSS selectors or XPaths directly. It identifies *what 
 | `media` | Media interaction | Image gallery, video controls |
 | `social` | Social interaction | Share buttons, comments, likes |
 | `settings` | Configuration interface | Account settings, preferences |
+
+Phase 1 fokussiert auf formularlastige Flows. Andere Endpoint-Typen werden erkannt aber nicht aktiv optimiert.
 
 ### Endpoint Lifecycle
 
