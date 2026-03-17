@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="utf-8"><title>Kontakt</title></head>
+<body>
+  <main>
+    <form action="/contact" method="POST" role="form" aria-labelledby="contact-heading">
+      <h1 id="contact-heading">Kontaktformular</h1>
+      <label for="firstname">Vorname</label>
+      <input type="text" id="firstname" name="firstname" aria-label="Vorname" required>
+      <label for="lastname">Nachname</label>
+      <input type="text" id="lastname" name="lastname" aria-label="Nachname" required>
+      <label for="contact-email">E-Mail</label>
+      <input type="email" id="contact-email" name="email" aria-label="E-Mail" required>
+      <label for="subject">Betreff</label>
+      <input type="text" id="subject" name="subject" aria-label="Betreff" required>
+      <label for="message">Nachricht</label>
+      <textarea id="message" name="message" aria-label="Nachricht" required></textarea>
+      <button type="submit">Nachricht senden</button>
+    </form>
+  </main>
+</body>
+</html>

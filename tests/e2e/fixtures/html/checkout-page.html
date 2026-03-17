@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="utf-8"><title>Kasse</title></head>
+<body>
+  <main>
+    <h1 id="checkout-heading">Kasse</h1>
+    <form action="/checkout" method="POST" role="form" aria-labelledby="checkout-heading">
+      <fieldset aria-label="Lieferadresse">
+        <legend>Lieferadresse</legend>
+        <label for="street">Strasse</label>
+        <input type="text" id="street" name="street" aria-label="Strasse" required>
+        <label for="zip">PLZ</label>
+        <input type="text" id="zip" name="zip" aria-label="PLZ" required>
+        <label for="city">Stadt</label>
+        <input type="text" id="city" name="city" aria-label="Stadt" required>
+        <label for="country">Land</label>
+        <select id="country" name="country" aria-label="Land" required>
+          <option value="DE">Deutschland</option>
+          <option value="AT">Oesterreich</option>
+          <option value="CH">Schweiz</option>
+        </select>
+      </fieldset>
+      <fieldset aria-label="Zahlungsinformationen">
+        <legend>Zahlung</legend>
+        <label for="card-number">Kartennummer</label>
+        <input type="text" id="card-number" name="cardNumber" aria-label="Kartennummer" required>
+        <label for="expiry">Ablaufdatum</label>
+        <input type="text" id="expiry" name="expiry" aria-label="Ablaufdatum" required>
+        <label for="cvv">CVV</label>
+        <input type="text" id="cvv" name="cvv" aria-label="CVV" required>
+      </fieldset>
+      <section aria-label="Zusammenfassung">
+        <p>Gesamtbetrag: <strong>49,99 &euro;</strong></p>
+      </section>
+      <button type="submit">Kostenpflichtig bestellen</button>
+    </form>
+  </main>
+</body>
+</html>
