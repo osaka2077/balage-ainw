@@ -21,6 +21,7 @@ describe("Scenario: Payment Action", () => {
       category: "commerce",
       label: { primary: "checkout", display: "Complete Purchase", synonyms: ["buy", "pay"], language: "en" },
       status: "verified",
+      validation_status: "fully_verified",
       anchors: [{ selector: "button#pay-now" }],
       affordances: [
         { type: "submit", expectedOutcome: "payment processed", sideEffects: ["charge card", "send receipt"], reversible: false, requiresConfirmation: true },
@@ -79,6 +80,7 @@ describe("Scenario: Payment Action", () => {
       category: "settings",
       label: { primary: "password", display: "Change Password", synonyms: [], language: "en" },
       status: "verified",
+      validation_status: "fully_verified",
       anchors: [{ selector: "form#password-change" }],
       affordances: [
         { type: "submit", expectedOutcome: "password changed", sideEffects: ["logout other sessions"], reversible: false, requiresConfirmation: true },

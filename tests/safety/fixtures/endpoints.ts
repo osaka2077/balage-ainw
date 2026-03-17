@@ -25,6 +25,7 @@ export const NAVIGATION_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "nav.main-nav",
@@ -114,6 +115,7 @@ export const FORM_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "form#contact-form",
@@ -211,6 +213,7 @@ export const CHECKOUT_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "form#payment-form",
@@ -310,6 +313,7 @@ export const SETTINGS_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "form#account-settings",
@@ -452,6 +456,7 @@ export const LOGIN_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "form#login-form",

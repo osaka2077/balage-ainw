@@ -23,6 +23,7 @@ function makeEndpoint(overrides: Partial<Endpoint> = {}): Endpoint {
     category: "navigation",
     label: { primary: "test", display: "Test", synonyms: [], language: "en" },
     status: "verified",
+    validation_status: "fully_verified",
     anchors: [{ selector: "#test" }],
     affordances: [
       {

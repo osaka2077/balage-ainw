@@ -44,7 +44,7 @@ export function getDefaultRules(): PolicyRule[] {
       metadata: {},
     },
 
-    // 3. Form Fill: ALLOW bei erhoehtem Threshold
+    // 3. Form Fill: ALLOW bei erhoehtem Threshold (mindestens inferred)
     {
       id: randomUUID(),
       name: "allow-form-fill",
@@ -53,13 +53,14 @@ export function getDefaultRules(): PolicyRule[] {
       min_confidence: 0.75,
       require_evidence: 2,
       max_contradiction: 0.25,
+      required_validation_status: "inferred",
       allow_inferred_with_confirmation: false,
       enabled: true,
       priority: 80,
       metadata: {},
     },
 
-    // 4. Submit Data: ALLOW bei hohem Threshold und keine Widersprueche
+    // 4. Submit Data: ALLOW bei hohem Threshold (inferred mit Confirmation)
     {
       id: randomUUID(),
       name: "allow-submit-data",
@@ -68,13 +69,14 @@ export function getDefaultRules(): PolicyRule[] {
       min_confidence: 0.85,
       require_evidence: 3,
       max_contradiction: 0.2,
-      allow_inferred_with_confirmation: false,
+      required_validation_status: "inferred",
+      allow_inferred_with_confirmation: true,
       enabled: true,
       priority: 70,
       metadata: {},
     },
 
-    // 5. Financial Action: Erfordert extrem hohe Confidence
+    // 5. Financial Action: Erfordert extrem hohe Confidence + fully_verified
     // In der Praxis wird SI-01 immer zu ESCALATE fuehren
     {
       id: randomUUID(),
@@ -84,13 +86,14 @@ export function getDefaultRules(): PolicyRule[] {
       min_confidence: 1.01, // Unerreichbar — erzwingt ESCALATE via Gate-Logik
       require_evidence: 5,
       max_contradiction: 0.1,
+      required_validation_status: "fully_verified",
       allow_inferred_with_confirmation: false,
       enabled: true,
       priority: 60,
       metadata: { always_escalate: true },
     },
 
-    // 6. Destructive Action: Erfordert extrem hohe Confidence
+    // 6. Destructive Action: Erfordert extrem hohe Confidence + fully_verified
     // In der Praxis wird SI-01 immer zu ESCALATE fuehren
     {
       id: randomUUID(),
@@ -100,6 +103,7 @@ export function getDefaultRules(): PolicyRule[] {
       min_confidence: 1.01, // Unerreichbar — erzwingt ESCALATE via Gate-Logik
       require_evidence: 5,
       max_contradiction: 0.05,
+      required_validation_status: "fully_verified",
       allow_inferred_with_confirmation: false,
       enabled: true,
       priority: 50,

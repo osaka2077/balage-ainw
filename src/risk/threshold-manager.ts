@@ -6,6 +6,8 @@
 
 import pino from "pino";
 import type { RiskLevel } from "./types.js";
+import type { ValidationStatus } from "../../shared_interfaces.js";
+import { PROVENANCE_FACTORS } from "../../shared_interfaces.js";
 import { ThresholdError } from "./errors.js";
 
 const logger = pino({ name: "risk-gate:threshold-manager" });
@@ -43,14 +45,31 @@ export class ThresholdManager {
     }
   }
 
-  /** Gibt den Threshold fuer ein Risk-Level zurueck */
-  getThreshold(riskLevel: RiskLevel): number {
+  /**
+   * Gibt den Threshold fuer ein Risk-Level zurueck.
+   * Wenn validationStatus angegeben: effective_threshold = base / provenance_factor
+   * Beispiel: submit_data base=0.85, inferred factor=0.85 → effective=1.0 (unerreichbar → DENY)
+   */
+  getThreshold(riskLevel: RiskLevel, validationStatus?: ValidationStatus): number {
     const threshold = this.thresholds.get(riskLevel);
     if (threshold === undefined) {
       logger.error({ riskLevel }, "Unknown risk level — using 1.0 as safe default");
       return 1.0;
     }
-    return threshold;
+
+    if (validationStatus === undefined || validationStatus === "fully_verified") {
+      return threshold;
+    }
+
+    const factor = PROVENANCE_FACTORS[validationStatus];
+    const effective = Math.min(threshold / factor, 1.0);
+
+    logger.debug(
+      { riskLevel, validationStatus, baseThreshold: threshold, factor, effective },
+      "Provenance-adjusted threshold"
+    );
+
+    return effective;
   }
 
   /**

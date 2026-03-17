@@ -20,6 +20,7 @@ describe("Scenario: Form Submit", () => {
       category: "form",
       label: { primary: "contact", display: "Contact Form", synonyms: [], language: "en" },
       status: "verified",
+      validation_status: "fully_verified",
       anchors: [{ selector: "form#contact" }],
       affordances: [
         { type: "submit", expectedOutcome: "form submitted", sideEffects: ["email sent"], reversible: false, requiresConfirmation: false },
@@ -74,6 +75,7 @@ describe("Scenario: Form Submit", () => {
       category: "form",
       label: { primary: "contact", display: "Contact Form", synonyms: [], language: "en" },
       status: "discovered",
+      validation_status: "fully_verified",
       anchors: [{ selector: "form" }],
       affordances: [
         { type: "submit", expectedOutcome: "submitted", sideEffects: [], reversible: false, requiresConfirmation: false },

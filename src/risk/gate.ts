@@ -21,6 +21,8 @@ import type {
   PolicyResult,
 } from "./types.js";
 import { ConfidenceScoreSchema } from "./types.js";
+import type { ValidationStatus } from "../../shared_interfaces.js";
+import { PROVENANCE_FACTORS } from "../../shared_interfaces.js";
 import { classifyAction } from "./action-classifier.js";
 import { ThresholdManager } from "./threshold-manager.js";
 import { detectContradictions } from "./contradiction-detector.js";
@@ -30,6 +32,9 @@ import { EscalationHandler } from "./escalation-handler.js";
 import { GateEvaluationError } from "./errors.js";
 
 const logger = pino({ name: "risk-gate:gate" });
+
+/** Endpoint-Typen die bei form_fill eine Eskalation erfordern (ADR-014) */
+const SENSITIVE_FORM_FILL_ENDPOINTS = new Set(["auth", "checkout", "settings"]);
 
 /** Max Contradiction pro Risk-Level */
 const MAX_CONTRADICTION: Record<RiskLevel, number> = {
@@ -127,8 +132,24 @@ export class RiskGate {
         );
       }
 
-      // 5. Confidence-Threshold pruefen
-      const threshold = this.thresholdManager.getThreshold(riskLevel);
+      // 5. Provenance-Check (ADR-014, SI-07)
+      const validationStatus: ValidationStatus = endpoint.validation_status ?? "unvalidated";
+      const provenanceDecision = this.checkProvenance(
+        validationStatus,
+        riskLevel,
+        action,
+        endpoint,
+        auditId,
+        validatedConfidence.score,
+        context,
+        startTime
+      );
+      if (provenanceDecision) {
+        return provenanceDecision;
+      }
+
+      // 6. Confidence-Threshold pruefen (mit Provenance-Faktor)
+      const threshold = this.thresholdManager.getThreshold(riskLevel, validationStatus);
       if (validatedConfidence.score < threshold) {
         logger.info(
           {
@@ -155,7 +176,7 @@ export class RiskGate {
         );
       }
 
-      // 6. Contradiction-Check
+      // 7. Contradiction-Check
       const contradictionResult = detectContradictions(context.evidence);
       const maxContradiction = MAX_CONTRADICTION[riskLevel];
       if (contradictionResult.score > maxContradiction) {
@@ -183,7 +204,7 @@ export class RiskGate {
         );
       }
 
-      // 7. Policy-Engine pruefen
+      // 8. Policy-Engine pruefen
       const policyResult = this.policyEngine.evaluatePolicy(
         action,
         endpoint,
@@ -216,7 +237,7 @@ export class RiskGate {
         );
       }
 
-      // 8. Alle Checks bestanden → ALLOW
+      // 9. Alle Checks bestanden → ALLOW
       logger.info(
         { action, riskLevel, confidence: validatedConfidence.score, auditId },
         "All checks passed — ALLOW"
@@ -256,6 +277,149 @@ export class RiskGate {
     }
   }
 
+  /**
+   * Provenance-Check (ADR-014, SI-07).
+   * Prueft ob der Validation-Status des Endpoints fuer die Aktion ausreicht.
+   * Gibt eine GateDecision zurueck wenn DENY/ESCALATE, sonst null.
+   */
+  private checkProvenance(
+    validationStatus: ValidationStatus,
+    riskLevel: RiskLevel,
+    action: string,
+    endpoint: Endpoint,
+    auditId: string,
+    confidence: number,
+    context: GateContext,
+    startTime: number
+  ): GateDecision | null {
+    const isHighRisk = riskLevel === "high" || riskLevel === "critical";
+
+    // Unvalidated + high/critical → DENY
+    if (validationStatus === "unvalidated" && isHighRisk) {
+      logger.info(
+        { action, validationStatus, riskLevel, auditId },
+        "SI-07: Unvalidated endpoint — DENY for high-risk action"
+      );
+      return this.createDecision(
+        "deny",
+        `SI-07: Unvalidated endpoint cannot perform ${riskLevel}-risk action "${action}"`,
+        auditId,
+        confidence,
+        this.thresholdManager.getThreshold(riskLevel),
+        0,
+        MAX_CONTRADICTION[riskLevel],
+        action,
+        endpoint,
+        context,
+        startTime
+      );
+    }
+
+    // Inferred + high/critical → check policy
+    if (validationStatus === "inferred" && isHighRisk) {
+      // Pruefe ob allow_inferred_with_confirmation in passender PolicyRule gesetzt
+      const actionClass = this.getActionClassForAction(action);
+      const matchedRule = this.policyEngine.getRules().find(
+        (r) => r.enabled && r.action_class === actionClass &&
+          (!r.endpoint_types || r.endpoint_types.length === 0 || r.endpoint_types.includes(endpoint.type))
+      );
+      const allowWithConfirmation = matchedRule?.allow_inferred_with_confirmation ?? false;
+
+      if (allowWithConfirmation) {
+        logger.info(
+          { action, validationStatus, riskLevel, auditId },
+          "SI-07: Inferred endpoint requires confirmation — ESCALATE"
+        );
+        return this.createDecision(
+          "escalate",
+          `SI-07: Inferred endpoint requires confirmation for ${riskLevel}-risk action "${action}"`,
+          auditId,
+          confidence,
+          this.thresholdManager.getThreshold(riskLevel),
+          0,
+          MAX_CONTRADICTION[riskLevel],
+          action,
+          endpoint,
+          context,
+          startTime,
+          {
+            type: "human_review",
+            message: `Inferred endpoint requires confirmation for ${riskLevel}-risk action "${action}"`,
+          }
+        );
+      }
+
+      // Nicht erlaubt → DENY
+      logger.info(
+        { action, validationStatus, riskLevel, auditId },
+        "SI-07: Inferred endpoint — DENY for high-risk action"
+      );
+      return this.createDecision(
+        "deny",
+        `SI-07: High-risk action "${action}" requires verified endpoint`,
+        auditId,
+        confidence,
+        this.thresholdManager.getThreshold(riskLevel),
+        0,
+        MAX_CONTRADICTION[riskLevel],
+        action,
+        endpoint,
+        context,
+        startTime
+      );
+    }
+
+    // Inferred + form_fill auf auth/checkout/settings → ESCALATE
+    if (
+      validationStatus === "inferred" &&
+      action === "form_fill" &&
+      SENSITIVE_FORM_FILL_ENDPOINTS.has(endpoint.type)
+    ) {
+      logger.info(
+        { action, validationStatus, endpointType: endpoint.type, auditId },
+        "SI-07: Inferred endpoint + sensitive form_fill — ESCALATE"
+      );
+      return this.createDecision(
+        "escalate",
+        `SI-07: Form fill on ${endpoint.type} endpoint requires verified endpoint (currently inferred)`,
+        auditId,
+        confidence,
+        this.thresholdManager.getThreshold(riskLevel),
+        0,
+        MAX_CONTRADICTION[riskLevel],
+        action,
+        endpoint,
+        context,
+        startTime,
+        {
+          type: "human_review",
+          message: `Inferred endpoint: form_fill on sensitive ${endpoint.type} endpoint requires confirmation`,
+        }
+      );
+    }
+
+    return null;
+  }
+
+  /** Hilfsfunktion: Action → ActionClass mapping fuer Provenance-Check */
+  private getActionClassForAction(action: string): string {
+    const map: Record<string, string> = {
+      read: "read_only",
+      navigate: "read_only",
+      scroll: "read_only",
+      toggle: "reversible_action",
+      form_fill: "form_fill",
+      form_submit: "submit_data",
+      account_change: "submit_data",
+      file_upload: "submit_data",
+      payment: "financial_action",
+      password_change: "destructive_action",
+      account_delete: "destructive_action",
+      legal_action: "destructive_action",
+    };
+    return map[action] ?? "submit_data";
+  }
+
   /** Validiert den ConfidenceScore mit Zod */
   private validateConfidence(confidence: ConfidenceScore): ConfidenceScore {
     try {
@@ -286,6 +450,10 @@ export class RiskGate {
     const now = new Date();
     const duration = Date.now() - startTime;
 
+    const endpointValidationStatus = (endpoint.validation_status ?? "unvalidated") as ValidationStatus;
+    const requiresVerification = decision !== "allow" &&
+      (endpointValidationStatus === "unvalidated" || endpointValidationStatus === "inferred");
+
     const gateDecision: GateDecision = {
       decision,
       reason,
@@ -295,7 +463,8 @@ export class RiskGate {
       contradictionScore,
       contradictionLimit,
       escalation,
-      required_verification_for_action: false,
+      endpoint_validation_status: endpointValidationStatus,
+      required_verification_for_action: requiresVerification,
       timestamp: now,
     };
 

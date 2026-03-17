@@ -20,6 +20,7 @@ describe("Scenario: Safe Navigation", () => {
       category: "navigation",
       label: { primary: "products", display: "Products Page", synonyms: ["shop"], language: "en" },
       status: "verified",
+      validation_status: "fully_verified",
       anchors: [{ selector: "a.nav-products" }],
       affordances: [
         { type: "navigate", expectedOutcome: "page change", sideEffects: [], reversible: true, requiresConfirmation: false },
