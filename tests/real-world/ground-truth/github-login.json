@@ -1,0 +1,64 @@
+{
+  "url": "https://github.com/login",
+  "captured_at": "2026-03-17",
+  "difficulty": "easy",
+  "notes": "Standard login page. Clean HTML, semantic forms, well-labeled elements. OAuth buttons for SSO providers. Minimal JS complexity.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Form",
+      "description": "Username/email + password login form with sign-in submit button",
+      "selector_hint": "form[action='/session']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["login", "password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign in with SSO (SAML)",
+      "description": "Enterprise SSO sign-in link redirecting to SAML flow",
+      "selector_hint": "a[href*='enterprise']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Create Account",
+      "description": "Link to GitHub registration page",
+      "selector_hint": "a[href='/signup']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Link to password reset flow",
+      "selector_hint": "a[href='/password_reset']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign in with Passkey",
+      "description": "WebAuthn passkey authentication button",
+      "selector_hint": "button[data-signin-with='passkey']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.80,
+    "min_recall_target": 0.80
+  }
+}

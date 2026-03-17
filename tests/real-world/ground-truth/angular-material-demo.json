@@ -1,0 +1,84 @@
+{
+  "url": "https://material.angular.io/components/categories",
+  "captured_at": "2026-03-17",
+  "difficulty": "extreme",
+  "notes": "Angular SPA with Material Design components. Shadow DOM encapsulation on many components makes selector-based discovery unreliable. Component demos include forms, buttons, menus, dialogs — all rendered dynamically. Sidebar navigation is an Angular Router outlet. Code examples toggle between source and rendered output. Extreme difficulty from Shadow DOM boundaries, dynamic Angular rendering, and nested component hierarchies.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Demo Form Components",
+      "description": "Interactive form demos: Input, Select, Datepicker, Checkbox, Radio, Slider, Autocomplete — each with live preview",
+      "selector_hint": "mat-form-field, mat-select, mat-datepicker, mat-checkbox",
+      "affordances": ["fill", "select", "click"],
+      "risk_class": "low",
+      "fields": ["demo_input", "demo_select", "demo_date"],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Component Sidebar",
+      "description": "Left sidebar listing all Material components grouped by category (Form Controls, Navigation, Layout, etc.)",
+      "selector_hint": "nav .docs-component-category a, .docs-nav-content a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Code Example Toggle",
+      "description": "Source/Result toggle buttons on component examples showing TypeScript, HTML, CSS tabs",
+      "selector_hint": "button[aria-label*='source'], .docs-example-source button",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Search Components",
+      "description": "Search input for filtering component list",
+      "selector_hint": "input[aria-label*='search'], input[placeholder*='Search']",
+      "affordances": ["fill"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Top Navigation Bar",
+      "description": "Header nav: Components, CDK, Guides with version selector dropdown",
+      "selector_hint": "nav a[routerlink], .docs-navbar a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Theme Toggle",
+      "description": "Dark/light theme switcher button in header",
+      "selector_hint": "button[aria-label*='theme'], .theme-toggle",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Component Tab Sections",
+      "description": "Tab group within each component page: Overview, API, Examples",
+      "selector_hint": "mat-tab-group .mat-mdc-tab, [role='tab']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 7,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.50,
+    "min_recall_target": 0.40
+  }
+}

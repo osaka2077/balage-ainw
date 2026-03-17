@@ -1,0 +1,64 @@
+{
+  "url": "https://news.ycombinator.com",
+  "captured_at": "2026-03-17",
+  "difficulty": "easy",
+  "notes": "Minimal server-rendered HTML with table-based layout. No JavaScript frameworks, no Shadow DOM, no dynamic loading. Extremely simple DOM structure. All links are plain anchor tags. One of the simplest modern websites to parse.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Link",
+      "description": "Top-right login link redirecting to login form page",
+      "selector_hint": "a[href='login']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Header Navigation",
+      "description": "Top bar links: new, past, comments, ask, show, jobs, submit",
+      "selector_hint": ".pagetop a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Story Links",
+      "description": "List of 30 story titles linking to external URLs or internal discussion pages",
+      "selector_hint": ".titleline a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Story Metadata Links",
+      "description": "Per-story links: points, author profile, timestamp, comment count/discussion page",
+      "selector_hint": ".subtext a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "More Link (Pagination)",
+      "description": "Bottom 'More' link for loading next page of stories",
+      "selector_hint": "a.morelink",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.90,
+    "min_recall_target": 0.85
+  }
+}

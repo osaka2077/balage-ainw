@@ -1,0 +1,94 @@
+{
+  "url": "https://www.amazon.de",
+  "captured_at": "2026-03-17",
+  "difficulty": "extreme",
+  "notes": "Extremely complex page. Dense DOM with thousands of elements, dynamic content loading, personalization, A/B testing, multiple overlapping navigation systems. Category mega-menu with nested flyouts. Cookie/privacy banner. Delivery location modal. Many endpoints are context-dependent (logged-in vs. guest).",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Search Bar",
+      "description": "Product search with category dropdown filter and autocomplete suggestions",
+      "selector_hint": "form[action='/s'] input#twotabsearchtextbox, #nav-search-submit-button",
+      "affordances": ["fill", "submit", "select"],
+      "risk_class": "low",
+      "fields": ["search_query", "search_category"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Category Mega-Menu",
+      "description": "Hamburger menu 'Alle' opening full category navigation with nested flyout submenus",
+      "selector_hint": "#nav-hamburger-menu, #hmenu-content",
+      "affordances": ["click", "hover"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Sign In",
+      "description": "Account & Lists dropdown with sign-in button redirecting to auth flow",
+      "selector_hint": "#nav-link-accountList, a[href*='signin']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "checkout",
+      "label": "Shopping Cart",
+      "description": "Cart icon with item count badge, links to cart/checkout page",
+      "selector_hint": "#nav-cart, a[href='/cart']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "form",
+      "label": "Delivery Location Selector",
+      "description": "Location widget to set delivery address/ZIP for availability and pricing",
+      "selector_hint": "#nav-global-location-popover-link, #GLUXZipUpdateInput",
+      "affordances": ["click", "fill", "submit"],
+      "risk_class": "medium",
+      "fields": ["zip_code"],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Top Navigation Bar",
+      "description": "Horizontal nav: Today's Deals, Customer Service, Gift Cards, Sell, etc.",
+      "selector_hint": "#nav-xshop a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Cookie Consent Banner",
+      "description": "Cookie preferences with Accept/Customize buttons",
+      "selector_hint": "#sp-cc-accept, input[name='accept']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Orders & Returns",
+      "description": "Header link to order history and returns management",
+      "selector_hint": "#nav-orders, a[href*='order-history']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 8,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.55,
+    "min_recall_target": 0.45
+  }
+}

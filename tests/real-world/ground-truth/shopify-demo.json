@@ -1,0 +1,74 @@
+{
+  "url": "https://themes.shopify.com/themes/dawn/styles/default/preview",
+  "captured_at": "2026-03-17",
+  "difficulty": "medium",
+  "notes": "Shopify Dawn theme demo store. Clean Liquid-rendered HTML with Web Components (custom elements). Product cards with quick-add buttons. Cart drawer as slide-over panel. Search with predictive results. Medium complexity from custom elements and cart AJAX updates.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Product Search",
+      "description": "Predictive search with autocomplete dropdown showing products, collections, and pages",
+      "selector_hint": "form[action='/search'] input[type='search'], predictive-search",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "checkout",
+      "label": "Add to Cart Buttons",
+      "description": "Product card quick-add buttons and product page add-to-cart form with quantity selector",
+      "selector_hint": "form[action='/cart/add'] button[type='submit'], product-form",
+      "affordances": ["click", "fill"],
+      "risk_class": "medium",
+      "fields": ["quantity", "variant_id"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Header menu with links to Catalog, Contact, and collection pages",
+      "selector_hint": "nav[role='navigation'] a, header-menu",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "checkout",
+      "label": "Cart Drawer",
+      "description": "Slide-over cart panel showing items, quantities, subtotal, and checkout button",
+      "selector_hint": "cart-drawer, a[href='/cart']",
+      "affordances": ["click", "fill", "submit"],
+      "risk_class": "high",
+      "fields": ["quantity"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Product Cards",
+      "description": "Grid of product cards linking to product detail pages with images, titles, prices",
+      "selector_hint": ".product-card a, .card__heading a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer links: Quick links, Info, Policies, Social media icons",
+      "selector_hint": "footer a, .footer-block a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.70,
+    "min_recall_target": 0.65
+  }
+}

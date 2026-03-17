@@ -1,0 +1,84 @@
+{
+  "url": "https://www.airbnb.com",
+  "captured_at": "2026-03-17",
+  "difficulty": "hard",
+  "notes": "React SPA with complex multi-step search form. Location input with autocomplete, date range picker (calendar), guest counter with increment/decrement buttons. Category filter bar with horizontal scroll. Heavy client-side rendering, A/B testing, dynamic content. Cookie banner for GDPR regions.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Search Form",
+      "description": "Multi-field search: Where (location autocomplete), Check in/out (date picker), Who (guest counter), Search button",
+      "selector_hint": "form[action='/s'], [data-testid='structured-search-input']",
+      "affordances": ["fill", "submit", "select"],
+      "risk_class": "low",
+      "fields": ["location", "checkin_date", "checkout_date", "adults", "children", "infants"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Category Filter Bar",
+      "description": "Horizontal scrollable tabs: Icons, Amazing views, Beachfront, Cabins, Trending, etc. with filter toggle",
+      "selector_hint": "[data-testid='category-bar'], [role='tablist']",
+      "affordances": ["click", "scroll"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Sign Up / Log In",
+      "description": "Profile menu button opening dropdown with Log in, Sign up options. Opens auth modal.",
+      "selector_hint": "[data-testid='cypress-headernav-profile'], button[aria-label*='profile']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "form",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie consent overlay with Accept/Manage Preferences buttons",
+      "selector_hint": "[data-testid='cookie-banner'] button, #cookie-banner",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Listing Cards",
+      "description": "Grid of property cards with images, title, price, rating. Links to listing detail pages.",
+      "selector_hint": "[data-testid='card-container'] a, [itemprop='url']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Become a Host",
+      "description": "Header CTA link to Airbnb hosting onboarding",
+      "selector_hint": "a[href*='host']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer sections: Support, Hosting, Airbnb (About, Careers, etc.) with expandable mobile sections",
+      "selector_hint": "footer a, footer nav a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 7,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.60,
+    "min_recall_target": 0.50
+  }
+}

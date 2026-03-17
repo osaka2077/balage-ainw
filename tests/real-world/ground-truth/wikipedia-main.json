@@ -1,0 +1,64 @@
+{
+  "url": "https://en.wikipedia.org/wiki/Main_Page",
+  "captured_at": "2026-03-17",
+  "difficulty": "easy",
+  "notes": "Classic server-rendered HTML. Semantic structure, no Shadow DOM, no SPA. Search form is the primary interactive element. Navigation through sidebar and top tabs.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Search Wikipedia",
+      "description": "Global search form with text input and submit button",
+      "selector_hint": "form#searchform, input#searchInput",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation Tabs",
+      "description": "Top tabs: Main Page, Contents, Current Events, Random Article, About, Donate",
+      "selector_hint": "#p-navigation .vector-menu-content-list a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Language Selector",
+      "description": "Interlanguage links to switch Wikipedia language editions",
+      "selector_hint": "#p-lang .interlanguage-link a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Featured Article Links",
+      "description": "Links to featured content on the main page (Today's Featured Article, Did You Know, etc.)",
+      "selector_hint": "#mp-tfa a, #mp-dyk a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Log In / Create Account",
+      "description": "Personal tools login link in top-right corner",
+      "selector_hint": "#pt-login-2 a, a[href*='UserLogin']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.80,
+    "min_recall_target": 0.80
+  }
+}

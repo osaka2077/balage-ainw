@@ -1,0 +1,64 @@
+{
+  "url": "https://www.linkedin.com/login",
+  "captured_at": "2026-03-17",
+  "difficulty": "easy",
+  "notes": "Simple login page with clean HTML form. Standard email/password fields with submit. Links to registration and password recovery. Minimal JavaScript complexity. Well-labeled form elements.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Form",
+      "description": "Email/phone + password login form with Sign In button",
+      "selector_hint": "form.login__form, input#username, input#password",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["username", "password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Link to password reset flow",
+      "selector_hint": "a[href*='forgot-password'], a.forgot-password",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Join Now",
+      "description": "Link to LinkedIn registration / sign-up page",
+      "selector_hint": "a[href*='signup'], a.join-now",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Sign in with Google",
+      "description": "Google OAuth sign-in button for single sign-on",
+      "selector_hint": "button[data-provider='google'], a[href*='google']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Links",
+      "description": "Footer navigation: About, Accessibility, User Agreement, Privacy Policy, etc.",
+      "selector_hint": "footer a, .footer__list a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.80,
+    "min_recall_target": 0.80
+  }
+}
