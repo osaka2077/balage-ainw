@@ -4,9 +4,12 @@
 
 import type { Browser, BrowserContext, Page, CDPSession } from "playwright";
 
+// Browser-Config aus Layer-1-lokalem Schema (ADR-013)
+export { BrowserAdapterConfigSchema } from "./config-schema.js";
+export type { BrowserAdapterConfig } from "./config-schema.js";
+
 // Re-Exports aus shared_interfaces
 export type {
-  BrowserAdapterConfig,
   DomNode,
   AccessibilityNode,
   StateChangeEvent,
@@ -15,7 +18,6 @@ export type {
 } from "../../shared_interfaces.js";
 
 export {
-  BrowserAdapterConfigSchema,
   DomNodeSchema,
   AccessibilityNodeSchema,
   StateChangeEventSchema,

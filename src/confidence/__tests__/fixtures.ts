@@ -22,6 +22,7 @@ export const LOGIN_ENDPOINT: Endpoint = {
   },
   status: "verified",
   validation_status: "fully_verified",
+  adapter_type: "browser",
   anchors: [
     {
       selector: "form#login-form",
@@ -117,6 +118,7 @@ export const NAVIGATION_ENDPOINT: Endpoint = {
   },
   status: "verified",
   validation_status: "fully_verified",
+  adapter_type: "browser",
   anchors: [
     {
       selector: "nav.main-nav",
@@ -176,6 +178,7 @@ export const BARE_ENDPOINT: Endpoint = {
   },
   status: "discovered",
   validation_status: "unvalidated",
+  adapter_type: "browser",
   anchors: [
     { selector: "div.content" },
   ],

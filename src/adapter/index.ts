@@ -41,9 +41,12 @@ export type {
   ManagedContext,
 } from "./types.js";
 
+// Browser Config (Layer 1 — ADR-013)
+export { BrowserAdapterConfigSchema } from "./config-schema.js";
+export type { BrowserAdapterConfig } from "./config-schema.js";
+
 // Shared Interface Re-Exports
 export type {
-  BrowserAdapterConfig,
   DomNode,
   AccessibilityNode,
   StateChangeEvent,

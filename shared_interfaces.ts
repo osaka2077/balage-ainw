@@ -226,6 +226,10 @@ export const EndpointStatusSchema = z.enum([
 ]);
 export type EndpointStatus = z.infer<typeof EndpointStatusSchema>;
 
+/** Adapter-Typ — plattformuebergreifend (MASTERSPEC Phase 8) */
+export const AdapterTypeSchema = z.enum(["browser", "desktop", "mobile", "api"]);
+export type AdapterType = z.infer<typeof AdapterTypeSchema>;
+
 // ============================================================================
 // 5. Evidence & Confidence — Begruendung und Bewertung
 // ============================================================================
@@ -499,6 +503,7 @@ export const EndpointSchema = z.object({
   label: SemanticLabelSchema,
   status: EndpointStatusSchema,
   validation_status: ValidationStatusSchema.default("unvalidated"),
+  adapter_type: AdapterTypeSchema.default("browser"),
   provenance: EndpointProvenanceSchema.optional(),
   trust_level: TrustLevelSchema.optional(),
 
@@ -918,91 +923,7 @@ export const WorkflowDefinitionSchema = z.object({
 export type WorkflowDefinition = z.infer<typeof WorkflowDefinitionSchema>;
 
 // ============================================================================
-// 18. Browser Adapter Config — Browser-Konfiguration (Layer 1)
-// ============================================================================
-
-export const BrowserAdapterConfigSchema = z.object({
-  headless: z.boolean().default(true),
-  browserType: z
-    .enum(["chromium", "firefox", "webkit"])
-    .default("chromium"),
-
-  // Viewport
-  viewport: z
-    .object({
-      width: z.number().int().positive().default(1280),
-      height: z.number().int().positive().default(720),
-    })
-    .default({}),
-
-  // Proxy
-  proxy: z
-    .object({
-      enabled: z.boolean().default(false),
-      server: z.string().url().optional(),
-      rotationStrategy: z
-        .enum(["per_session", "per_request", "sticky"])
-        .default("per_session"),
-      provider: z.enum(["residential", "datacenter", "mobile"]).optional(),
-      geoTarget: z.string().max(8).optional(),
-    })
-    .default({}),
-
-  // Anti-Detection
-  antiDetection: z
-    .object({
-      timing: z
-        .object({
-          minDelay: z.number().int().nonnegative().default(80),
-          maxDelay: z.number().int().positive().default(250),
-          typingSpeed: z
-            .object({
-              min: z.number().positive().default(6),
-              max: z.number().positive().default(10),
-            })
-            .default({}),
-          scrollBehavior: z
-            .enum(["instant", "smooth_random"])
-            .default("smooth_random"),
-          mouseMovement: z
-            .enum(["direct", "bezier_curve"])
-            .default("bezier_curve"),
-        })
-        .default({}),
-      fingerprint: z
-        .object({
-          randomizeViewport: z.boolean().default(true),
-          viewportVariation: z.number().int().nonnegative().default(15),
-          rotateUserAgent: z.boolean().default(true),
-          userAgentPool: z.array(z.string()).default([]),
-        })
-        .default({}),
-    })
-    .default({}),
-
-  // CAPTCHA
-  captcha: z
-    .object({
-      detectionEnabled: z.boolean().default(true),
-      onDetection: z
-        .enum(["pause_and_escalate", "solve_via_service", "abort"])
-        .default("pause_and_escalate"),
-    })
-    .default({}),
-
-  // Lokalisierung
-  locale: z.string().max(16).default("de-DE"),
-  timezone: z.string().max(64).default("Europe/Berlin"),
-  extraHTTPHeaders: z.record(z.string()).default({}),
-
-  // Timeouts
-  navigationTimeout: z.number().int().positive().default(30_000),
-  actionTimeout: z.number().int().positive().default(10_000),
-});
-export type BrowserAdapterConfig = z.infer<typeof BrowserAdapterConfigSchema>;
-
-// ============================================================================
-// 19. BalageConfig — Globale Konfiguration
+// 18. BalageConfig — Globale Konfiguration
 // ============================================================================
 
 export const BalageConfigSchema = z.object({
@@ -1012,8 +933,8 @@ export const BalageConfigSchema = z.object({
   /** Version */
   version: z.string().default("1.0.0"),
 
-  // --- Browser ---
-  browser: BrowserAdapterConfigSchema.default({}),
+  // --- Adapter Config (adapter-spezifisch, see src/adapter/config-schema.ts) ---
+  adapter: z.record(z.unknown()).optional(),
 
   // --- LLM ---
   llm: z
