@@ -171,7 +171,7 @@ export async function generateEndpoints(
   }
 
   // 6. Confidence-Filter: niedrige Confidence raus
-  const MIN_CANDIDATE_CONFIDENCE = 0.70;
+  const MIN_CANDIDATE_CONFIDENCE = 0.55;
   const filtered = allCandidates.filter(
     (c) => c.confidence >= MIN_CANDIDATE_CONFIDENCE,
   );
@@ -184,7 +184,7 @@ export async function generateEndpoints(
   const deduped = deduplicateCandidates(filtered);
 
   // 8. Global Cap: Top-N nach Confidence
-  const MAX_TOTAL_ENDPOINTS = 6;
+  const MAX_TOTAL_ENDPOINTS = 10;
   const capped = deduped
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_TOTAL_ENDPOINTS);
