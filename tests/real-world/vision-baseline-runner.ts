@@ -386,11 +386,10 @@ async function dismissCookieBanner(page: Page): Promise<void> {
 // Main Runner
 // ============================================================================
 
-async function run(): Promise<void> {
+export async function run(): Promise<VisionBaselineReport> {
   const apiKey = process.env["BALAGE_OPENAI_API_KEY"];
   if (!apiKey) {
-    console.error("ERROR: BALAGE_OPENAI_API_KEY not set in .env.local");
-    process.exit(1);
+    throw new Error("BALAGE_OPENAI_API_KEY not set in .env.local");
   }
 
   const client = new OpenAI({ apiKey });
@@ -657,6 +656,8 @@ async function run(): Promise<void> {
   }
 
   console.log("\n═══════════════════════════════════════════════════════════════\n");
+
+  return report;
 }
 
 function fmtNum(v: unknown): string {
@@ -680,11 +681,10 @@ function printPlaceholderComparison(p: number, r: number, f1: number): void {
   console.log(`    F1 Score:  ${f1.toFixed(3)}`);
 }
 
-// ============================================================================
-// Entry Point
-// ============================================================================
-
-run().catch((err) => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
+// Entry point for direct execution (npx tsx vision-baseline-runner.ts)
+if (process.argv[1]?.endsWith("vision-baseline-runner.ts")) {
+  run().catch((err) => {
+    console.error("Fatal error:", err);
+    process.exit(1);
+  });
+}

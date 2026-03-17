@@ -525,11 +525,10 @@ function padRight(s: string, len: number): string {
 // Main
 // ============================================================================
 
-async function main(): Promise<void> {
+export async function main(): Promise<BenchmarkReport> {
   // API-Key pruefen
   if (!envConfig.hasAnyApiKey) {
-    console.error("ERROR: No API key found. Set BALAGE_OPENAI_API_KEY or BALAGE_ANTHROPIC_API_KEY in .env.local");
-    process.exit(1);
+    throw new Error("No API key found. Set BALAGE_OPENAI_API_KEY or BALAGE_ANTHROPIC_API_KEY in .env.local");
   }
 
   const runStart = Date.now();
@@ -692,6 +691,8 @@ async function main(): Promise<void> {
   const outPath = join(import.meta.dirname!, `benchmark-results-${runDate}.json`);
   writeFileSync(outPath, JSON.stringify(report, null, 2), "utf-8");
   log(`Results saved to ${outPath}`);
+
+  return report;
 }
 
 function aggregateMetrics(
@@ -734,11 +735,10 @@ function aggregateMetrics(
   };
 }
 
-// ============================================================================
-// Entry
-// ============================================================================
-
-main().catch((err) => {
-  console.error("FATAL:", err);
-  process.exit(1);
-});
+// Entry point for direct execution (npx tsx benchmark-runner.ts)
+if (process.argv[1]?.endsWith("benchmark-runner.ts")) {
+  main().catch((err) => {
+    console.error("FATAL:", err);
+    process.exit(1);
+  });
+}

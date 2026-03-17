@@ -9,8 +9,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:real": "vitest run tests/real-world/ --reporter=verbose",
-    "benchmark:real": "npx tsx tests/real-world/benchmark-runner.ts",
-    "benchmark:vision": "npx tsx tests/real-world/vision-baseline-runner.ts",
+    "benchmark:real": "vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
+    "benchmark:vision": "vitest run tests/real-world/vision-baseline.test.ts --reporter=verbose",
     "lint": "eslint src/ --ext .ts",
     "typecheck": "tsc --noEmit"
   },
