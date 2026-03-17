@@ -20,29 +20,29 @@
         ]
       },
       "detected": {
-        "total": 8,
+        "total": 3,
         "types": [
           "auth"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.5,
-          "recall": 0.8,
-          "f1": 0.615,
+          "precision": 1,
+          "recall": 0.6,
+          "f1": 0.75,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.25,
+          "precision": 0.667,
           "recall": 1,
-          "f1": 0.4,
+          "f1": 0.8,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 44868,
+        "totalMs": 29986,
         "llmCalls": 5,
-        "llmCostUsd": 0.003
+        "llmCostUsd": 0.002
       },
       "errors": [],
       "matchDetails": [
@@ -100,12 +100,8 @@
             "label": "Sign in with Passkey",
             "phase": 2
           },
-          "matched": {
-            "type": "auth",
-            "label": "Manage Cookies",
-            "confidence": 0.8800000000000001
-          },
-          "typeMatch": true
+          "matched": null,
+          "typeMatch": false
         }
       ]
     },
@@ -126,9 +122,9 @@
         "total": 4,
         "types": [
           "search",
-          "navigation",
           "auth",
-          "commerce"
+          "navigation",
+          "form"
         ]
       },
       "metrics": {
@@ -146,7 +142,7 @@
         }
       },
       "timing": {
-        "totalMs": 36946,
+        "totalMs": 44590,
         "llmCalls": 3,
         "llmCostUsd": 0.002
       },
@@ -174,7 +170,7 @@
           "matched": {
             "type": "navigation",
             "label": "Main Navigation",
-            "confidence": 0.77
+            "confidence": 0.74
           },
           "typeMatch": true
         },
@@ -221,29 +217,29 @@
         ]
       },
       "detected": {
-        "total": 4,
+        "total": 2,
         "types": [
           "auth"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.75,
-          "recall": 0.6,
-          "f1": 0.667,
+          "precision": 1,
+          "recall": 0.4,
+          "f1": 0.571,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.5,
+          "precision": 1,
           "recall": 1,
-          "f1": 0.667,
+          "f1": 1,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 49154,
+        "totalMs": 66999,
         "llmCalls": 6,
-        "llmCostUsd": 0.003
+        "llmCostUsd": 0.002
       },
       "errors": [],
       "matchDetails": [
@@ -268,8 +264,8 @@
           },
           "matched": {
             "type": "auth",
-            "label": "Continue with Google",
-            "confidence": 0.8800000000000001
+            "label": "Login with Apple",
+            "confidence": 0.9000000000000001
           },
           "typeMatch": true
         },
@@ -288,12 +284,8 @@
             "label": "Sign in with Google",
             "phase": 2
           },
-          "matched": {
-            "type": "auth",
-            "label": "Continue with Apple",
-            "confidence": 0.8800000000000001
-          },
-          "typeMatch": true
+          "matched": null,
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -321,7 +313,7 @@
         ]
       },
       "detected": {
-        "total": 12,
+        "total": 6,
         "types": [
           "search",
           "navigation"
@@ -330,19 +322,19 @@
       "metrics": {
         "all": {
           "precision": 0.333,
-          "recall": 0.8,
-          "f1": 0.471,
-          "typeAccuracy": 0.75
+          "recall": 0.4,
+          "f1": 0.364,
+          "typeAccuracy": 0.5
         },
         "phase1Only": {
-          "precision": 0.083,
+          "precision": 0.167,
           "recall": 1,
-          "f1": 0.154,
+          "f1": 0.286,
           "typeAccuracy": 0
         }
       },
       "timing": {
-        "totalMs": 105212,
+        "totalMs": 109328,
         "llmCalls": 7,
         "llmCostUsd": 0.004
       },
@@ -370,7 +362,7 @@
           "matched": {
             "type": "navigation",
             "label": "Main Menu Toggle",
-            "confidence": 0.9299999999999999
+            "confidence": 0.9000000000000001
           },
           "typeMatch": true
         },
@@ -380,12 +372,8 @@
             "label": "Language Selector",
             "phase": 2
           },
-          "matched": {
-            "type": "navigation",
-            "label": "Main Navigation",
-            "confidence": 0.9000000000000001
-          },
-          "typeMatch": true
+          "matched": null,
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -393,12 +381,8 @@
             "label": "Featured Article Links",
             "phase": 2
           },
-          "matched": {
-            "type": "navigation",
-            "label": "Footer Links",
-            "confidence": 0.9000000000000001
-          },
-          "typeMatch": true
+          "matched": null,
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -426,7 +410,7 @@
         ]
       },
       "detected": {
-        "total": 13,
+        "total": 6,
         "types": [
           "search",
           "checkout"
@@ -434,22 +418,22 @@
       },
       "metrics": {
         "all": {
-          "precision": 0.231,
+          "precision": 0.5,
           "recall": 0.5,
-          "f1": 0.316,
+          "f1": 0.5,
           "typeAccuracy": 0.667
         },
         "phase1Only": {
-          "precision": 0.231,
+          "precision": 0.5,
           "recall": 1,
-          "f1": 0.375,
+          "f1": 0.667,
           "typeAccuracy": 0.667
         }
       },
       "timing": {
-        "totalMs": 90088,
+        "totalMs": 101510,
         "llmCalls": 7,
-        "llmCostUsd": 0.004
+        "llmCostUsd": 0.003
       },
       "errors": [],
       "matchDetails": [
@@ -496,8 +480,8 @@
           },
           "matched": {
             "type": "checkout",
-            "label": "Language Selection Form",
-            "confidence": 0.9099999999999999
+            "label": "Search Button",
+            "confidence": 0.8800000000000001
           },
           "typeMatch": true
         },
@@ -525,7 +509,7 @@
       "url": "https://docs.stripe.com",
       "file": "stripe-docs",
       "difficulty": "medium",
-      "status": "success",
+      "status": "timeout",
       "groundTruth": {
         "total": 6,
         "phase1": 1,
@@ -536,116 +520,32 @@
         ]
       },
       "detected": {
-        "total": 16,
-        "types": [
-          "support",
-          "navigation",
-          "search",
-          "auth",
-          "content",
-          "checkout"
-        ]
+        "total": 0,
+        "types": []
       },
       "metrics": {
         "all": {
-          "precision": 0.375,
-          "recall": 1,
-          "f1": 0.545,
-          "typeAccuracy": 0.833
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "typeAccuracy": 0
         },
         "phase1Only": {
-          "precision": 0.063,
-          "recall": 1,
-          "f1": 0.118,
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
           "typeAccuracy": 0
         }
       },
       "timing": {
-        "totalMs": 117999,
-        "llmCalls": 6,
-        "llmCostUsd": 0.004
+        "totalMs": 120014,
+        "llmCalls": 5,
+        "llmCostUsd": 0.003
       },
-      "errors": [],
-      "matchDetails": [
-        {
-          "groundTruth": {
-            "type": "form",
-            "label": "Documentation Search",
-            "phase": 1
-          },
-          "matched": {
-            "type": "search",
-            "label": "Documentation Search",
-            "confidence": 0.71
-          },
-          "typeMatch": false
-        },
-        {
-          "groundTruth": {
-            "type": "navigation",
-            "label": "Sidebar Navigation",
-            "phase": 2
-          },
-          "matched": {
-            "type": "navigation",
-            "label": "Developer Chat on Discord",
-            "confidence": 0.74
-          },
-          "typeMatch": true
-        },
-        {
-          "groundTruth": {
-            "type": "navigation",
-            "label": "Breadcrumbs",
-            "phase": 2
-          },
-          "matched": {
-            "type": "navigation",
-            "label": "Changelog",
-            "confidence": 0.74
-          },
-          "typeMatch": true
-        },
-        {
-          "groundTruth": {
-            "type": "navigation",
-            "label": "Code Example Controls",
-            "phase": 2
-          },
-          "matched": {
-            "type": "navigation",
-            "label": "Read llms.txt",
-            "confidence": 0.74
-          },
-          "typeMatch": true
-        },
-        {
-          "groundTruth": {
-            "type": "auth",
-            "label": "Sign In / Dashboard",
-            "phase": 2
-          },
-          "matched": {
-            "type": "auth",
-            "label": "Login Form",
-            "confidence": 0.74
-          },
-          "typeMatch": true
-        },
-        {
-          "groundTruth": {
-            "type": "navigation",
-            "label": "Top Navigation",
-            "phase": 2
-          },
-          "matched": {
-            "type": "navigation",
-            "label": "Use Cases Navigation",
-            "confidence": 0.74
-          },
-          "typeMatch": true
-        }
-      ]
+      "errors": [
+        "TIMEOUT"
+      ],
+      "matchDetails": []
     },
     {
       "url": "https://www.airbnb.com",
@@ -662,32 +562,30 @@
         ]
       },
       "detected": {
-        "total": 13,
+        "total": 6,
         "types": [
           "search",
-          "navigation",
-          "content",
-          "media"
+          "navigation"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.462,
+          "precision": 1,
           "recall": 0.857,
-          "f1": 0.6,
+          "f1": 0.923,
           "typeAccuracy": 0.667
         },
         "phase1Only": {
-          "precision": 0.077,
+          "precision": 0.167,
           "recall": 0.5,
-          "f1": 0.133,
+          "f1": 0.25,
           "typeAccuracy": 0
         }
       },
       "timing": {
-        "totalMs": 82871,
-        "llmCalls": 7,
-        "llmCostUsd": 0.004
+        "totalMs": 98175,
+        "llmCalls": 8,
+        "llmCostUsd": 0.005
       },
       "errors": [],
       "matchDetails": [
@@ -699,8 +597,8 @@
           },
           "matched": {
             "type": "search",
-            "label": "Location Search",
-            "confidence": 0.9000000000000001
+            "label": "Destination Search",
+            "confidence": 0.9299999999999999
           },
           "typeMatch": false
         },
@@ -712,8 +610,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Profile Navigation",
-            "confidence": 0.9299999999999999
+            "label": "Support Navigation",
+            "confidence": 0.9000000000000001
           },
           "typeMatch": true
         },
@@ -734,8 +632,8 @@
           },
           "matched": {
             "type": "search",
-            "label": "Destination Search",
-            "confidence": 0.9000000000000001
+            "label": "Become a Host Button",
+            "confidence": 0.8800000000000001
           },
           "typeMatch": false
         },
@@ -747,7 +645,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Social Media Links",
+            "label": "Host Resources Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -760,7 +658,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Navigation Tabs",
+            "label": "Main Navigation Menu",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -773,7 +671,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Tab Navigation",
+            "label": "Profile Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -795,7 +693,7 @@
         ]
       },
       "detected": {
-        "total": 20,
+        "total": 6,
         "types": [
           "checkout",
           "navigation"
@@ -803,9 +701,9 @@
       },
       "metrics": {
         "all": {
-          "precision": 0.15,
+          "precision": 0.5,
           "recall": 0.5,
-          "f1": 0.231,
+          "f1": 0.5,
           "typeAccuracy": 1
         },
         "phase1Only": {
@@ -816,9 +714,9 @@
         }
       },
       "timing": {
-        "totalMs": 117182,
+        "totalMs": 116280,
         "llmCalls": 6,
-        "llmCostUsd": 0.005
+        "llmCostUsd": 0.004
       },
       "errors": [],
       "matchDetails": [
@@ -839,8 +737,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "City Navigation Tabs",
-            "confidence": 0.9299999999999999
+            "label": "Trending Destinations",
+            "confidence": 0.9000000000000001
           },
           "typeMatch": true
         },
@@ -870,7 +768,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Trending Destinations",
+            "label": "Quick Links Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -883,7 +781,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Browse by Property Type",
+            "label": "Main Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -924,9 +822,9 @@
         }
       },
       "timing": {
-        "totalMs": 120016,
-        "llmCalls": 4,
-        "llmCostUsd": 0.002
+        "totalMs": 120001,
+        "llmCalls": 7,
+        "llmCostUsd": 0.005
       },
       "errors": [
         "TIMEOUT"
@@ -947,7 +845,7 @@
         ]
       },
       "detected": {
-        "total": 6,
+        "total": 5,
         "types": [
           "navigation",
           "content"
@@ -955,10 +853,10 @@
       },
       "metrics": {
         "all": {
-          "precision": 0.833,
+          "precision": 1,
           "recall": 0.714,
-          "f1": 0.769,
-          "typeAccuracy": 0.6
+          "f1": 0.833,
+          "typeAccuracy": 0.4
         },
         "phase1Only": {
           "precision": 0,
@@ -968,9 +866,9 @@
         }
       },
       "timing": {
-        "totalMs": 114340,
-        "llmCalls": 9,
-        "llmCostUsd": 0.03
+        "totalMs": 78435,
+        "llmCalls": 6,
+        "llmCostUsd": 0.003
       },
       "errors": [],
       "matchDetails": [
@@ -992,7 +890,7 @@
           "matched": {
             "type": "navigation",
             "label": "Top Toolbar Navigation",
-            "confidence": 0.96
+            "confidence": 0.9299999999999999
           },
           "typeMatch": true
         },
@@ -1025,11 +923,11 @@
             "phase": 2
           },
           "matched": {
-            "type": "navigation",
-            "label": "GitHub Repository Link",
-            "confidence": 0.9000000000000001
+            "type": "content",
+            "label": "Version Picker",
+            "confidence": 0.74
           },
-          "typeMatch": true
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -1039,8 +937,8 @@
           },
           "matched": {
             "type": "content",
-            "label": "Version Picker",
-            "confidence": 0.77
+            "label": "Theme Picker",
+            "confidence": 0.74
           },
           "typeMatch": false
         },
@@ -1052,8 +950,8 @@
           },
           "matched": {
             "type": "content",
-            "label": "Theme Picker",
-            "confidence": 0.77
+            "label": "Component List",
+            "confidence": 0.74
           },
           "typeMatch": false
         }
@@ -1062,22 +960,22 @@
   ],
   "aggregate": {
     "totalWebsites": 10,
-    "successful": 9,
-    "skipped": 1,
+    "successful": 8,
+    "skipped": 2,
     "allEndpoints": {
-      "precision": 0.459,
-      "recall": 0.686,
-      "f1": 0.518,
-      "typeAccuracy": 0.835
+      "precision": 0.729,
+      "recall": 0.546,
+      "f1": 0.611,
+      "typeAccuracy": 0.779
     },
     "phase1Endpoints": {
-      "precision": 0.162,
-      "recall": 0.722,
-      "f1": 0.25,
-      "typeAccuracy": 0.407
+      "precision": 0.344,
+      "recall": 0.688,
+      "f1": 0.425,
+      "typeAccuracy": 0.458
     },
     "totalLlmCalls": 60,
-    "totalLlmCostUsd": 0.061,
-    "totalTimeMs": 878873
+    "totalLlmCostUsd": 0.034,
+    "totalTimeMs": 885501
   }
 }

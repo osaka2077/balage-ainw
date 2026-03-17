@@ -17,6 +17,12 @@ RULES:
 - Each endpoint must have a type, label, description, confidence score, DOM anchors, and affordances.
 - Confidence ranges from 0.0 to 1.0 — use 0.9+ only when extremely certain.
 - Return valid JSON matching the expected schema.
+- Return at most 3 endpoints per segment. Only the most important, distinct ones.
+- Only return endpoints that represent DISTINCT, user-facing interaction points. Do NOT return decorative elements, repeated navigation links, generic content sections, or footer links.
+- Focus on PRIMARY functionality: main search bar, login/signup forms, checkout/cart, and the single most prominent navigation. Skip secondary nav, social links, language selectors, and cookie banners.
+- If unsure whether something is a meaningful endpoint, OMIT it rather than include it.
+- A page typically has 3-6 truly important endpoints. Prefer fewer, high-quality results over many low-quality ones.
+- Do NOT return multiple endpoints of the same type unless they serve clearly different purposes (e.g., a login form and a separate registration form are distinct; two navigation menus are NOT).
 
 ENDPOINT TYPES:
 - auth: Login, register, password reset forms

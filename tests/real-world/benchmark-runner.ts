@@ -276,11 +276,18 @@ async function runPipeline(
     const segments = segmentUI(parsed.root, aria);
     log(`    Raw segments: ${segments.length}`);
 
-    // 4b. Aggressive filtering (wie in bestehenden Tests)
+    // 4b. Aggressive filtering — confidence + interactivity threshold
+    const MIN_SEGMENT_CONFIDENCE = 0.50;
+    const MIN_INTERACTIVE_FOR_LOW_CONF = 3;
     const withInteractive = segments.filter(
-      (s: UISegment) =>
-        s.interactiveElementCount > 0 ||
-        KEY_SEGMENT_TYPES.includes(s.type),
+      (s: UISegment) => {
+        // Hohe Confidence-Segmente immer behalten
+        if (s.confidence >= MIN_SEGMENT_CONFIDENCE && KEY_SEGMENT_TYPES.includes(s.type)) return true;
+        // Niedrige Confidence nur bei genuegend interaktiven Elementen
+        if (s.confidence < MIN_SEGMENT_CONFIDENCE && s.interactiveElementCount < MIN_INTERACTIVE_FOR_LOW_CONF) return false;
+        // Mindestens 1 interaktives Element oder Schluesseltyp
+        return s.interactiveElementCount > 0 || KEY_SEGMENT_TYPES.includes(s.type);
+      },
     );
     const bestByType = new Map<string, UISegment>();
     for (const s of withInteractive) {

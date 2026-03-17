@@ -170,8 +170,31 @@ export async function generateEndpoints(
     }
   }
 
-  // 6. Deduplizierung
-  return deduplicateCandidates(allCandidates);
+  // 6. Confidence-Filter: niedrige Confidence raus
+  const MIN_CANDIDATE_CONFIDENCE = 0.70;
+  const filtered = allCandidates.filter(
+    (c) => c.confidence >= MIN_CANDIDATE_CONFIDENCE,
+  );
+  logger.debug(
+    { before: allCandidates.length, after: filtered.length, threshold: MIN_CANDIDATE_CONFIDENCE },
+    "Confidence filter applied",
+  );
+
+  // 7. Deduplizierung
+  const deduped = deduplicateCandidates(filtered);
+
+  // 8. Global Cap: Top-N nach Confidence
+  const MAX_TOTAL_ENDPOINTS = 6;
+  const capped = deduped
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, MAX_TOTAL_ENDPOINTS);
+
+  logger.debug(
+    { deduped: deduped.length, capped: capped.length },
+    "Global endpoint cap applied",
+  );
+
+  return capped;
 }
 
 /**
@@ -309,22 +332,48 @@ export function candidateToEndpoint(
 // Helpers
 // ============================================================================
 
-/** Dedupliziert Kandidaten basierend auf Label + Typ */
+/** Dedupliziert Kandidaten basierend auf Type + fuzzy Label-Similarity */
 function deduplicateCandidates(
   candidates: EndpointCandidate[],
 ): EndpointCandidate[] {
-  const seen = new Map<string, EndpointCandidate>();
+  const result: EndpointCandidate[] = [];
 
   for (const candidate of candidates) {
-    const key = `${candidate.type}:${candidate.label.toLowerCase()}`;
-    const existing = seen.get(key);
+    const duplicate = result.find(
+      (existing) =>
+        existing.type === candidate.type &&
+        labelSimilarity(existing.label, candidate.label) > 0.6,
+    );
 
-    if (!existing || candidate.confidence > existing.confidence) {
-      seen.set(key, candidate);
+    if (duplicate) {
+      // Behalte den mit hoeherer Confidence
+      if (candidate.confidence > duplicate.confidence) {
+        const idx = result.indexOf(duplicate);
+        result[idx] = candidate;
+      }
+    } else {
+      result.push(candidate);
     }
   }
 
-  return [...seen.values()];
+  return result;
+}
+
+/** Berechnet Jaccard-aehnliche Wort-Similarity zwischen zwei Labels */
+function labelSimilarity(a: string, b: string): number {
+  const wordsA = new Set(a.toLowerCase().split(/\s+/).filter(Boolean));
+  const wordsB = new Set(b.toLowerCase().split(/\s+/).filter(Boolean));
+
+  if (wordsA.size === 0 && wordsB.size === 0) return 1;
+  if (wordsA.size === 0 || wordsB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const word of wordsA) {
+    if (wordsB.has(word)) intersection++;
+  }
+
+  const union = new Set([...wordsA, ...wordsB]).size;
+  return intersection / union;
 }
 
 /** Mappt Affordance-Type-Strings auf das Enum */
