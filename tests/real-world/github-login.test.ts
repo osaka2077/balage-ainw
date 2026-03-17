@@ -9,10 +9,8 @@
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
-import { BrowserAdapter } from "../../src/adapter/browser-adapter.js";
-import { extractStructuredDOM } from "../../src/adapter/dom-extractor.js";
-import { parseDom } from "../../src/parser/dom-parser.js";
-import { segmentUI } from "../../src/parser/ui-segmenter.js";
+import { BrowserAdapter, extractStructuredDOM, extractAccessibilityTree } from "../../src/adapter/index.js";
+import { pruneDom, parseDom, parseAria, segmentUI } from "../../src/parser/index.js";
 import {
   generateEndpoints,
   candidateToEndpoint,
@@ -39,6 +37,10 @@ describe.skipIf(!hasApiKey)("Real-World: github.com/login", () => {
     await adapter.launch();
 
     llmClient = createFallbackLLMClient({ envConfig });
+    console.log(`  API Key present: ${!!envConfig.openaiApiKey || !!envConfig.anthropicApiKey}`);
+    console.log(`  Provider: ${envConfig.llmProvider}`);
+    console.log(`  Model: ${envConfig.llmModel}`);
+    console.log(`  Fallback: ${envConfig.llmFallbackModel}`);
   }, 60_000);
 
   afterAll(async () => {
@@ -70,18 +72,33 @@ describe.skipIf(!hasApiKey)("Real-World: github.com/login", () => {
 
       // 2. DOM Extraction
       console.log("\n[2/7] Extracting structured DOM ...");
-      const domNode = await extractStructuredDOM(page);
-      console.log(`  DOM nodes: ${countNodes(domNode)}`);
+      const rawDom = await extractStructuredDOM(page);
+      console.log(`  Raw DOM nodes: ${countNodes(rawDom)}`);
 
-      // 3. DOM Parsing
-      console.log("\n[3/7] Parsing DOM ...");
-      const parsed = parseDom(domNode);
-      console.log(`  Normalized nodes: ${parsed.stats.totalNodes}`);
-      console.log(`  Depth: ${parsed.stats.maxDepth}`);
+      // 3. Prune + Parse + ARIA + Segment
+      console.log("\n[3/7] Pruning + Parsing DOM ...");
+      const { prunedDom } = pruneDom(rawDom);
+      const parsed = parseDom(prunedDom);
+      console.log(`  Pruned nodes: ${parsed.nodeCount}`);
+      console.log(`  Depth: ${parsed.maxDepth}`);
+
+      // ARIA Tree (braucht CDP Session)
+      console.log("\n[3b/7] Extracting ARIA tree ...");
+      let aria;
+      try {
+        const cdp = await page.context().newCDPSession(page);
+        const axTree = await extractAccessibilityTree(page, cdp);
+        aria = parseAria(parsed.root, axTree);
+        console.log(`  ARIA landmarks: ${aria.landmarks.length}`);
+      } catch (ariaErr) {
+        console.log(`  ARIA extraction failed (non-fatal): ${ariaErr instanceof Error ? ariaErr.message : String(ariaErr)}`);
+        // Fallback: leeres ARIA-Objekt
+        aria = { landmarks: [], liveRegions: [], labelledElements: [], ariaConflicts: [] };
+      }
 
       // 4. UI Segmentation
       console.log("\n[4/7] Segmenting UI ...");
-      const segments = segmentUI(parsed.root);
+      const segments = segmentUI(parsed.root, aria);
       console.log(`  Segments found: ${segments.length}`);
       for (const seg of segments) {
         console.log(
@@ -89,16 +106,47 @@ describe.skipIf(!hasApiKey)("Real-World: github.com/login", () => {
         );
       }
 
+      // 4b. Aggressive filtering: nur relevante Segmente an LLM senden
+      // Schritt 1: Nur Segmente mit interactiven Elementen ODER Schluesseltypen
+      const withInteractive = segments.filter(
+        (s) =>
+          s.interactiveElementCount > 0 ||
+          ["form", "navigation", "auth"].includes(s.type),
+      );
+      // Schritt 2: Deduplizieren nach Typ — nur das beste pro Typ behalten
+      const bestByType = new Map<string, typeof segments[0]>();
+      for (const s of withInteractive) {
+        const existing = bestByType.get(s.type);
+        if (!existing || s.confidence > existing.confidence ||
+            (s.confidence === existing.confidence && s.interactiveElementCount > existing.interactiveElementCount)) {
+          bestByType.set(s.type, s);
+        }
+      }
+      // Schritt 3: Sortieren nach Confidence desc, cap bei 8 Segmenten
+      const relevantSegments = [...bestByType.values()]
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, 8);
+      console.log(
+        `  Filtered: ${segments.length} → ${withInteractive.length} interactive → ${relevantSegments.length} deduped+capped`,
+      );
+      for (const seg of relevantSegments) {
+        console.log(
+          `    → [${seg.type}] confidence=${seg.confidence.toFixed(2)} interactive=${seg.interactiveElementCount}`,
+        );
+      }
+
       // 5. LLM Endpoint Generation
       console.log("\n[5/7] Generating endpoints via LLM ...");
+      const siteId = randomUUID();
       const context = {
         url: page.url(),
-        siteId: "github.com",
+        siteId,
         sessionId: randomUUID(),
         pageTitle: await page.title(),
       };
+      console.log(`  siteId (UUID): ${siteId}`);
 
-      const candidates = await generateEndpoints(segments, context, {
+      const candidates = await generateEndpoints(relevantSegments, context, {
         llmClient,
       });
       console.log(`  Candidates from LLM: ${candidates.length}`);
@@ -194,7 +242,7 @@ describe.skipIf(!hasApiKey)("Real-World: github.com/login", () => {
     } finally {
       await adapter.destroyContext(contextId);
     }
-  }, 120_000);
+  }, 180_000);
 });
 
 // ============================================================================

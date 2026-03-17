@@ -238,6 +238,11 @@ export function candidateToEndpoint(
     });
   }
 
+  // Schema erlaubt max 16 Affordances
+  if (affordances.length > 16) {
+    affordances.length = 16;
+  }
+
   const now = new Date();
 
   const endpoint = {
