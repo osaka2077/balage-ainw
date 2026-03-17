@@ -15,6 +15,10 @@ export { collectEvidence, summarizeEvidence } from "./evidence-collector.js";
 export type { LLMClient, LLMRequest, LLMResponse, MockCallRecord, MockLLMClient } from "./llm-client.js";
 export { createOpenAIClient, createAnthropicClient, createMockClient } from "./llm-client.js";
 
+// Fallback LLM Client (Rate Limiting, Cost Tracking, Circuit Breaker)
+export type { FallbackLLMClient, FallbackLLMClientOptions, CostSummary, CostRecord } from "./fallback-llm-client.js";
+export { createFallbackLLMClient } from "./fallback-llm-client.js";
+
 // Prompts
 export {
   ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
