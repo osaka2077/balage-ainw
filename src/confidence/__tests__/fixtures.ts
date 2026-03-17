@@ -21,6 +21,7 @@ export const LOGIN_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "form#login-form",
@@ -115,6 +116,7 @@ export const NAVIGATION_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "verified",
+  validation_status: "fully_verified",
   anchors: [
     {
       selector: "nav.main-nav",
@@ -173,6 +175,7 @@ export const BARE_ENDPOINT: Endpoint = {
     language: "en",
   },
   status: "discovered",
+  validation_status: "unvalidated",
   anchors: [
     { selector: "div.content" },
   ],

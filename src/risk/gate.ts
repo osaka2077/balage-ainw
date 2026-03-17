@@ -295,6 +295,7 @@ export class RiskGate {
       contradictionScore,
       contradictionLimit,
       escalation,
+      required_verification_for_action: false,
       timestamp: now,
     };
 

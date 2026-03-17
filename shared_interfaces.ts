@@ -257,6 +257,69 @@ export const EvidenceSchema = z.object({
 });
 export type Evidence = z.infer<typeof EvidenceSchema>;
 
+// ============================================================================
+// 5b. Endpoint Provenance & Trust — ADR-012 (SI-07 Enforcement)
+// ============================================================================
+
+/** Validation-Status — Vertrauensstufe eines Endpoints */
+export const ValidationStatusSchema = z.enum([
+  "unvalidated",
+  "inferred",
+  "validated_inferred",
+  "fully_verified",
+]);
+export type ValidationStatus = z.infer<typeof ValidationStatusSchema>;
+
+/** Endpoint-Provenance — Herkunft und Verifikationshistorie */
+export const EndpointProvenanceSchema = z.object({
+  discovery_method: z.enum([
+    "llm_inference",
+    "heuristic_match",
+    "user_defined",
+    "historical_replay",
+    "api_import",
+  ]),
+  discovery_model: z.string().max(128).optional(),
+  discovery_confidence: z.number().min(0).max(1),
+  discovery_timestamp: z.coerce.date(),
+  verification_evidence: z.array(EvidenceSchema).default([]),
+  verification_timestamp: z.coerce.date().optional(),
+  promoted_at: z.coerce.date().optional(),
+  promoted_by: z
+    .enum(["verification_service", "operator", "historical_match"])
+    .optional(),
+  trust_ceiling: z.number().min(0).max(1),
+});
+export type EndpointProvenance = z.infer<typeof EndpointProvenanceSchema>;
+
+/** Trust-Level — Berechnetes Vertrauensniveau mit Ceiling */
+export const TrustLevelSchema = z.object({
+  score: z.number().min(0).max(1),
+  ceiling: z.number().min(0).max(1),
+  components: z.object({
+    confidence_component: z.number().min(0).max(1),
+    provenance_component: z.number().min(0).max(1),
+  }),
+  effective_score: z.number().min(0).max(1),
+});
+export type TrustLevel = z.infer<typeof TrustLevelSchema>;
+
+/** Trust-Ceiling pro Validation-Status (SI-07: inferred < verified) */
+export const TRUST_CEILINGS = {
+  unvalidated: 0.50,
+  inferred: 0.70,
+  validated_inferred: 0.85,
+  fully_verified: 1.00,
+} as const;
+
+/** Provenance-Faktor pro Validation-Status */
+export const PROVENANCE_FACTORS = {
+  unvalidated: 0.70,
+  inferred: 0.85,
+  validated_inferred: 0.95,
+  fully_verified: 1.00,
+} as const;
+
 /** Confidence-Score mit Gewichten und Breakdown */
 export const ConfidenceScoreSchema = z.object({
   score: z.number().min(0).max(1),
@@ -435,6 +498,9 @@ export const EndpointSchema = z.object({
   category: EndpointTypeSchema,
   label: SemanticLabelSchema,
   status: EndpointStatusSchema,
+  validation_status: ValidationStatusSchema.default("unvalidated"),
+  provenance: EndpointProvenanceSchema.optional(),
+  trust_level: TrustLevelSchema.optional(),
 
   // Lokalisierung
   anchors: z.array(DomAnchorSchema).min(1).max(32),
@@ -505,6 +571,10 @@ export const GateDecisionSchema = z.object({
     })
     .optional(),
 
+  // Provenance-Kontext (ADR-012)
+  endpoint_validation_status: ValidationStatusSchema.optional(),
+  required_verification_for_action: z.boolean().default(false),
+
   timestamp: z.coerce.date(),
 });
 export type GateDecision = z.infer<typeof GateDecisionSchema>;
@@ -532,6 +602,10 @@ export const PolicyRuleSchema = z.object({
   min_confidence: z.number().min(0).max(1),
   require_evidence: z.number().int().nonnegative().default(1),
   max_contradiction: z.number().min(0).max(1),
+
+  // Provenance-Anforderungen (ADR-012)
+  required_validation_status: ValidationStatusSchema.optional(),
+  allow_inferred_with_confirmation: z.boolean().default(false),
 
   // Scope
   endpoint_types: z.array(EndpointTypeSchema).optional(),
