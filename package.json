@@ -9,6 +9,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:real": "vitest run tests/real-world/ --reporter=verbose",
+    "benchmark:vision": "npx tsx tests/real-world/vision-baseline-runner.ts",
     "lint": "eslint src/ --ext .ts",
     "typecheck": "tsc --noEmit"
   },
@@ -17,6 +18,7 @@
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   },
