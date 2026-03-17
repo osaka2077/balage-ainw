@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { EvidenceSchema as _EvidenceSchema } from "../../shared_interfaces.js";
 
 // Re-Exports
 export type {
@@ -69,13 +70,7 @@ export const GateContextSchema = z.object({
   sessionId: z.string().uuid(),
   traceId: z.string().uuid(),
   evidence: z.lazy(() =>
-    z.array(z.object({
-      type: z.string(),
-      signal: z.string(),
-      weight: z.number().min(0).max(1),
-      detail: z.string().optional(),
-      source: z.string().optional(),
-    }))
+    z.array(_EvidenceSchema)
   ).default([]),
   timestamp: z.coerce.date().optional(),
   domain: z.string().max(256).optional(),

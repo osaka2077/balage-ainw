@@ -38,7 +38,7 @@ export const BoundingBoxSchema = z.object({
 export type BoundingBox = z.infer<typeof BoundingBoxSchema>;
 
 /** Strukturierter DOM-Knoten — Minimale Repraesentation fuer Parsing */
-export const DomNodeSchema: z.ZodType<DomNode> = z.lazy(() =>
+export const DomNodeSchema: z.ZodType<DomNode, z.ZodTypeDef, any> = z.lazy(() =>
   z.object({
     tagName: z.string().min(1).max(64),
     attributes: z.record(z.string()),
@@ -75,7 +75,7 @@ export interface DomNode {
 }
 
 /** Accessibility-Tree-Knoten — ARIA-Informationen */
-export const AccessibilityNodeSchema: z.ZodType<AccessibilityNode> = z.lazy(
+export const AccessibilityNodeSchema: z.ZodType<AccessibilityNode, z.ZodTypeDef, any> = z.lazy(
   () =>
     z.object({
       role: z.string().min(1).max(64),
