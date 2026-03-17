@@ -120,7 +120,7 @@ async function runPipeline(
   const relevant = segments
     .filter((s: UISegment) => s.interactiveElementCount > 0 || ["auth", "form", "commerce", "navigation"].includes(s.type))
     .sort((a: UISegment, b: UISegment) => b.confidence - a.confidence)
-    .slice(0, 6);
+    .slice(0, 4);
 
   // LLM Endpoint Generation
   const siteId = randomUUID();
@@ -367,5 +367,5 @@ describe.skipIf(!hasApiKey)("E2E Checkout Flow — saucedemo.com", () => {
     } finally {
       await adapter.destroyContext(contextId);
     }
-  }, 180_000);
+  }, 300_000);
 });

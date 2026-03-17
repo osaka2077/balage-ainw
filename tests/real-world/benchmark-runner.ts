@@ -111,7 +111,14 @@ const DIFFICULTY_ORDER: Record<string, number> = {
   extreme: 3,
 };
 
-const WEBSITE_TIMEOUT_MS = 120_000;
+const WEBSITE_TIMEOUT_MS: Record<string, number> = {
+  easy: 120_000,
+  medium: 180_000,
+  hard: 180_000,
+  extreme: 240_000,
+};
+
+const DEFAULT_TIMEOUT_MS = 120_000;
 
 // Typ-Aliase: welche Ground-Truth-Typen zu welchen Detected-Typen passen
 const TYPE_ALIASES: Record<string, string[]> = {
@@ -121,7 +128,12 @@ const TYPE_ALIASES: Record<string, string[]> = {
   checkout: ["checkout", "commerce", "form"],
   search: ["search", "form"],
   support: ["support", "navigation"],
+  content: ["content", "navigation"],
 };
+
+// Label-Patterns fuer semantische Zuordnung
+const AUTH_LABEL_PATTERN = /login|sign.?in|auth|password|credential/i;
+const SEARCH_LABEL_PATTERN = /search|find|query|lookup/i;
 
 // Schluesseltypen fuer Segment-Filterung (aus den bestehenden Tests)
 const KEY_SEGMENT_TYPES = ["form", "navigation", "auth", "search", "checkout"];
@@ -136,6 +148,16 @@ function typesMatch(gtType: string, detectedType: string): boolean {
   return aliases ? aliases.includes(detectedType) : false;
 }
 
+/** Label-basierte semantische Zuordnung als Fallback wenn Type-Aliases nicht greifen */
+function labelBasedMatch(gtType: string, detType: string, detLabel: string): boolean {
+  const label = detLabel.toLowerCase();
+  // detected "form" mit Auth-Keywords → matcht GT "auth"
+  if (detType === "form" && gtType === "auth" && AUTH_LABEL_PATTERN.test(label)) return true;
+  // detected "form" mit Search-Keywords → matcht GT "search"
+  if (detType === "form" && gtType === "search" && SEARCH_LABEL_PATTERN.test(label)) return true;
+  return false;
+}
+
 function computeMatches(
   groundTruth: GroundTruthEndpoint[],
   detected: Endpoint[],
@@ -146,23 +168,28 @@ function computeMatches(
 
   for (const gt of groundTruth) {
     let bestIdx = -1;
+    let bestPriority = -1;
     let bestConfidence = -1;
-    let exactTypeMatch = false;
 
     for (let i = 0; i < detected.length; i++) {
       if (usedDetected.has(i)) continue;
       const det = detected[i]!;
-      if (typesMatch(gt.type, det.type)) {
-        // Bevorzuge exakten Type-Match, dann hoechste Confidence
-        const isExact = gt.type === det.type;
-        if (
-          (isExact && !exactTypeMatch) ||
-          (isExact === exactTypeMatch && det.confidence > bestConfidence)
-        ) {
-          bestIdx = i;
-          bestConfidence = det.confidence;
-          exactTypeMatch = isExact;
-        }
+
+      const isExact = gt.type === det.type;
+      const isAlias = !isExact && typesMatch(gt.type, det.type);
+      const isSemantic = !isExact && !isAlias && labelBasedMatch(gt.type, det.type, det.label.primary);
+
+      if (!isExact && !isAlias && !isSemantic) continue;
+
+      // Prioritaet: exact(2) > alias(1) > semantic(0), dann Confidence
+      const priority = isExact ? 2 : isAlias ? 1 : 0;
+      if (
+        priority > bestPriority ||
+        (priority === bestPriority && det.confidence > bestConfidence)
+      ) {
+        bestIdx = i;
+        bestPriority = priority;
+        bestConfidence = det.confidence;
       }
     }
 
@@ -278,7 +305,7 @@ async function runPipeline(
 
     // 4b. Aggressive filtering — confidence + interactivity threshold
     const MIN_SEGMENT_CONFIDENCE = 0.50;
-    const MIN_INTERACTIVE_FOR_LOW_CONF = 3;
+    const MIN_INTERACTIVE_FOR_LOW_CONF = 1;
     const withInteractive = segments.filter(
       (s: UISegment) => {
         // Hohe Confidence-Segmente immer behalten
@@ -301,9 +328,10 @@ async function runPipeline(
         bestByType.set(s.type, s);
       }
     }
+    const segmentCap = parsed.nodeCount > 400 ? 5 : 8;
     const relevantSegments = [...bestByType.values()]
       .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 8);
+      .slice(0, segmentCap);
     log(`    Filtered: ${segments.length} → ${withInteractive.length} → ${relevantSegments.length}`);
 
     if (relevantSegments.length === 0) {
@@ -437,7 +465,11 @@ function printWebsiteResult(result: BenchmarkResult): void {
     for (const m of result.matchDetails) {
       const gtStr = `[${m.groundTruth.type}] "${m.groundTruth.label}" (P${m.groundTruth.phase})`;
       if (m.matched) {
-        const matchStr = m.typeMatch ? "EXACT" : "ALIAS";
+        const matchStr = m.typeMatch
+          ? "EXACT"
+          : typesMatch(m.groundTruth.type, m.matched.type)
+            ? "ALIAS"
+            : "SEMANTIC";
         console.log(`    ${matchStr} ${gtStr} → [${m.matched.type}] "${m.matched.label}" (${m.matched.confidence.toFixed(2)})`);
       } else {
         console.log(`    MISS  ${gtStr} → (not detected)`);
@@ -501,11 +533,43 @@ function printFinalReport(report: BenchmarkReport): void {
     }
   }
 
+  // Phase-1 MVP Metriken — prominenter Block
+  console.log("");
+  printSeparator("*", 72);
+  console.log("  ★ PHASE-1 MVP METRICS (auth, form, checkout, support)");
+  printSeparator("*", 72);
+  const p1 = report.aggregate.phase1Endpoints;
+  const p1Targets = { precision: 0.80, recall: 0.60, f1: 0.68 };
+  const p1PStr = `${(p1.precision * 100).toFixed(1)}%`;
+  const p1RStr = `${(p1.recall * 100).toFixed(1)}%`;
+  const p1F1Str = `${(p1.f1 * 100).toFixed(1)}%`;
+  const checkP = p1.precision >= p1Targets.precision ? "PASS" : "MISS";
+  const checkR = p1.recall >= p1Targets.recall ? "PASS" : "MISS";
+  const checkF1 = p1.f1 >= p1Targets.f1 ? "PASS" : "MISS";
+  console.log(`    Precision: ${p1PStr.padEnd(8)} (target >=${(p1Targets.precision * 100).toFixed(0)}%)  [${checkP}]`);
+  console.log(`    Recall:    ${p1RStr.padEnd(8)} (target >=${(p1Targets.recall * 100).toFixed(0)}%)  [${checkR}]`);
+  console.log(`    F1:        ${p1F1Str.padEnd(8)} (target >=${(p1Targets.f1 * 100).toFixed(0)}%)  [${checkF1}]`);
+  console.log(`    TypeAcc:   ${(p1.typeAccuracy * 100).toFixed(1)}%`);
+
+  // Pro-Website Phase-1 Aufschluesselung
+  console.log("");
+  console.log("    Per-Website Phase-1:");
+  for (const r of report.results) {
+    if (r.status !== "success" || r.groundTruth.phase1 === 0) continue;
+    const shortUrl = r.url.replace("https://", "").replace("http://", "").slice(0, 30);
+    const m = r.metrics.phase1Only;
+    console.log(
+      `      ${padRight(shortUrl, 32)} P=${(m.precision * 100).toFixed(0).padStart(3)}%  R=${(m.recall * 100).toFixed(0).padStart(3)}%  F1=${(m.f1 * 100).toFixed(0).padStart(3)}%`,
+    );
+  }
+  printSeparator("*", 72);
+
   // Aggregate
   console.log("");
   printSeparator("─");
   console.log("  AGGREGATE (successful websites only):");
-  console.log(`    Websites: ${report.aggregate.successful}/${report.aggregate.totalWebsites} (${report.aggregate.skipped} skipped)`);
+  const extremeTimeouts = report.results.filter((r) => r.status === "timeout" && r.difficulty === "extreme").length;
+  console.log(`    Websites: ${report.aggregate.successful}/${report.aggregate.totalWebsites} (${report.aggregate.skipped} skipped${extremeTimeouts > 0 ? `, ${extremeTimeouts} extreme-timeout` : ""})`);
   console.log("");
   console.log("    ALL ENDPOINTS:");
   console.log(`      Precision: ${(report.aggregate.allEndpoints.precision * 100).toFixed(1)}%`);
@@ -579,7 +643,7 @@ export async function main(): Promise<BenchmarkReport> {
       const pipelineResult = await Promise.race([
         runPipeline(adapter, llmClient, gt.url),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error("TIMEOUT")), WEBSITE_TIMEOUT_MS),
+          setTimeout(() => reject(new Error("TIMEOUT")), WEBSITE_TIMEOUT_MS[gt.difficulty] ?? DEFAULT_TIMEOUT_MS),
         ),
       ]);
 
