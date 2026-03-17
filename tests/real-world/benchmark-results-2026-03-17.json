@@ -40,7 +40,7 @@
         }
       },
       "timing": {
-        "totalMs": 29986,
+        "totalMs": 26157,
         "llmCalls": 5,
         "llmCostUsd": 0.002
       },
@@ -119,30 +119,29 @@
         ]
       },
       "detected": {
-        "total": 4,
+        "total": 3,
         "types": [
           "search",
           "auth",
-          "navigation",
-          "form"
+          "navigation"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.5,
+          "precision": 0.667,
           "recall": 0.4,
-          "f1": 0.444,
+          "f1": 0.5,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.25,
+          "precision": 0.333,
           "recall": 1,
-          "f1": 0.4,
+          "f1": 0.5,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 44590,
+        "totalMs": 40618,
         "llmCalls": 3,
         "llmCostUsd": 0.002
       },
@@ -237,7 +236,7 @@
         }
       },
       "timing": {
-        "totalMs": 66999,
+        "totalMs": 66678,
         "llmCalls": 6,
         "llmCostUsd": 0.002
       },
@@ -334,9 +333,9 @@
         }
       },
       "timing": {
-        "totalMs": 109328,
+        "totalMs": 108746,
         "llmCalls": 7,
-        "llmCostUsd": 0.004
+        "llmCostUsd": 0.003
       },
       "errors": [],
       "matchDetails": [
@@ -431,7 +430,7 @@
         }
       },
       "timing": {
-        "totalMs": 101510,
+        "totalMs": 106485,
         "llmCalls": 7,
         "llmCostUsd": 0.003
       },
@@ -480,7 +479,7 @@
           },
           "matched": {
             "type": "checkout",
-            "label": "Search Button",
+            "label": "Login Link",
             "confidence": 0.8800000000000001
           },
           "typeMatch": true
@@ -564,16 +563,16 @@
       "detected": {
         "total": 6,
         "types": [
-          "search",
-          "navigation"
+          "navigation",
+          "search"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 1,
-          "recall": 0.857,
-          "f1": 0.923,
-          "typeAccuracy": 0.667
+          "precision": 0.833,
+          "recall": 0.714,
+          "f1": 0.769,
+          "typeAccuracy": 0.8
         },
         "phase1Only": {
           "precision": 0.167,
@@ -583,7 +582,7 @@
         }
       },
       "timing": {
-        "totalMs": 98175,
+        "totalMs": 100924,
         "llmCalls": 8,
         "llmCostUsd": 0.005
       },
@@ -598,7 +597,7 @@
           "matched": {
             "type": "search",
             "label": "Destination Search",
-            "confidence": 0.9299999999999999
+            "confidence": 0.9000000000000001
           },
           "typeMatch": false
         },
@@ -610,7 +609,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Support Navigation",
+            "label": "Language Selection",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -630,11 +629,7 @@
             "label": "Cookie Consent Banner",
             "phase": 2
           },
-          "matched": {
-            "type": "search",
-            "label": "Become a Host Button",
-            "confidence": 0.8800000000000001
-          },
+          "matched": null,
           "typeMatch": false
         },
         {
@@ -645,7 +640,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Host Resources Navigation",
+            "label": "Currency Selection",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -658,7 +653,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Navigation Menu",
+            "label": "Main Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -714,7 +709,7 @@
         }
       },
       "timing": {
-        "totalMs": 116280,
+        "totalMs": 108378,
         "llmCalls": 6,
         "llmCostUsd": 0.004
       },
@@ -737,8 +732,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Trending Destinations",
-            "confidence": 0.9000000000000001
+            "label": "City Navigation Tabs",
+            "confidence": 0.9299999999999999
           },
           "typeMatch": true
         },
@@ -768,7 +763,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Quick Links Navigation",
+            "label": "Trending Destinations",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -781,7 +776,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Navigation",
+            "label": "Quick Links Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -822,7 +817,7 @@
         }
       },
       "timing": {
-        "totalMs": 120001,
+        "totalMs": 120011,
         "llmCalls": 7,
         "llmCostUsd": 0.005
       },
@@ -866,7 +861,7 @@
         }
       },
       "timing": {
-        "totalMs": 78435,
+        "totalMs": 82632,
         "llmCalls": 6,
         "llmCostUsd": 0.003
       },
@@ -950,8 +945,8 @@
           },
           "matched": {
             "type": "content",
-            "label": "Component List",
-            "confidence": 0.74
+            "label": "Component Descriptions",
+            "confidence": 0.71
           },
           "typeMatch": false
         }
@@ -964,18 +959,18 @@
     "skipped": 2,
     "allEndpoints": {
       "precision": 0.729,
-      "recall": 0.546,
-      "f1": 0.611,
-      "typeAccuracy": 0.779
+      "recall": 0.529,
+      "f1": 0.598,
+      "typeAccuracy": 0.796
     },
     "phase1Endpoints": {
-      "precision": 0.344,
+      "precision": 0.354,
       "recall": 0.688,
-      "f1": 0.425,
+      "f1": 0.438,
       "typeAccuracy": 0.458
     },
     "totalLlmCalls": 60,
-    "totalLlmCostUsd": 0.034,
-    "totalTimeMs": 885501
+    "totalLlmCostUsd": 0.033,
+    "totalTimeMs": 880825
   }
 }
