@@ -10,17 +10,17 @@
   "successfulSites": 10,
   "failedSites": 0,
   "aggregate": {
-    "precision": 0.103,
-    "recall": 0.15,
-    "f1": 0.122,
-    "tp": 9,
-    "fp": 78,
-    "fn": 51
+    "precision": 0.118,
+    "recall": 0.167,
+    "f1": 0.138,
+    "tp": 10,
+    "fp": 75,
+    "fn": 50
   },
-  "totalCostUsd": 0.0527,
+  "totalCostUsd": 0.0522,
   "budgetLimitUsd": 2,
-  "totalLatencyMs": 41036,
-  "totalTokens": 14950,
+  "totalLatencyMs": 49780,
+  "totalTokens": 14893,
   "sites": [
     {
       "name": "github-login",
@@ -39,23 +39,23 @@
         },
         {
           "type": "auth",
-          "label": "Forgot Password Link",
-          "confidence": 0.9
-        },
-        {
-          "type": "auth",
           "label": "Sign In Button",
           "confidence": 0.95
         },
         {
           "type": "auth",
+          "label": "Forgot Password Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
           "label": "Continue with Google Button",
-          "confidence": 0.95
+          "confidence": 0.9
         },
         {
           "type": "auth",
           "label": "Continue with Apple Button",
-          "confidence": 0.95
+          "confidence": 0.9
         },
         {
           "type": "auth",
@@ -70,7 +70,7 @@
         {
           "type": "navigation",
           "label": "Footer Links",
-          "confidence": 0.9
+          "confidence": 0.85
         }
       ],
       "groundTruth": [
@@ -145,11 +145,11 @@
       "tp": 2,
       "fp": 7,
       "fn": 3,
-      "latencyMs": 5058,
+      "latencyMs": 5118,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 219,
-        "total": 1509
+        "completion": 215,
+        "total": 1505
       },
       "costUsd": 0.0054
     },
@@ -252,11 +252,11 @@
       "tp": 0,
       "fp": 5,
       "fn": 5,
-      "latencyMs": 3096,
+      "latencyMs": 3916,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 113,
-        "total": 1403
+        "completion": 117,
+        "total": 1407
       },
       "costUsd": 0.0044
     },
@@ -292,13 +292,13 @@
         },
         {
           "type": "auth",
-          "label": "Show Password Button",
-          "confidence": 0.9
+          "label": "Forgot Password Link",
+          "confidence": 0.95
         },
         {
           "type": "auth",
-          "label": "Forgot Password Link",
-          "confidence": 0.9
+          "label": "Keep me signed in Checkbox",
+          "confidence": 0.95
         },
         {
           "type": "auth",
@@ -306,23 +306,23 @@
           "confidence": 0.95
         },
         {
-          "type": "navigation",
-          "label": "User Agreement Link",
-          "confidence": 0.85
-        },
-        {
-          "type": "navigation",
-          "label": "Privacy Policy Link",
-          "confidence": 0.85
-        },
-        {
-          "type": "navigation",
-          "label": "Cookie Policy Link",
-          "confidence": 0.85
-        },
-        {
           "type": "auth",
           "label": "Join now Link",
+          "confidence": 0.95
+        },
+        {
+          "type": "content",
+          "label": "User Agreement Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "content",
+          "label": "Privacy Policy Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "content",
+          "label": "Cookie Policy Link",
           "confidence": 0.9
         }
       ],
@@ -398,11 +398,11 @@
       "tp": 2,
       "fp": 10,
       "fn": 3,
-      "latencyMs": 4524,
+      "latencyMs": 6392,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 280,
-        "total": 1570
+        "completion": 282,
+        "total": 1572
       },
       "costUsd": 0.006
     },
@@ -432,24 +432,14 @@
           "confidence": 0.9
         },
         {
-          "type": "content",
-          "label": "Read",
-          "confidence": 0.85
-        },
-        {
-          "type": "content",
-          "label": "View source",
-          "confidence": 0.85
-        },
-        {
-          "type": "content",
-          "label": "View history",
+          "type": "navigation",
+          "label": "Page Tabs",
           "confidence": 0.85
         },
         {
           "type": "settings",
           "label": "Appearance Settings",
-          "confidence": 0.8
+          "confidence": 0.85
         },
         {
           "type": "navigation",
@@ -522,19 +512,19 @@
           "phase": 2
         }
       ],
-      "precision": 0.111,
+      "precision": 0.143,
       "recall": 0.2,
-      "f1": 0.143,
+      "f1": 0.167,
       "tp": 1,
-      "fp": 8,
+      "fp": 6,
       "fn": 4,
-      "latencyMs": 4559,
+      "latencyMs": 5224,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 204,
-        "total": 1494
+        "completion": 161,
+        "total": 1451
       },
-      "costUsd": 0.0053
+      "costUsd": 0.0048
     },
     {
       "name": "shopify-demo",
@@ -543,47 +533,47 @@
       "detected": [
         {
           "type": "navigation",
-          "label": "Browse Themes Dropdown",
-          "confidence": 0.9
-        },
-        {
-          "type": "auth",
-          "label": "Log In Button",
+          "label": "Browse themes",
           "confidence": 0.95
         },
         {
           "type": "auth",
-          "label": "Sign Up Button",
+          "label": "Log in",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Sign up",
           "confidence": 0.95
         },
         {
           "type": "search",
-          "label": "Search Icon",
-          "confidence": 0.9
+          "label": "Search Bar",
+          "confidence": 0.95
         },
         {
           "type": "navigation",
-          "label": "Main Navigation Links",
-          "confidence": 0.9
-        },
-        {
-          "type": "commerce",
-          "label": "View Demo Button",
-          "confidence": 0.9
-        },
-        {
-          "type": "commerce",
-          "label": "Try Theme Button",
-          "confidence": 0.9
-        },
-        {
-          "type": "consent",
-          "label": "Cookies Accept Button",
+          "label": "Main Navigation",
           "confidence": 0.95
         },
         {
           "type": "consent",
-          "label": "Cookies Decline Button",
+          "label": "Cookies akzeptieren",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Ablehnen",
+          "confidence": 0.95
+        },
+        {
+          "type": "content",
+          "label": "View demo",
+          "confidence": 0.95
+        },
+        {
+          "type": "commerce",
+          "label": "Try theme",
           "confidence": 0.95
         }
       ],
@@ -678,11 +668,11 @@
       "tp": 1,
       "fp": 8,
       "fn": 5,
-      "latencyMs": 4007,
+      "latencyMs": 5101,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 211,
-        "total": 1501
+        "completion": 207,
+        "total": 1497
       },
       "costUsd": 0.0053
     },
@@ -697,11 +687,6 @@
           "confidence": 0.95
         },
         {
-          "type": "search",
-          "label": "Search Bar",
-          "confidence": 0.95
-        },
-        {
           "type": "auth",
           "label": "Create Account",
           "confidence": 0.95
@@ -712,53 +697,63 @@
           "confidence": 0.95
         },
         {
-          "type": "form",
-          "label": "Get Started with Stripe Button",
+          "type": "search",
+          "label": "Search Bar",
           "confidence": 0.95
         },
         {
-          "type": "navigation",
-          "label": "Explore All Products Link",
-          "confidence": 0.95
+          "type": "form",
+          "label": "Ask AI",
+          "confidence": 0.9
         },
         {
           "type": "auth",
-          "label": "Sign In or Create Account Link",
-          "confidence": 0.95
+          "label": "Sign In or Create Account",
+          "confidence": 0.9
         },
         {
           "type": "navigation",
+          "label": "Explore All Products",
+          "confidence": 0.9
+        },
+        {
+          "type": "commerce",
+          "label": "Get Started with Stripe",
+          "confidence": 0.95
+        },
+        {
+          "type": "content",
           "label": "Payments Links",
-          "confidence": 0.95
+          "confidence": 0.9
         },
         {
-          "type": "navigation",
+          "type": "content",
           "label": "Revenue Links",
-          "confidence": 0.95
+          "confidence": 0.9
         },
         {
-          "type": "navigation",
+          "type": "content",
           "label": "Developers Links",
+          "confidence": 0.9
+        },
+        {
+          "type": "consent",
+          "label": "Cookie Policy",
           "confidence": 0.95
         },
         {
           "type": "consent",
-          "label": "Cookie Policy Link",
+          "label": "Manage Cookies",
           "confidence": 0.95
         },
         {
           "type": "consent",
-          "label": "Manage Cookies Link",
+          "label": "Accept All",
           "confidence": 0.95
         },
         {
           "type": "consent",
-          "label": "Accept All Button",
-          "confidence": 0.95
-        },
-        {
-          "type": "consent",
-          "label": "Reject All Button",
+          "label": "Reject All",
           "confidence": 0.95
         }
       ],
@@ -846,15 +841,15 @@
       "recall": 0,
       "f1": 0,
       "tp": 0,
-      "fp": 14,
+      "fp": 15,
       "fn": 6,
-      "latencyMs": 5769,
+      "latencyMs": 8412,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 333,
-        "total": 1623
+        "completion": 348,
+        "total": 1638
       },
-      "costUsd": 0.0066
+      "costUsd": 0.0067
     },
     {
       "name": "airbnb-main",
@@ -863,7 +858,7 @@
       "detected": [
         {
           "type": "navigation",
-          "label": "Main Navigation",
+          "label": "Main Navigation Links",
           "confidence": 0.95
         },
         {
@@ -883,28 +878,23 @@
         },
         {
           "type": "navigation",
-          "label": "Popular Homes Link",
-          "confidence": 0.85
-        },
-        {
-          "type": "navigation",
-          "label": "Featured Hotels Link",
-          "confidence": 0.85
-        },
-        {
-          "type": "commerce",
-          "label": "Property Listings",
+          "label": "Popular Homes in Paris",
           "confidence": 0.9
         },
         {
-          "type": "social",
-          "label": "Favorite Button",
+          "type": "navigation",
+          "label": "Featured Hotels in Paris",
+          "confidence": 0.9
+        },
+        {
+          "type": "navigation",
+          "label": "Become a Host",
           "confidence": 0.85
         },
         {
-          "type": "auth",
-          "label": "Become a Host",
-          "confidence": 0.8
+          "type": "settings",
+          "label": "Language and Menu Options",
+          "confidence": 0.85
         }
       ],
       "groundTruth": [
@@ -1003,19 +993,19 @@
           "phase": 2
         }
       ],
-      "precision": 0.111,
-      "recall": 0.143,
-      "f1": 0.125,
-      "tp": 1,
-      "fp": 8,
-      "fn": 6,
-      "latencyMs": 3733,
+      "precision": 0.25,
+      "recall": 0.286,
+      "f1": 0.267,
+      "tp": 2,
+      "fp": 6,
+      "fn": 5,
+      "latencyMs": 5004,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 203,
-        "total": 1493
+        "completion": 186,
+        "total": 1476
       },
-      "costUsd": 0.0053
+      "costUsd": 0.0051
     },
     {
       "name": "booking-main",
@@ -1147,13 +1137,13 @@
       "tp": 0,
       "fp": 7,
       "fn": 6,
-      "latencyMs": 3568,
+      "latencyMs": 4109,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 175,
-        "total": 1465
+        "completion": 171,
+        "total": 1461
       },
-      "costUsd": 0.005
+      "costUsd": 0.0049
     },
     {
       "name": "amazon-de-main",
@@ -1187,17 +1177,17 @@
         },
         {
           "type": "consent",
-          "label": "Accept Cookies Button",
+          "label": "Accept Button",
           "confidence": 0.95
         },
         {
           "type": "consent",
-          "label": "Decline Cookies Button",
+          "label": "Decline Button",
           "confidence": 0.95
         },
         {
           "type": "consent",
-          "label": "Customize Cookies Button",
+          "label": "Customise Button",
           "confidence": 0.95
         }
       ],
@@ -1315,13 +1305,13 @@
       "tp": 2,
       "fp": 6,
       "fn": 6,
-      "latencyMs": 4113,
+      "latencyMs": 3637,
       "tokenUsage": {
         "prompt": 1290,
-        "completion": 194,
-        "total": 1484
+        "completion": 188,
+        "total": 1478
       },
-      "costUsd": 0.0052
+      "costUsd": 0.0051
     },
     {
       "name": "angular-material-demo",
@@ -1346,7 +1336,7 @@
         {
           "type": "navigation",
           "label": "Material Design Specification Link",
-          "confidence": 0.85
+          "confidence": 0.9
         },
         {
           "type": "navigation",
@@ -1454,7 +1444,7 @@
       "tp": 0,
       "fp": 5,
       "fn": 7,
-      "latencyMs": 2609,
+      "latencyMs": 2867,
       "tokenUsage": {
         "prompt": 1290,
         "completion": 118,
