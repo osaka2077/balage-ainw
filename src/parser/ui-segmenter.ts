@@ -280,7 +280,7 @@ function collectSegmentableNodes(
     const segment: UISegment = {
       id: randomUUID(),
       type: classification.type,
-      label: classification.label,
+      label: classification.label?.slice(0, 256),
       confidence: Math.round(classification.confidence * 100) / 100,
       boundingBox: box,
       nodes: [node],

@@ -647,6 +647,12 @@ export async function main(): Promise<BenchmarkReport> {
     results.push(result);
     printWebsiteResult(result);
 
+    // Inkrementell speichern: nach jeder Website Zwischenergebnis sichern
+    const partialReport = buildReport(results, runDate, runStart, llmClient);
+    const outPath = join(import.meta.dirname!, `benchmark-results-${runDate}.json`);
+    writeFileSync(outPath, JSON.stringify(partialReport, null, 2), "utf-8");
+    log(`  (partial results saved — ${results.length}/${groundTruths.length} sites)`);
+
     prevCalls = llmClient.summary().totalCalls;
     prevCost = llmClient.totalCostUsd();
   }
@@ -655,17 +661,30 @@ export async function main(): Promise<BenchmarkReport> {
   log("Shutting down browser ...");
   await adapter.shutdown();
 
-  // Aggregate Metriken berechnen
-  const successResults = results.filter((r) => r.status === "success");
+  const report = buildReport(results, runDate, runStart, llmClient);
+  printFinalReport(report);
 
-  // Aggregierte Metriken: gewichteter Durchschnitt nach Anzahl Ground-Truth-Endpoints
+  // Finales JSON speichern
+  const outPath = join(import.meta.dirname!, `benchmark-results-${runDate}.json`);
+  writeFileSync(outPath, JSON.stringify(report, null, 2), "utf-8");
+  log(`Results saved to ${outPath}`);
+
+  return report;
+}
+
+function buildReport(
+  results: BenchmarkResult[],
+  runDate: string,
+  runStart: number,
+  llmClient: FallbackLLMClient,
+): BenchmarkReport {
+  const successResults = results.filter((r) => r.status === "success");
   const aggAll = aggregateMetrics(successResults, "all");
   const aggPhase1 = aggregateMetrics(successResults, "phase1Only");
-
   const totalTime = Date.now() - runStart;
   const finalSummary = llmClient.summary();
 
-  const report: BenchmarkReport = {
+  return {
     runDate,
     config: {
       provider: envConfig.llmProvider,
@@ -684,15 +703,6 @@ export async function main(): Promise<BenchmarkReport> {
       totalTimeMs: totalTime,
     },
   };
-
-  printFinalReport(report);
-
-  // JSON speichern
-  const outPath = join(import.meta.dirname!, `benchmark-results-${runDate}.json`);
-  writeFileSync(outPath, JSON.stringify(report, null, 2), "utf-8");
-  log(`Results saved to ${outPath}`);
-
-  return report;
 }
 
 function aggregateMetrics(

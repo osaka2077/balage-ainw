@@ -339,7 +339,7 @@ async function extractViaCdp(cdp: CDPSession): Promise<AccessibilityNode> {
 
       const axNode: AccessibilityNode = {
         role: role ?? "unknown",
-        name: (node.name?.value as string) ?? "",
+        name: ((node.name?.value as string) ?? "").slice(0, 512),
         value: node.value?.value as string | undefined,
         description: node.description?.value as string | undefined,
         checked: extractCheckedState(node),
@@ -525,7 +525,7 @@ async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
 
       const node: RawNode = {
         role,
-        name: getName(el),
+        name: getName(el).slice(0, 512),
         disabled: el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true",
         required: el.hasAttribute("required") || el.getAttribute("aria-required") === "true",
         children: [],

@@ -13,6 +13,12 @@ import type { EndpointCandidate, LLMEndpointResponse, EvidenceSummary } from "./
 
 const logger = pino({ name: "semantic:evidence-collector" });
 
+/** Truncate string to fit within schema max length */
+function truncateSignal(s: string, max = 512): string {
+  if (s.length <= max) return s;
+  return s.slice(0, max - 3) + "...";
+}
+
 /**
  * Sammelt Evidence fuer eine Endpoint-Interpretation.
  */
@@ -30,7 +36,7 @@ export function collectEvidence(
       evidence.push(
         EvidenceSchema.parse({
           type: "semantic_label",
-          signal: semanticLabels.join(", "),
+          signal: truncateSignal(semanticLabels.join(", ")),
           weight: 0.8,
           detail: `Found ${semanticLabels.length} semantic label(s) in segment`,
           source: "dom",
@@ -45,7 +51,7 @@ export function collectEvidence(
       evidence.push(
         EvidenceSchema.parse({
           type: "aria_role",
-          signal: ariaRoles.join(", "),
+          signal: truncateSignal(ariaRoles.join(", ")),
           weight: rolesMatch ? 0.9 : 0.4,
           detail: rolesMatch
             ? `ARIA roles [${ariaRoles.join(", ")}] support endpoint type "${candidate.type}"`
@@ -75,7 +81,7 @@ export function collectEvidence(
       evidence.push(
         EvidenceSchema.parse({
           type: "text_content",
-          signal: relevantTexts.slice(0, 5).join("; "),
+          signal: truncateSignal(relevantTexts.slice(0, 5).join("; ")),
           weight: 0.6,
           detail: `Found ${relevantTexts.length} text signal(s) matching type "${candidate.type}"`,
           source: "dom",
@@ -102,7 +108,7 @@ export function collectEvidence(
     evidence.push(
       EvidenceSchema.parse({
         type: "llm_inference",
-        signal: candidate.reasoning,
+        signal: truncateSignal(candidate.reasoning),
         weight: 0.7,
         detail: `LLM (${llmResponse.model}) inferred type="${candidate.type}" with confidence=${candidate.confidence}`,
         source: "llm",

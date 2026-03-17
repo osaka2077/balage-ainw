@@ -9,6 +9,9 @@
  */
 
 import { describe, it, expect } from "vitest";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+dotenv.config(); // also load .env as fallback
 
 const hasApiKey =
   !!process.env["BALAGE_OPENAI_API_KEY"] ||
@@ -26,5 +29,5 @@ describe.skipIf(!hasApiKey)("Real-World Benchmark", () => {
     );
 
     expect(report.aggregate.successful).toBeGreaterThan(0);
-  }, 600_000);
+  }, 1_200_000);
 });
