@@ -1,0 +1,1466 @@
+{
+  "runner": "vision-only-baseline",
+  "model": "gpt-4o",
+  "date": "2026-03-17",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "totalSites": 10,
+  "successfulSites": 10,
+  "failedSites": 0,
+  "aggregate": {
+    "precision": 0.103,
+    "recall": 0.15,
+    "f1": 0.122,
+    "tp": 9,
+    "fp": 78,
+    "fn": 51
+  },
+  "totalCostUsd": 0.0527,
+  "budgetLimitUsd": 2,
+  "totalLatencyMs": 41036,
+  "totalTokens": 14950,
+  "sites": [
+    {
+      "name": "github-login",
+      "url": "https://github.com/login",
+      "difficulty": "easy",
+      "detected": [
+        {
+          "type": "auth",
+          "label": "Username or Email Field",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Password Field",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Forgot Password Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Sign In Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Continue with Google Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Continue with Apple Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Create an Account Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Sign in with a Passkey Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "navigation",
+          "label": "Footer Links",
+          "confidence": 0.9
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "auth",
+          "label": "Login Form",
+          "description": "Username/email + password login form with sign-in submit button",
+          "selector_hint": "form[action='/session']",
+          "affordances": [
+            "fill",
+            "submit"
+          ],
+          "risk_class": "high",
+          "fields": [
+            "login",
+            "password"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "auth",
+          "label": "Sign in with SSO (SAML)",
+          "description": "Enterprise SSO sign-in link redirecting to SAML flow",
+          "selector_hint": "a[href*='enterprise']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Create Account",
+          "description": "Link to GitHub registration page",
+          "selector_hint": "a[href='/signup']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Forgot Password",
+          "description": "Link to password reset flow",
+          "selector_hint": "a[href='/password_reset']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "medium",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "auth",
+          "label": "Sign in with Passkey",
+          "description": "WebAuthn passkey authentication button",
+          "selector_hint": "button[data-signin-with='passkey']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0.222,
+      "recall": 0.4,
+      "f1": 0.286,
+      "tp": 2,
+      "fp": 7,
+      "fn": 3,
+      "latencyMs": 5058,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 219,
+        "total": 1509
+      },
+      "costUsd": 0.0054
+    },
+    {
+      "name": "hacker-news",
+      "url": "https://news.ycombinator.com",
+      "difficulty": "easy",
+      "detected": [
+        {
+          "type": "navigation",
+          "label": "Main Navigation Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Login Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "content",
+          "label": "Article Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "content",
+          "label": "Comments Links",
+          "confidence": 0.9
+        },
+        {
+          "type": "content",
+          "label": "Hide Links",
+          "confidence": 0.9
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "auth",
+          "label": "Login Link",
+          "description": "Top-right login link redirecting to login form page",
+          "selector_hint": "a[href='login']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "medium",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Header Navigation",
+          "description": "Top bar links: new, past, comments, ask, show, jobs, submit",
+          "selector_hint": ".pagetop a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Story Links",
+          "description": "List of 30 story titles linking to external URLs or internal discussion pages",
+          "selector_hint": ".titleline a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Story Metadata Links",
+          "description": "Per-story links: points, author profile, timestamp, comment count/discussion page",
+          "selector_hint": ".subtext a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "More Link (Pagination)",
+          "description": "Bottom 'More' link for loading next page of stories",
+          "selector_hint": "a.morelink",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "tp": 0,
+      "fp": 5,
+      "fn": 5,
+      "latencyMs": 3096,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 113,
+        "total": 1403
+      },
+      "costUsd": 0.0044
+    },
+    {
+      "name": "linkedin-login",
+      "url": "https://www.linkedin.com/login",
+      "difficulty": "easy",
+      "detected": [
+        {
+          "type": "auth",
+          "label": "Continue with Google",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Sign in with Microsoft",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Sign in with Apple",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Email or Phone Field",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Password Field",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Show Password Button",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Forgot Password Link",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Sign in Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "User Agreement Link",
+          "confidence": 0.85
+        },
+        {
+          "type": "navigation",
+          "label": "Privacy Policy Link",
+          "confidence": 0.85
+        },
+        {
+          "type": "navigation",
+          "label": "Cookie Policy Link",
+          "confidence": 0.85
+        },
+        {
+          "type": "auth",
+          "label": "Join now Link",
+          "confidence": 0.9
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "auth",
+          "label": "Login Form",
+          "description": "Email/phone + password login form with Sign In button",
+          "selector_hint": "form.login__form, input#username, input#password",
+          "affordances": [
+            "fill",
+            "submit"
+          ],
+          "risk_class": "high",
+          "fields": [
+            "username",
+            "password"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "auth",
+          "label": "Forgot Password",
+          "description": "Link to password reset flow",
+          "selector_hint": "a[href*='forgot-password'], a.forgot-password",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "medium",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Join Now",
+          "description": "Link to LinkedIn registration / sign-up page",
+          "selector_hint": "a[href*='signup'], a.join-now",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Sign in with Google",
+          "description": "Google OAuth sign-in button for single sign-on",
+          "selector_hint": "button[data-provider='google'], a[href*='google']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Footer Links",
+          "description": "Footer navigation: About, Accessibility, User Agreement, Privacy Policy, etc.",
+          "selector_hint": "footer a, .footer__list a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0.167,
+      "recall": 0.4,
+      "f1": 0.235,
+      "tp": 2,
+      "fp": 10,
+      "fn": 3,
+      "latencyMs": 4524,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 280,
+        "total": 1570
+      },
+      "costUsd": 0.006
+    },
+    {
+      "name": "wikipedia-main",
+      "url": "https://en.wikipedia.org/wiki/Main_Page",
+      "difficulty": "easy",
+      "detected": [
+        {
+          "type": "search",
+          "label": "Search Bar",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "Main Navigation Links",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Log in",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Create account",
+          "confidence": 0.9
+        },
+        {
+          "type": "content",
+          "label": "Read",
+          "confidence": 0.85
+        },
+        {
+          "type": "content",
+          "label": "View source",
+          "confidence": 0.85
+        },
+        {
+          "type": "content",
+          "label": "View history",
+          "confidence": 0.85
+        },
+        {
+          "type": "settings",
+          "label": "Appearance Settings",
+          "confidence": 0.8
+        },
+        {
+          "type": "navigation",
+          "label": "Tools Dropdown",
+          "confidence": 0.8
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Search Wikipedia",
+          "description": "Global search form with text input and submit button",
+          "selector_hint": "form#searchform, input#searchInput",
+          "affordances": [
+            "fill",
+            "submit"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "search"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Main Navigation Tabs",
+          "description": "Top tabs: Main Page, Contents, Current Events, Random Article, About, Donate",
+          "selector_hint": "#p-navigation .vector-menu-content-list a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Language Selector",
+          "description": "Interlanguage links to switch Wikipedia language editions",
+          "selector_hint": "#p-lang .interlanguage-link a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Featured Article Links",
+          "description": "Links to featured content on the main page (Today's Featured Article, Did You Know, etc.)",
+          "selector_hint": "#mp-tfa a, #mp-dyk a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Log In / Create Account",
+          "description": "Personal tools login link in top-right corner",
+          "selector_hint": "#pt-login-2 a, a[href*='UserLogin']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "medium",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0.111,
+      "recall": 0.2,
+      "f1": 0.143,
+      "tp": 1,
+      "fp": 8,
+      "fn": 4,
+      "latencyMs": 4559,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 204,
+        "total": 1494
+      },
+      "costUsd": 0.0053
+    },
+    {
+      "name": "shopify-demo",
+      "url": "https://themes.shopify.com/themes/dawn/styles/default/preview",
+      "difficulty": "medium",
+      "detected": [
+        {
+          "type": "navigation",
+          "label": "Browse Themes Dropdown",
+          "confidence": 0.9
+        },
+        {
+          "type": "auth",
+          "label": "Log In Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Sign Up Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "search",
+          "label": "Search Icon",
+          "confidence": 0.9
+        },
+        {
+          "type": "navigation",
+          "label": "Main Navigation Links",
+          "confidence": 0.9
+        },
+        {
+          "type": "commerce",
+          "label": "View Demo Button",
+          "confidence": 0.9
+        },
+        {
+          "type": "commerce",
+          "label": "Try Theme Button",
+          "confidence": 0.9
+        },
+        {
+          "type": "consent",
+          "label": "Cookies Accept Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Cookies Decline Button",
+          "confidence": 0.95
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Product Search",
+          "description": "Predictive search with autocomplete dropdown showing products, collections, and pages",
+          "selector_hint": "form[action='/search'] input[type='search'], predictive-search",
+          "affordances": [
+            "fill",
+            "submit"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "search_query"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "checkout",
+          "label": "Add to Cart Buttons",
+          "description": "Product card quick-add buttons and product page add-to-cart form with quantity selector",
+          "selector_hint": "form[action='/cart/add'] button[type='submit'], product-form",
+          "affordances": [
+            "click",
+            "fill"
+          ],
+          "risk_class": "medium",
+          "fields": [
+            "quantity",
+            "variant_id"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Main Navigation",
+          "description": "Header menu with links to Catalog, Contact, and collection pages",
+          "selector_hint": "nav[role='navigation'] a, header-menu",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "checkout",
+          "label": "Cart Drawer",
+          "description": "Slide-over cart panel showing items, quantities, subtotal, and checkout button",
+          "selector_hint": "cart-drawer, a[href='/cart']",
+          "affordances": [
+            "click",
+            "fill",
+            "submit"
+          ],
+          "risk_class": "high",
+          "fields": [
+            "quantity"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Product Cards",
+          "description": "Grid of product cards linking to product detail pages with images, titles, prices",
+          "selector_hint": ".product-card a, .card__heading a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Footer Navigation",
+          "description": "Footer links: Quick links, Info, Policies, Social media icons",
+          "selector_hint": "footer a, .footer-block a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0.111,
+      "recall": 0.167,
+      "f1": 0.133,
+      "tp": 1,
+      "fp": 8,
+      "fn": 5,
+      "latencyMs": 4007,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 211,
+        "total": 1501
+      },
+      "costUsd": 0.0053
+    },
+    {
+      "name": "stripe-docs",
+      "url": "https://docs.stripe.com",
+      "difficulty": "medium",
+      "detected": [
+        {
+          "type": "navigation",
+          "label": "Main Navigation Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "search",
+          "label": "Search Bar",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Create Account",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Sign In",
+          "confidence": 0.95
+        },
+        {
+          "type": "form",
+          "label": "Get Started with Stripe Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "Explore All Products Link",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Sign In or Create Account Link",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "Payments Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "Revenue Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "Developers Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Cookie Policy Link",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Manage Cookies Link",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Accept All Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Reject All Button",
+          "confidence": 0.95
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Documentation Search",
+          "description": "Search input / command palette (Cmd+K) for searching docs, API reference, and guides",
+          "selector_hint": "button[data-testid='search-button'], input[type='search']",
+          "affordances": [
+            "click",
+            "fill",
+            "submit"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "search_query"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Sidebar Navigation",
+          "description": "Hierarchical docs sidebar with expandable sections: Get Started, Payments, Billing, Connect, etc.",
+          "selector_hint": "nav[aria-label='Sidebar'] a, .sidebar-nav a",
+          "affordances": [
+            "click",
+            "expand"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Breadcrumbs",
+          "description": "Breadcrumb trail showing current position in doc hierarchy",
+          "selector_hint": "nav[aria-label='Breadcrumb'] a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Code Example Controls",
+          "description": "Language switcher tabs and copy-to-clipboard buttons on code blocks",
+          "selector_hint": "[data-testid='code-block'] button, .code-lang-selector",
+          "affordances": [
+            "click",
+            "select"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Sign In / Dashboard",
+          "description": "Header link to Stripe Dashboard sign-in",
+          "selector_hint": "a[href*='dashboard.stripe.com'], a[href*='login']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Top Navigation",
+          "description": "Header nav: Products, Solutions, Developers, Resources, Pricing",
+          "selector_hint": "header nav a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "tp": 0,
+      "fp": 14,
+      "fn": 6,
+      "latencyMs": 5769,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 333,
+        "total": 1623
+      },
+      "costUsd": 0.0066
+    },
+    {
+      "name": "airbnb-main",
+      "url": "https://www.airbnb.com",
+      "difficulty": "hard",
+      "detected": [
+        {
+          "type": "navigation",
+          "label": "Main Navigation",
+          "confidence": 0.95
+        },
+        {
+          "type": "search",
+          "label": "Search Bar",
+          "confidence": 0.95
+        },
+        {
+          "type": "form",
+          "label": "Date Picker",
+          "confidence": 0.9
+        },
+        {
+          "type": "form",
+          "label": "Guest Selector",
+          "confidence": 0.9
+        },
+        {
+          "type": "navigation",
+          "label": "Popular Homes Link",
+          "confidence": 0.85
+        },
+        {
+          "type": "navigation",
+          "label": "Featured Hotels Link",
+          "confidence": 0.85
+        },
+        {
+          "type": "commerce",
+          "label": "Property Listings",
+          "confidence": 0.9
+        },
+        {
+          "type": "social",
+          "label": "Favorite Button",
+          "confidence": 0.85
+        },
+        {
+          "type": "auth",
+          "label": "Become a Host",
+          "confidence": 0.8
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Search Form",
+          "description": "Multi-field search: Where (location autocomplete), Check in/out (date picker), Who (guest counter), Search button",
+          "selector_hint": "form[action='/s'], [data-testid='structured-search-input']",
+          "affordances": [
+            "fill",
+            "submit",
+            "select"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "location",
+            "checkin_date",
+            "checkout_date",
+            "adults",
+            "children",
+            "infants"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Category Filter Bar",
+          "description": "Horizontal scrollable tabs: Icons, Amazing views, Beachfront, Cabins, Trending, etc. with filter toggle",
+          "selector_hint": "[data-testid='category-bar'], [role='tablist']",
+          "affordances": [
+            "click",
+            "scroll"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Sign Up / Log In",
+          "description": "Profile menu button opening dropdown with Log in, Sign up options. Opens auth modal.",
+          "selector_hint": "[data-testid='cypress-headernav-profile'], button[aria-label*='profile']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "form",
+          "label": "Cookie Consent Banner",
+          "description": "GDPR cookie consent overlay with Accept/Manage Preferences buttons",
+          "selector_hint": "[data-testid='cookie-banner'] button, #cookie-banner",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Listing Cards",
+          "description": "Grid of property cards with images, title, price, rating. Links to listing detail pages.",
+          "selector_hint": "[data-testid='card-container'] a, [itemprop='url']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Become a Host",
+          "description": "Header CTA link to Airbnb hosting onboarding",
+          "selector_hint": "a[href*='host']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Footer Navigation",
+          "description": "Footer sections: Support, Hosting, Airbnb (About, Careers, etc.) with expandable mobile sections",
+          "selector_hint": "footer a, footer nav a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0.111,
+      "recall": 0.143,
+      "f1": 0.125,
+      "tp": 1,
+      "fp": 8,
+      "fn": 6,
+      "latencyMs": 3733,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 203,
+        "total": 1493
+      },
+      "costUsd": 0.0053
+    },
+    {
+      "name": "booking-main",
+      "url": "https://www.booking.com",
+      "difficulty": "hard",
+      "detected": [
+        {
+          "type": "consent",
+          "label": "Confirm Settings Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Decline All Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Accept All Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Functional Cookies Tab",
+          "confidence": 0.9
+        },
+        {
+          "type": "consent",
+          "label": "Analytical Cookies Tab",
+          "confidence": 0.9
+        },
+        {
+          "type": "consent",
+          "label": "Marketing Cookies Tab",
+          "confidence": 0.9
+        },
+        {
+          "type": "content",
+          "label": "Privacy Notice Link",
+          "confidence": 0.85
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Accommodation Search Form",
+          "description": "Primary search: destination input with autocomplete, check-in/check-out date pickers, guests/rooms selector, and search button",
+          "selector_hint": "form[action='/searchresults.html'], input[name='ss']",
+          "affordances": [
+            "fill",
+            "submit",
+            "select"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "destination",
+            "checkin_date",
+            "checkout_date",
+            "guests",
+            "rooms"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Property Type Tabs",
+          "description": "Header tabs: Stays, Flights, Flight+Hotel, Car Rentals, Attractions, Airport Taxis",
+          "selector_hint": "[data-testid='header-tab']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Sign In / Register",
+          "description": "Header sign-in button opening auth modal or redirect",
+          "selector_hint": "[data-testid='header-sign-in-button'], a[href*='sign-in']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "form",
+          "label": "Cookie Consent Banner",
+          "description": "GDPR cookie consent with Accept/Manage buttons — blocks page until dismissed",
+          "selector_hint": "#onetrust-accept-btn-handler, button[id*='cookie']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Trending Destinations",
+          "description": "Cards/links to popular destination cities below the search form",
+          "selector_hint": "[data-testid='popular-destinations'] a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Currency/Language Selector",
+          "description": "Header buttons for changing currency and language preferences",
+          "selector_hint": "[data-testid='header-currency-picker'], [data-testid='header-language-picker']",
+          "affordances": [
+            "click",
+            "select"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "tp": 0,
+      "fp": 7,
+      "fn": 6,
+      "latencyMs": 3568,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 175,
+        "total": 1465
+      },
+      "costUsd": 0.005
+    },
+    {
+      "name": "amazon-de-main",
+      "url": "https://www.amazon.de",
+      "difficulty": "extreme",
+      "detected": [
+        {
+          "type": "navigation",
+          "label": "Main Navigation Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "search",
+          "label": "Search Bar",
+          "confidence": 0.95
+        },
+        {
+          "type": "auth",
+          "label": "Account & Lists",
+          "confidence": 0.9
+        },
+        {
+          "type": "commerce",
+          "label": "Shopping Basket",
+          "confidence": 0.9
+        },
+        {
+          "type": "consent",
+          "label": "Cookies and Advertising Choices",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Accept Cookies Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Decline Cookies Button",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Customize Cookies Button",
+          "confidence": 0.95
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Search Bar",
+          "description": "Product search with category dropdown filter and autocomplete suggestions",
+          "selector_hint": "form[action='/s'] input#twotabsearchtextbox, #nav-search-submit-button",
+          "affordances": [
+            "fill",
+            "submit",
+            "select"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "search_query",
+            "search_category"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Category Mega-Menu",
+          "description": "Hamburger menu 'Alle' opening full category navigation with nested flyout submenus",
+          "selector_hint": "#nav-hamburger-menu, #hmenu-content",
+          "affordances": [
+            "click",
+            "hover"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "auth",
+          "label": "Sign In",
+          "description": "Account & Lists dropdown with sign-in button redirecting to auth flow",
+          "selector_hint": "#nav-link-accountList, a[href*='signin']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "checkout",
+          "label": "Shopping Cart",
+          "description": "Cart icon with item count badge, links to cart/checkout page",
+          "selector_hint": "#nav-cart, a[href='/cart']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "high",
+          "fields": [],
+          "phase": 1
+        },
+        {
+          "type": "form",
+          "label": "Delivery Location Selector",
+          "description": "Location widget to set delivery address/ZIP for availability and pricing",
+          "selector_hint": "#nav-global-location-popover-link, #GLUXZipUpdateInput",
+          "affordances": [
+            "click",
+            "fill",
+            "submit"
+          ],
+          "risk_class": "medium",
+          "fields": [
+            "zip_code"
+          ],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Top Navigation Bar",
+          "description": "Horizontal nav: Today's Deals, Customer Service, Gift Cards, Sell, etc.",
+          "selector_hint": "#nav-xshop a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "form",
+          "label": "Cookie Consent Banner",
+          "description": "Cookie preferences with Accept/Customize buttons",
+          "selector_hint": "#sp-cc-accept, input[name='accept']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Orders & Returns",
+          "description": "Header link to order history and returns management",
+          "selector_hint": "#nav-orders, a[href*='order-history']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "medium",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0.25,
+      "recall": 0.25,
+      "f1": 0.25,
+      "tp": 2,
+      "fp": 6,
+      "fn": 6,
+      "latencyMs": 4113,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 194,
+        "total": 1484
+      },
+      "costUsd": 0.0052
+    },
+    {
+      "name": "angular-material-demo",
+      "url": "https://material.angular.io/components/categories",
+      "difficulty": "extreme",
+      "detected": [
+        {
+          "type": "navigation",
+          "label": "Main Navigation Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "navigation",
+          "label": "Sidebar Navigation Links",
+          "confidence": 0.95
+        },
+        {
+          "type": "consent",
+          "label": "Cookie Consent",
+          "confidence": 0.9
+        },
+        {
+          "type": "navigation",
+          "label": "Material Design Specification Link",
+          "confidence": 0.85
+        },
+        {
+          "type": "navigation",
+          "label": "GitHub Link",
+          "confidence": 0.9
+        }
+      ],
+      "groundTruth": [
+        {
+          "type": "form",
+          "label": "Demo Form Components",
+          "description": "Interactive form demos: Input, Select, Datepicker, Checkbox, Radio, Slider, Autocomplete — each with live preview",
+          "selector_hint": "mat-form-field, mat-select, mat-datepicker, mat-checkbox",
+          "affordances": [
+            "fill",
+            "select",
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "demo_input",
+            "demo_select",
+            "demo_date"
+          ],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Component Sidebar",
+          "description": "Left sidebar listing all Material components grouped by category (Form Controls, Navigation, Layout, etc.)",
+          "selector_hint": "nav .docs-component-category a, .docs-nav-content a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Code Example Toggle",
+          "description": "Source/Result toggle buttons on component examples showing TypeScript, HTML, CSS tabs",
+          "selector_hint": "button[aria-label*='source'], .docs-example-source button",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "form",
+          "label": "Search Components",
+          "description": "Search input for filtering component list",
+          "selector_hint": "input[aria-label*='search'], input[placeholder*='Search']",
+          "affordances": [
+            "fill"
+          ],
+          "risk_class": "low",
+          "fields": [
+            "search_query"
+          ],
+          "phase": 1
+        },
+        {
+          "type": "navigation",
+          "label": "Top Navigation Bar",
+          "description": "Header nav: Components, CDK, Guides with version selector dropdown",
+          "selector_hint": "nav a[routerlink], .docs-navbar a",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Theme Toggle",
+          "description": "Dark/light theme switcher button in header",
+          "selector_hint": "button[aria-label*='theme'], .theme-toggle",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        },
+        {
+          "type": "navigation",
+          "label": "Component Tab Sections",
+          "description": "Tab group within each component page: Overview, API, Examples",
+          "selector_hint": "mat-tab-group .mat-mdc-tab, [role='tab']",
+          "affordances": [
+            "click"
+          ],
+          "risk_class": "low",
+          "fields": [],
+          "phase": 2
+        }
+      ],
+      "precision": 0,
+      "recall": 0,
+      "f1": 0,
+      "tp": 0,
+      "fp": 5,
+      "fn": 7,
+      "latencyMs": 2609,
+      "tokenUsage": {
+        "prompt": 1290,
+        "completion": 118,
+        "total": 1408
+      },
+      "costUsd": 0.0044
+    }
+  ]
+}

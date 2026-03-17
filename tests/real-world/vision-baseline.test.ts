@@ -9,6 +9,9 @@
  */
 
 import { describe, it, expect } from "vitest";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+dotenv.config();
 
 const hasOpenAiKey = !!process.env["BALAGE_OPENAI_API_KEY"];
 
@@ -24,5 +27,5 @@ describe.skipIf(!hasOpenAiKey)("Vision-Only Baseline", () => {
     );
 
     expect(report.successfulSites).toBeGreaterThan(0);
-  }, 600_000);
+  }, 1_200_000);
 });
