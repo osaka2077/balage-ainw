@@ -52,6 +52,13 @@ const HEURISTIC_RULES: HeuristicRule[] = [
     correctedType: "support",
     check: (segment) => hasChatWidget(segment.nodes),
   },
+  {
+    name: "cart-class-implies-checkout",
+    correctedType: "checkout",
+    check: (segment) =>
+      segment.type === "checkout" ||
+      segment.nodes.some((n) => findAttrPattern(n, "class", /\b(cart|basket|checkout)\b/i)),
+  },
 ];
 
 // ============================================================================

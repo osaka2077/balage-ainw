@@ -54,6 +54,8 @@ const CLASS_PATTERNS: Array<{ pattern: RegExp; type: UISegmentType; weight: numb
   { pattern: /\bcontent\b/i, type: "content", weight: 0.3 },
   { pattern: /\bmain\b/i, type: "content", weight: 0.4 },
   { pattern: /\bsearch\b/i, type: "search", weight: 0.55 },
+  { pattern: /\b(cart|basket|checkout)\b/i, type: "checkout", weight: 0.7 },
+  { pattern: /\b(order|purchase|payment)\b/i, type: "checkout", weight: 0.55 },
 ];
 
 /** Interaktive HTML-Elemente */
@@ -67,7 +69,7 @@ const INTERACTIVE_TAGS = new Set([
   "summary",
 ]);
 
-const DEFAULT_MIN_CONFIDENCE = 0.3;
+const DEFAULT_MIN_CONFIDENCE = 0.4;
 
 /**
  * Zaehlt interaktive Elemente in einem DomNode-Teilbaum.
@@ -181,11 +183,14 @@ function isStandaloneInteractive(node: DomNode): boolean {
 /**
  * Erkennt implizite Formulare: Divs die Inputs und Buttons enthalten,
  * aber kein <form>-Tag sind.
+ * Erkennt auch role="button", aria-basierte Buttons und
+ * Search-Inputs die keinen expliziten Button brauchen.
  */
 function isImplicitForm(node: DomNode): boolean {
   if (node.tagName.toLowerCase() === "form") return false;
 
   let hasInput = false;
+  let hasSearchInput = false;
   let hasButton = false;
 
   function scan(n: DomNode): void {
@@ -194,8 +199,16 @@ function isImplicitForm(node: DomNode): boolean {
     if (tag === "form") return;
     if (tag === "input" || tag === "textarea" || tag === "select") {
       hasInput = true;
+      if (n.attributes["type"] === "search" || n.attributes["role"] === "searchbox") {
+        hasSearchInput = true;
+      }
     }
-    if (tag === "button" || (tag === "input" && (n.attributes["type"] === "submit" || n.attributes["type"] === "button"))) {
+    if (
+      tag === "button" ||
+      (tag === "input" && (n.attributes["type"] === "submit" || n.attributes["type"] === "button")) ||
+      n.attributes["role"] === "button" ||
+      (tag === "a" && n.attributes["type"] === "submit")
+    ) {
       hasButton = true;
     }
     for (const child of n.children) {
@@ -204,6 +217,8 @@ function isImplicitForm(node: DomNode): boolean {
   }
 
   scan(node);
+  // Search-Inputs brauchen keinen Button (Enter-Submit)
+  if (hasSearchInput) return true;
   return hasInput && hasButton;
 }
 
@@ -339,6 +354,25 @@ function collectSegmentableNodes(
         { errors: validated.error.issues, type: classification.type },
         "UISegment Validierung fehlgeschlagen, Segment wird uebersprungen"
       );
+    }
+
+    // FIX: Navigation-Segment das auch Form-Elemente enthaelt → zusaetzliches Form-Segment emittieren
+    // Verhindert dass Suchformulare in Navigationsleisten verloren gehen
+    if (classification.type === "navigation" && isImplicitForm(node)) {
+      const formSegment: UISegment = {
+        id: randomUUID(),
+        type: "form",
+        label: classification.label ? `${classification.label} (embedded form)` : "Embedded Form",
+        confidence: 0.7,
+        boundingBox: box,
+        nodes: [node],
+        interactiveElementCount: interactiveCount,
+        semanticRole: "form",
+      };
+      const formValidated = UISegmentSchema.safeParse(formSegment);
+      if (formValidated.success) {
+        segments.push(formValidated.data);
+      }
     }
 
     // Kinder erben den Form-Kontext wenn dieses Segment ein Form/Search ist

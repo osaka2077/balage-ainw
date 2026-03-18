@@ -192,6 +192,7 @@ export function pruneForLLM(
 
     return {
       segmentId: segment.id,
+      segmentType: segment.type,
       textRepresentation,
       estimatedTokens,
       preservedElements,

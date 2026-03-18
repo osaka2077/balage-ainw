@@ -173,6 +173,7 @@ export const UISegmentTypeSchema = z.enum([
   "list",
   "media",
   "search",
+  "checkout",
   "unknown",
 ]);
 export type UISegmentType = z.infer<typeof UISegmentTypeSchema>;

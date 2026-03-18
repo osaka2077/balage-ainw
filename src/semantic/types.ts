@@ -55,6 +55,7 @@ export interface PruneForLLMOptions {
 /** Ergebnis des LLM-optimierten Prunings */
 export interface PrunedSegment {
   segmentId: string;
+  segmentType?: string;
   textRepresentation: string;
   estimatedTokens: number;
   preservedElements: number;

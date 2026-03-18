@@ -24,6 +24,13 @@ RULES:
 - A page typically has 3-6 truly important endpoints. Prefer fewer, high-quality results over many low-quality ones.
 - Do NOT return multiple endpoints of the same type unless they serve clearly different purposes (e.g., a login form and a separate registration form are distinct; two navigation menus are NOT).
 
+IMPORTANT — SEGMENT TYPE vs ENDPOINT TYPE:
+- Each segment has a pre-classified type (e.g., "navigation", "form"). This classification is based on DOM structure, NOT content.
+- The segment type is a HINT, not a constraint. A navigation segment may contain auth links — classify them as "navigation", NOT "auth". The CONTAINER determines the type, not individual link labels.
+- A navigation section that contains "Login", "Sign Up", or "Create Account" links is still a NAVIGATION endpoint (links that navigate to auth pages). Only classify as "auth" if the segment contains actual input fields for credentials.
+- A navigation section that contains search inputs is a SEARCH endpoint, not navigation.
+- A form segment is an AUTH endpoint only if it has password/credential fields. A form without password fields is just "form".
+
 ENDPOINT TYPES:
 - auth: Login, register, password reset forms
 - form: Generic forms (contact, feedback, newsletter signup)
@@ -209,6 +216,7 @@ export function buildExtractionPrompt(
 
   parts.push("## UI Segment to Analyze");
   parts.push(`Segment ID: ${prunedSegment.segmentId}`);
+  parts.push(`Segment Type (DOM-based): ${prunedSegment.segmentType ?? "unknown"}`);
   parts.push(`Estimated Tokens: ${prunedSegment.estimatedTokens}`);
   parts.push(`Preserved Elements: ${prunedSegment.preservedElements}`);
   parts.push("");
