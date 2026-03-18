@@ -223,7 +223,7 @@ export async function generateEndpoints(
   const deduped = deduplicateCandidates(filtered);
 
   // 8. Global Cap: Top-N nach Confidence
-  const MAX_TOTAL_ENDPOINTS = 5;
+  const MAX_TOTAL_ENDPOINTS = 7;
   const capped = deduped
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_TOTAL_ENDPOINTS);

@@ -344,7 +344,7 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(5);
+    expect(result).toHaveLength(7);
   });
 
   it("preserves highest-confidence candidates after cap", async () => {
@@ -363,14 +363,14 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    // Top 5 by confidence → types at index 0-4
+    // Top 7 by confidence → types at index 0-6
     const resultTypes = result.map((c) => c.type);
     expect(resultTypes).toContain("auth"); // 0.95
-    expect(resultTypes).toContain("content"); // 0.91
-    expect(resultTypes).not.toContain("checkout"); // 0.90 — cut off at cap=5
+    expect(resultTypes).toContain("commerce"); // 0.89
+    expect(resultTypes).not.toContain("social"); // 0.87 — cut off at cap=7
   });
 
-  it("returns all candidates when count <= 5", async () => {
+  it("returns all candidates when count <= 7", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9),
       makeValidCandidate("search", 0.8),
