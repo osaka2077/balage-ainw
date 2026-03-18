@@ -1,0 +1,94 @@
+{
+  "url": "https://www.zalando.de",
+  "captured_at": "2026-03-18",
+  "difficulty": "hard",
+  "notes": "Large fashion e-commerce site. Complex header with search, auth, wishlist, cart. Heavy client-side rendering with React. Cookie consent modal. Gender-based navigation (Damen/Herren/Kinder). Size/filter complexity on search results pages. A/B testing causes DOM variation.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Search Bar",
+      "description": "Product search input with autocomplete suggestions and search submit",
+      "selector_hint": "input[name='q'], input[data-testid='searchInput'], button[data-testid='search-button']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign In / Account",
+      "description": "Account icon in header opening login page or account flyout",
+      "selector_hint": "a[href*='myaccount'], a[data-testid='header-myaccount']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "checkout",
+      "label": "Shopping Cart",
+      "description": "Cart icon with item count badge linking to cart/checkout",
+      "selector_hint": "a[href*='cart'], a[data-testid='header-cart']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Wishlist",
+      "description": "Heart icon linking to saved items wishlist",
+      "selector_hint": "a[href*='wishlist'], a[data-testid='header-wishlist']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Gender Navigation",
+      "description": "Top-level navigation tabs: Damen, Herren, Kinder — each loads different product catalog",
+      "selector_hint": "nav a[href*='damen'], nav a[href*='herren'], nav a[href*='kinder']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Category Mega-Menu",
+      "description": "Hover/click category navigation with nested subcategories (Schuhe, Bekleidung, Sport, etc.)",
+      "selector_hint": "nav[data-testid='header-navigation'] a",
+      "affordances": ["click", "hover"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Cookie Consent Modal",
+      "description": "GDPR consent modal with Accept All / Settings buttons on first visit",
+      "selector_hint": "button[data-testid='consent-accept-all'], #uc-btn-accept-banner",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Newsletter Signup",
+      "description": "Email input for newsletter subscription, often in footer or modal popup",
+      "selector_hint": "input[name='newsletter_email'], form[data-testid='newsletter-form']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["email"],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 8,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.60,
+    "min_recall_target": 0.55
+  }
+}

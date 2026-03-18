@@ -1,0 +1,64 @@
+{
+  "url": "https://www.paypal.com/signin",
+  "captured_at": "2026-03-18",
+  "difficulty": "easy",
+  "notes": "Clean login page with email/phone input on first step, password on second step. Two-step auth flow with Next button between steps. SSO option via Google. Minimal DOM complexity.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Form — Email Step",
+      "description": "Email or phone number input field with Next button to proceed to password step",
+      "selector_hint": "input#email, button#btnNext",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["email"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Login Form — Password Step",
+      "description": "Password input field with Log In submit button (shown after email step)",
+      "selector_hint": "input#password, button#btnLogin",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Log In with Google",
+      "description": "Google One Tap / SSO button for signing in via Google account",
+      "selector_hint": "div[data-google-btn], a[href*='google']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Having trouble logging in? link to password recovery flow",
+      "selector_hint": "a[href*='authflow/password-recovery']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Sign Up",
+      "description": "Link to create a new PayPal account",
+      "selector_hint": "a[href*='webapps/mpp/account-selection']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.80,
+    "min_recall_target": 0.80
+  }
+}

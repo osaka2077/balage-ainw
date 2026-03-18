@@ -1,0 +1,94 @@
+{
+  "url": "https://www.ebay.de",
+  "captured_at": "2026-03-18",
+  "difficulty": "hard",
+  "notes": "Complex e-commerce homepage with search, auth, cart, category navigation, and personalized content. Heavy JS with dynamic loading. Cookie banner. Multiple overlapping navigation elements. Category dropdown in search bar adds complexity.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Search Bar",
+      "description": "Product search input with category dropdown filter and search button",
+      "selector_hint": "input#gh-ac, select#gh-cat, button#gh-btn",
+      "affordances": ["fill", "submit", "select"],
+      "risk_class": "low",
+      "fields": ["search_query", "search_category"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign In",
+      "description": "Header sign-in link redirecting to eBay authentication page",
+      "selector_hint": "a#gh-ug, a[href*='signin']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Register",
+      "description": "Link to eBay account registration",
+      "selector_hint": "a[href*='register'], a#gh-ug-reg",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "checkout",
+      "label": "Shopping Cart",
+      "description": "Cart icon in header linking to basket/checkout page",
+      "selector_hint": "a#gh-minicart-hover, a[href*='cart']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Category Navigation",
+      "description": "Horizontal category links below header: Elektronik, Mode, Haus & Garten, etc.",
+      "selector_hint": "#vl-flyout-nav a, ul.hl-cat-nav__container a",
+      "affordances": ["click", "hover"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Sell Button",
+      "description": "Header link to list an item for sale on eBay",
+      "selector_hint": "a[href*='sell'], #gh-sell",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie banner with Accept/Reject/Settings buttons",
+      "selector_hint": "#gdpr-banner-accept, button[id*='accept']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "My eBay (Watchlist/Orders)",
+      "description": "Dropdown or link to watchlist, purchase history, and account overview",
+      "selector_hint": "a#gh-eb-My, a[href*='myebay']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 8,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.60,
+    "min_recall_target": 0.55
+  }
+}

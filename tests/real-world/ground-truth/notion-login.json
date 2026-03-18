@@ -1,0 +1,64 @@
+{
+  "url": "https://www.notion.so/login",
+  "captured_at": "2026-03-18",
+  "difficulty": "easy",
+  "notes": "Clean SaaS login page. Email input with Continue button, then password or magic link. Google and Apple SSO buttons. Minimal DOM, React-rendered. Very straightforward for detection.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Email Login",
+      "description": "Email input field with Continue with email button",
+      "selector_hint": "input[type='email'], input#notion-email-input-1",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["email"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Continue with Google",
+      "description": "Google OAuth sign-in button",
+      "selector_hint": "div[role='button'][id*='google'], a[href*='accounts.google.com']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Continue with Apple",
+      "description": "Apple ID sign-in button",
+      "selector_hint": "div[role='button'][id*='apple'], a[href*='appleid.apple.com']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Continue with SAML SSO",
+      "description": "Enterprise SSO login option for organizations using SAML",
+      "selector_hint": "div[role='button']:has-text('SAML SSO')",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Sign Up",
+      "description": "Link to Notion account registration page",
+      "selector_hint": "a[href*='signup']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.85,
+    "min_recall_target": 0.80
+  }
+}

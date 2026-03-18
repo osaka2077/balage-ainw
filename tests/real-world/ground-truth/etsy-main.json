@@ -1,0 +1,84 @@
+{
+  "url": "https://www.etsy.com",
+  "captured_at": "2026-03-18",
+  "difficulty": "medium",
+  "notes": "Handmade/vintage marketplace. Search-centric homepage with category navigation. Auth via header Sign In link. Cart icon in header. Cookie banner for EU visitors. Moderate DOM complexity with some dynamic loading for personalized recommendations.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Search Bar",
+      "description": "Product search input with autocomplete and search submit button",
+      "selector_hint": "input#global-enhancements-search-query, input[name='search_query'], button[type='submit']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign In",
+      "description": "Header Sign In link opening login modal or redirecting to auth page",
+      "selector_hint": "a[href*='signin'], button[data-signin-modal]",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "checkout",
+      "label": "Shopping Cart",
+      "description": "Cart icon with item count badge in header linking to cart page",
+      "selector_hint": "a[href*='/cart'], a[data-cart-icon]",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Category Navigation",
+      "description": "Horizontal category links: Jewelry, Clothing, Home & Living, Wedding, Gifts, etc.",
+      "selector_hint": "nav[aria-label='Category navigation'] a, ul.wt-tab__container a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Favorites",
+      "description": "Heart icon linking to favorited/saved items list",
+      "selector_hint": "a[href*='favorites'], a[data-favorites]",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Cookie Consent Banner",
+      "description": "Cookie preferences banner with Accept button for EU/GDPR compliance",
+      "selector_hint": "button[data-gdpr-accept], button[data-action='accept-cookies']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Sell on Etsy",
+      "description": "Header link to open a seller shop on Etsy",
+      "selector_hint": "a[href*='sell'], a[href*='your/shops']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 7,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.70,
+    "min_recall_target": 0.65
+  }
+}

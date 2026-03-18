@@ -1,0 +1,74 @@
+{
+  "url": "https://www.typeform.com",
+  "captured_at": "2026-03-18",
+  "difficulty": "medium",
+  "notes": "Form-builder SaaS homepage. Meta-interesting: a tool for building forms has its own forms. Auth via header login button. CTA-heavy landing page with multiple Get Started buttons. Search in docs/help section. Moderate DOM complexity with animations and lazy-loaded sections.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login",
+      "description": "Header Login button linking to Typeform authentication page",
+      "selector_hint": "a[href*='login'], a[data-qa='header-login']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign Up / Get Started Free",
+      "description": "Primary CTA button for account registration (appears multiple times on page)",
+      "selector_hint": "a[href*='signup'], a[data-qa='header-signup'], button:has-text('Get started')",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "form",
+      "label": "Hero CTA — Get Started",
+      "description": "Hero section signup CTA with email input and Get Started button",
+      "selector_hint": "form.hero-form input[type='email'], button[data-qa='hero-cta']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["email"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Product Navigation",
+      "description": "Header navigation: Products, Solutions, Templates, Pricing, Enterprise with dropdown menus",
+      "selector_hint": "nav a[href*='products'], nav a[href*='pricing']",
+      "affordances": ["click", "hover"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Templates Gallery",
+      "description": "Link to browse form/survey templates",
+      "selector_hint": "a[href*='templates']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Cookie Consent",
+      "description": "Cookie consent banner with accept/manage buttons",
+      "selector_hint": "button#onetrust-accept-btn-handler, button[data-qa='cookie-accept']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 3,
+    "min_precision_target": 0.70,
+    "min_recall_target": 0.70
+  }
+}

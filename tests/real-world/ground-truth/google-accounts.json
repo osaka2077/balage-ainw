@@ -1,0 +1,74 @@
+{
+  "url": "https://accounts.google.com",
+  "captured_at": "2026-03-18",
+  "difficulty": "medium",
+  "notes": "Multi-step login flow. First screen: email/phone input with Next button. Second screen: password input. Possible 2FA interstitial. Google-specific Material Design components. DOM structure changes between steps — not a traditional single-page form.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Identifier Step — Email/Phone",
+      "description": "Email or phone input field with Next button on the first step of sign-in",
+      "selector_hint": "input[type='email'], #identifierId, button[jsname='LgbsSe']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["email_or_phone"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Password Step",
+      "description": "Password input field with Next button on the second step of sign-in",
+      "selector_hint": "input[type='password'], input[name='Passwd']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Email",
+      "description": "Link to find/recover Google account email address",
+      "selector_hint": "button[jsname='Cuz2Ue'], a[href*='signin/v2/usernamerecovery']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Link to account recovery for forgotten password (shown on password step)",
+      "selector_hint": "a[href*='signin/v2/challenge/pwd'], button[jsname='LwH6nd']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Create Account",
+      "description": "Link to Google account registration with options for personal, child, or business account",
+      "selector_hint": "button[jsname='tJiF1e'], a[href*='signup']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Language Selector",
+      "description": "Dropdown to change the page display language",
+      "selector_hint": "select#lang-chooser, div[jsname='LgbsSe']",
+      "affordances": ["select"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 4,
+    "min_precision_target": 0.70,
+    "min_recall_target": 0.65
+  }
+}
