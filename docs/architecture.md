@@ -168,9 +168,9 @@ BALAGE is only useful if developers can integrate it quickly. This layer ensures
 
 **Key components:**
 - REST API: Fastify-based server with authentication, rate limiting, WebSocket streaming, and idempotency
-- TypeScript SDK (`@balage/sdk`): Client with fluent WorkflowBuilder, streaming, auto-retry
+- TypeScript SDK (`@balage-osaka/sdk`): Client with fluent WorkflowBuilder, streaming, auto-retry
 - Python SDK (`balage`): Async client with Pydantic v2 models, context manager pattern
-- CLI (`@balage/cli`): Commander.js-based tool with init, run, test, and status commands
+- CLI (`@balage-osaka/cli`): Commander.js-based tool with init, run, test, and status commands
 
 **See also:**
 - [API Reference](./api-reference.md)
