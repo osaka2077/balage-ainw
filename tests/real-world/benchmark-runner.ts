@@ -78,6 +78,7 @@ interface MatchDetail {
   groundTruth: { type: string; label: string; phase: number };
   matched: { type: string; label: string; confidence: number } | null;
   typeMatch: boolean;
+  nearMisses?: NearMiss[];
 }
 
 interface BenchmarkReport {
@@ -158,6 +159,53 @@ function labelBasedMatch(gtType: string, detType: string, detLabel: string): boo
   return false;
 }
 
+/** FIX 5: Near-miss info fuer unmatched GT endpoints */
+interface NearMiss {
+  detectedType: string;
+  detectedLabel: string;
+  confidence: number;
+  reason: string;
+}
+
+function findNearMisses(
+  gt: GroundTruthEndpoint,
+  detected: Endpoint[],
+  usedIndices: Set<number>,
+): NearMiss[] {
+  const misses: Array<NearMiss & { score: number }> = [];
+  for (let i = 0; i < detected.length; i++) {
+    const det = detected[i]!;
+    let reason = "";
+    let score = 0;
+    // Type-Match aber bereits vergeben
+    if (usedIndices.has(i) && typesMatch(gt.type, det.type)) {
+      reason = "type-match but already used";
+      score = 0.5 + det.confidence * 0.3;
+    }
+    // Nicht-matchender Type
+    else if (!typesMatch(gt.type, det.type) && !usedIndices.has(i)) {
+      reason = `type-mismatch (gt=${gt.type}, det=${det.type})`;
+      score = det.confidence * 0.3;
+    }
+    // Bereits verwendet, anderer Type
+    else if (usedIndices.has(i)) {
+      reason = "already matched to different GT";
+      score = 0.2;
+    }
+    if (reason) {
+      misses.push({
+        detectedType: det.type,
+        detectedLabel: det.label.primary,
+        confidence: det.confidence,
+        reason,
+        score,
+      });
+    }
+  }
+  misses.sort((a, b) => b.score - a.score);
+  return misses.slice(0, 3).map(({ score: _s, ...rest }) => rest);
+}
+
 function computeMatches(
   groundTruth: GroundTruthEndpoint[],
   detected: Endpoint[],
@@ -203,10 +251,13 @@ function computeMatches(
         typeMatch: gt.type === det.type,
       });
     } else {
+      // FIX 5: Near-miss Analyse fuer verpasste Endpoints
+      const nearMisses = findNearMisses(gt, detected, usedDetected);
       details.push({
         groundTruth: { type: gt.type, label: gt.label, phase: gt.phase },
         matched: null,
         typeMatch: false,
+        nearMisses,
       });
     }
   }
@@ -306,8 +357,16 @@ async function runPipeline(
     // 4b. Aggressive filtering — confidence + interactivity threshold
     const MIN_SEGMENT_CONFIDENCE = 0.50;
     const MIN_INTERACTIVE_FOR_LOW_CONF = 1;
+    // FIX 1: Forms und Navigation weniger aggressiv filtern — fast immer echte Endpoints
+    const ALWAYS_KEEP_TYPES = new Set(["form"]);
+    const LOW_CONF_KEEP_TYPES = new Set(["navigation"]);
+    const LOW_CONF_THRESHOLD = 0.30;
     const withInteractive = segments.filter(
       (s: UISegment) => {
+        // Forms immer behalten (unabhaengig von Confidence/interactiveCount)
+        if (ALWAYS_KEEP_TYPES.has(s.type)) return true;
+        // Navigation mit Mindest-Confidence behalten
+        if (LOW_CONF_KEEP_TYPES.has(s.type) && s.confidence >= LOW_CONF_THRESHOLD) return true;
         // Hohe Confidence-Segmente immer behalten
         if (s.confidence >= MIN_SEGMENT_CONFIDENCE && KEY_SEGMENT_TYPES.includes(s.type)) return true;
         // Niedrige Confidence nur bei genuegend interaktiven Elementen
@@ -473,6 +532,12 @@ function printWebsiteResult(result: BenchmarkResult): void {
         console.log(`    ${matchStr} ${gtStr} → [${m.matched.type}] "${m.matched.label}" (${m.matched.confidence.toFixed(2)})`);
       } else {
         console.log(`    MISS  ${gtStr} → (not detected)`);
+        // FIX 5: Near-miss Details anzeigen
+        if (m.nearMisses && m.nearMisses.length > 0) {
+          for (const nm of m.nearMisses) {
+            console.log(`          near: [${nm.detectedType}] "${nm.detectedLabel}" (${nm.confidence.toFixed(2)}) — ${nm.reason}`);
+          }
+        }
       }
     }
   }

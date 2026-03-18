@@ -313,16 +313,50 @@ export function candidateToEndpoint(
     },
   };
 
-  // Zod-Validierung
-  const result = EndpointSchema.safeParse(endpoint);
+  // FIX 3: Robuste Zod-Validierung — Felder fixen statt Candidate verwerfen
+  let result = EndpointSchema.safeParse(endpoint);
   if (!result.success) {
-    const errors = result.error.issues.map(
-      (i) => `${i.path.join(".")}: ${i.message}`,
-    );
-    throw new EndpointValidationError(
-      `Generated endpoint failed validation: ${errors.join("; ")}`,
-      errors,
-    );
+    // Versuche Felder zu reparieren
+    const issues = result.error.issues;
+    for (const issue of issues) {
+      const path = issue.path.join(".");
+      // Label-Felder zu lang → truncate
+      if (path === "label.primary" && issue.code === "too_big") {
+        endpoint.label.primary = endpoint.label.primary.slice(0, 128);
+      }
+      if (path === "label.display" && issue.code === "too_big") {
+        endpoint.label.display = endpoint.label.display.slice(0, 256);
+      }
+      // Affordances > 16 → slice
+      if (path.startsWith("affordances") && issue.code === "too_big") {
+        endpoint.affordances = endpoint.affordances.slice(0, 16);
+      }
+      // Evidence signal > 512 → truncate
+      if (path.match(/^evidence\.\d+\.signal$/) && issue.code === "too_big") {
+        const idx = Number(issue.path[1]);
+        if (endpoint.evidence[idx]) {
+          endpoint.evidence[idx].signal = endpoint.evidence[idx].signal.slice(0, 512);
+        }
+      }
+      // Evidence detail > 2048 → truncate
+      if (path.match(/^evidence\.\d+\.detail$/) && issue.code === "too_big") {
+        const idx = Number(issue.path[1]);
+        if (endpoint.evidence[idx]?.detail) {
+          endpoint.evidence[idx].detail = endpoint.evidence[idx].detail!.slice(0, 2048);
+        }
+      }
+    }
+    // Retry nach Reparatur
+    result = EndpointSchema.safeParse(endpoint);
+    if (!result.success) {
+      const errors = result.error.issues.map(
+        (i) => `${i.path.join(".")}: ${i.message}`,
+      );
+      throw new EndpointValidationError(
+        `Generated endpoint failed validation: ${errors.join("; ")}`,
+        errors,
+      );
+    }
   }
 
   return result.data;
@@ -342,7 +376,7 @@ function deduplicateCandidates(
     const duplicate = result.find(
       (existing) =>
         existing.type === candidate.type &&
-        labelSimilarity(existing.label, candidate.label) > 0.6,
+        labelSimilarity(existing.label, candidate.label) > 0.75,
     );
 
     if (duplicate) {
