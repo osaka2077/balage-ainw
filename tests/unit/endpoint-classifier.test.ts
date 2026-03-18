@@ -1,0 +1,599 @@
+/**
+ * P2 — Endpoint-Classifier Heuristik-Tests
+ *
+ * Testet alle 6 HeuristicRules, inferAffordances und Edge Cases.
+ */
+
+import { describe, it, expect } from "vitest";
+import { randomUUID } from "node:crypto";
+import {
+  classifyEndpoint,
+  inferAffordances,
+} from "../../src/semantic/endpoint-classifier.js";
+import type { DomNode, UISegment } from "../../shared_interfaces.js";
+import type { EndpointCandidate } from "../../src/semantic/types.js";
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function makeDomNode(
+  tagName: string,
+  attrs: Record<string, string> = {},
+  children: DomNode[] = [],
+  overrides: Partial<DomNode> = {},
+): DomNode {
+  return {
+    tagName,
+    attributes: attrs,
+    isVisible: true,
+    isInteractive: false,
+    children,
+    ...overrides,
+  };
+}
+
+function makeSegment(
+  nodes: DomNode[],
+  type: string = "unknown",
+): UISegment {
+  return {
+    id: randomUUID(),
+    type: type as UISegment["type"],
+    confidence: 0.8,
+    boundingBox: { x: 0, y: 0, width: 800, height: 200 },
+    nodes,
+    interactiveElementCount: 1,
+  };
+}
+
+function makeCandidate(
+  type: string,
+  confidence: number = 0.8,
+): EndpointCandidate {
+  return {
+    type,
+    label: `Test ${type}`,
+    description: `Test endpoint for ${type}`,
+    confidence,
+    anchors: [{ selector: "div" }],
+    affordances: [
+      { type: "click", expectedOutcome: "Action", reversible: true },
+    ],
+    reasoning: "test reasoning",
+  };
+}
+
+// ============================================================================
+// Heuristic Rules
+// ============================================================================
+
+describe("Heuristic Rules", () => {
+  describe("password-field-implies-auth", () => {
+    it("corrects non-auth type to 'auth' when form has password input", () => {
+      const nodes = [
+        makeDomNode("form", {}, [
+          makeDomNode("input", { type: "email" }),
+          makeDomNode("input", { type: "password" }),
+        ]),
+      ];
+      const result = classifyEndpoint(makeCandidate("form"), makeSegment(nodes));
+
+      expect(result.correctedType).toBe("auth");
+      expect(result.heuristicConfidence).toBe(0.85);
+    });
+
+    it("boosts confidence when LLM already says 'auth'", () => {
+      const nodes = [
+        makeDomNode("form", {}, [
+          makeDomNode("input", { type: "password" }),
+        ]),
+      ];
+      const result = classifyEndpoint(makeCandidate("auth"), makeSegment(nodes));
+
+      expect(result.correctedType).toBeUndefined();
+      expect(result.heuristicConfidence).toBe(0.9);
+    });
+
+    it("finds password input in nested children", () => {
+      const nodes = [
+        makeDomNode("form", {}, [
+          makeDomNode("div", {}, [
+            makeDomNode("div", {}, [
+              makeDomNode("input", { type: "password" }),
+            ]),
+          ]),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("form"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("auth");
+    });
+  });
+
+  describe("price-with-buy-button-implies-checkout", () => {
+    it("corrects to 'checkout' when price and buy button present", () => {
+      const nodes = [
+        makeDomNode("div", {}, [
+          makeDomNode("span", {}, [], { textContent: "$49.99" }),
+          makeDomNode("button", {}, [], { textContent: "Add to Cart" }),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("commerce"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("checkout");
+    });
+
+    it("detects Euro price format", () => {
+      const nodes = [
+        makeDomNode("div", {}, [
+          makeDomNode("span", {}, [], { textContent: "€29,99" }),
+          makeDomNode("button", {}, [], { textContent: "Purchase" }),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("commerce"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("checkout");
+    });
+
+    it("does NOT trigger with price but no buy button", () => {
+      const nodes = [
+        makeDomNode("div", {}, [
+          makeDomNode("span", {}, [], { textContent: "$49.99" }),
+          makeDomNode("span", {}, [], { textContent: "Item description" }),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("commerce"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).not.toBe("checkout");
+    });
+  });
+
+  describe("search-input-implies-search", () => {
+    it("corrects to 'search' when input[type=search] present", () => {
+      const nodes = [
+        makeDomNode("div", {}, [
+          makeDomNode("input", { type: "search" }),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("form"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("search");
+    });
+
+    it("corrects to 'search' when role='search' present", () => {
+      const nodes = [makeDomNode("div", { role: "search" })];
+      const result = classifyEndpoint(
+        makeCandidate("form"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("search");
+    });
+
+    it("boosts confidence when LLM already says 'search'", () => {
+      const nodes = [
+        makeDomNode("div", {}, [
+          makeDomNode("input", { type: "search" }),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("search"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBeUndefined();
+      expect(result.heuristicConfidence).toBe(0.9);
+    });
+  });
+
+  describe("nav-root-implies-navigation", () => {
+    it("corrects to 'navigation' when <nav> element present", () => {
+      const nodes = [makeDomNode("nav")];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("navigation");
+    });
+
+    it("corrects to 'navigation' when role='navigation' present", () => {
+      const nodes = [makeDomNode("div", { role: "navigation" })];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("navigation");
+    });
+  });
+
+  describe("chat-widget-implies-support", () => {
+    it("corrects to 'support' when 'Live Chat' text found", () => {
+      const nodes = [
+        makeDomNode("div", {}, [], { textContent: "Live Chat with us" }),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("support");
+    });
+
+    it("corrects to 'support' when 'Start Chat' text found", () => {
+      const nodes = [
+        makeDomNode("div", {}, [], { textContent: "Start Chat" }),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("support");
+    });
+
+    it("corrects to 'support' when chat-widget class found", () => {
+      const nodes = [
+        makeDomNode("div", { class: "chat-widget-container" }),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("support");
+    });
+
+    it("detects intercom/crisp class patterns", () => {
+      const nodes = [makeDomNode("div", { class: "intercom-launcher" })];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("support");
+    });
+  });
+
+  describe("cart-class-implies-checkout", () => {
+    it("corrects to 'checkout' when class contains 'cart'", () => {
+      const nodes = [makeDomNode("div", { class: "shopping-cart" })];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("checkout");
+    });
+
+    it("corrects to 'checkout' when class contains 'basket'", () => {
+      const nodes = [makeDomNode("div", { class: "basket-summary" })];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("checkout");
+    });
+
+    it("matches when segment type is already 'checkout'", () => {
+      const nodes = [makeDomNode("div")];
+      const result = classifyEndpoint(
+        makeCandidate("commerce"),
+        makeSegment(nodes, "checkout"),
+      );
+      expect(result.correctedType).toBe("checkout");
+    });
+
+    it("detects 'checkout' class in nested children", () => {
+      const nodes = [
+        makeDomNode("div", {}, [
+          makeDomNode("span", { class: "checkout-btn" }),
+        ]),
+      ];
+      const result = classifyEndpoint(
+        makeCandidate("content"),
+        makeSegment(nodes),
+      );
+      expect(result.correctedType).toBe("checkout");
+    });
+  });
+});
+
+// ============================================================================
+// Risk Levels
+// ============================================================================
+
+describe("Risk Level Assignment", () => {
+  it.each([
+    ["auth", "high"],
+    ["checkout", "high"],
+    ["commerce", "high"],
+    ["form", "medium"],
+    ["consent", "medium"],
+    ["settings", "medium"],
+    ["navigation", "low"],
+    ["content", "low"],
+    ["search", "low"],
+    ["media", "low"],
+    ["social", "low"],
+    ["support", "low"],
+  ] as const)("assigns '%s' risk to '%s' type", (type, expectedRisk) => {
+    const nodes = [makeDomNode("div")];
+    const result = classifyEndpoint(
+      makeCandidate(type),
+      makeSegment(nodes),
+    );
+    expect(result.riskLevel).toBe(expectedRisk);
+  });
+
+  it("falls back to 'medium' for unknown types", () => {
+    const result = classifyEndpoint(
+      makeCandidate("some-unknown-type"),
+      makeSegment([makeDomNode("div")]),
+    );
+    expect(result.riskLevel).toBe("medium");
+  });
+});
+
+// ============================================================================
+// Combined Confidence
+// ============================================================================
+
+describe("Combined Confidence Calculation", () => {
+  it("calculates weighted average: LLM * 0.6 + heuristic * 0.4", () => {
+    // LLM says auth (confidence 0.9), heuristic agrees (0.9)
+    const nodes = [
+      makeDomNode("form", {}, [
+        makeDomNode("input", { type: "password" }),
+      ]),
+    ];
+    const result = classifyEndpoint(makeCandidate("auth", 0.9), makeSegment(nodes));
+    // 0.9 * 0.6 + 0.9 * 0.4 = 0.54 + 0.36 = 0.9
+    expect(result.combinedConfidence).toBeCloseTo(0.9, 2);
+  });
+
+  it("uses 0.85 heuristicConfidence when heuristic corrects LLM", () => {
+    const nodes = [
+      makeDomNode("form", {}, [
+        makeDomNode("input", { type: "password" }),
+      ]),
+    ];
+    const result = classifyEndpoint(makeCandidate("form", 0.7), makeSegment(nodes));
+    // 0.7 * 0.6 + 0.85 * 0.4 = 0.42 + 0.34 = 0.76
+    expect(result.heuristicConfidence).toBe(0.85);
+    expect(result.combinedConfidence).toBeCloseTo(0.76, 2);
+  });
+
+  it("uses 0.5 fallback when no heuristic matches", () => {
+    const result = classifyEndpoint(
+      makeCandidate("content", 0.8),
+      makeSegment([makeDomNode("div")]),
+    );
+    // 0.8 * 0.6 + 0.5 * 0.4 = 0.48 + 0.20 = 0.68
+    expect(result.heuristicConfidence).toBe(0.5);
+    expect(result.combinedConfidence).toBeCloseTo(0.68, 2);
+  });
+
+  it("caps combined confidence at 1.0", () => {
+    const nodes = [
+      makeDomNode("form", {}, [
+        makeDomNode("input", { type: "password" }),
+      ]),
+    ];
+    const result = classifyEndpoint(makeCandidate("auth", 1.0), makeSegment(nodes));
+    expect(result.combinedConfidence).toBeLessThanOrEqual(1.0);
+  });
+});
+
+// ============================================================================
+// inferAffordances
+// ============================================================================
+
+describe("inferAffordances", () => {
+  it("infers 'fill' from text input with placeholder", () => {
+    const nodes = [
+      makeDomNode("input", { type: "text", placeholder: "Enter name" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const fill = affordances.find((a) => a.type === "fill");
+    expect(fill).toBeDefined();
+    expect(fill!.expectedOutcome).toBe("Enter name");
+    expect(fill!.reversible).toBe(true);
+    expect(fill!.requiresConfirmation).toBe(false);
+  });
+
+  it("infers 'fill' from textarea", () => {
+    const nodes = [
+      makeDomNode("textarea", { placeholder: "Write message" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const fill = affordances.find((a) => a.type === "fill");
+    expect(fill).toBeDefined();
+    expect(fill!.expectedOutcome).toBe("Write message");
+  });
+
+  it("infers 'submit' from input[type=submit]", () => {
+    const nodes = [
+      makeDomNode("input", { type: "submit" }, [], {
+        textContent: "Submit Form",
+      }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const submit = affordances.find((a) => a.type === "submit");
+    expect(submit).toBeDefined();
+  });
+
+  it("infers 'click' from button element", () => {
+    const nodes = [
+      makeDomNode("button", {}, [], { textContent: "Click Me" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const click = affordances.find((a) => a.type === "click");
+    expect(click).toBeDefined();
+    expect(click!.expectedOutcome).toBe("Click Me");
+  });
+
+  it("infers 'navigate' from anchor element", () => {
+    const nodes = [
+      makeDomNode("a", { href: "/about" }, [], { textContent: "About Us" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("navigation"),
+      makeSegment(nodes),
+    );
+    const nav = affordances.find((a) => a.type === "navigate");
+    expect(nav).toBeDefined();
+    expect(nav!.expectedOutcome).toBe("About Us");
+    expect(nav!.sideEffects).toContain("navigation");
+  });
+
+  it("infers 'toggle' from checkbox", () => {
+    const nodes = [
+      makeDomNode("input", {
+        type: "checkbox",
+        "aria-label": "Remember me",
+      }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const toggle = affordances.find((a) => a.type === "toggle");
+    expect(toggle).toBeDefined();
+    expect(toggle!.expectedOutcome).toBe("Remember me");
+    expect(toggle!.reversible).toBe(true);
+  });
+
+  it("infers 'toggle' from radio button", () => {
+    const nodes = [
+      makeDomNode("input", { type: "radio", "aria-label": "Option A" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const toggle = affordances.find((a) => a.type === "toggle");
+    expect(toggle).toBeDefined();
+  });
+
+  it("infers 'select' from dropdown", () => {
+    const nodes = [
+      makeDomNode("select", { "aria-label": "Choose country" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const select = affordances.find((a) => a.type === "select");
+    expect(select).toBeDefined();
+    expect(select!.expectedOutcome).toBe("Choose country");
+  });
+
+  it("infers 'upload' from file input", () => {
+    const nodes = [makeDomNode("input", { type: "file" })];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const upload = affordances.find((a) => a.type === "upload");
+    expect(upload).toBeDefined();
+    expect(upload!.reversible).toBe(false);
+    expect(upload!.requiresConfirmation).toBe(true);
+  });
+
+  it("marks high-risk types with sideEffects and requiresConfirmation", () => {
+    const nodes = [
+      makeDomNode("button", {}, [], { textContent: "Buy Now" }),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("checkout"),
+      makeSegment(nodes),
+    );
+    const click = affordances.find((a) => a.type === "click");
+    expect(click).toBeDefined();
+    expect(click!.requiresConfirmation).toBe(true);
+    expect(click!.sideEffects).toContain("state_change");
+    expect(click!.reversible).toBe(false);
+  });
+
+  it("deduplicates affordances with same type + outcome", () => {
+    const nodes = [
+      makeDomNode("div", {}, [
+        makeDomNode("a", { href: "/a" }, [], { textContent: "Same Link" }),
+        makeDomNode("a", { href: "/b" }, [], { textContent: "Same Link" }),
+      ]),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("navigation"),
+      makeSegment(nodes),
+    );
+    const navAffordances = affordances.filter(
+      (a) => a.type === "navigate" && a.expectedOutcome === "Same Link",
+    );
+    expect(navAffordances).toHaveLength(1);
+  });
+
+  it("skips hidden inputs", () => {
+    const nodes = [makeDomNode("input", { type: "hidden" })];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    expect(affordances).toHaveLength(0);
+  });
+
+  it("returns empty array for segment with no interactive nodes", () => {
+    const nodes = [
+      makeDomNode("div", {}, [
+        makeDomNode("p", {}, [], { textContent: "Just text" }),
+      ]),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("content"),
+      makeSegment(nodes),
+    );
+    expect(affordances).toHaveLength(0);
+  });
+
+  it("handles segment with empty nodes array", () => {
+    const affordances = inferAffordances(
+      makeCandidate("content"),
+      makeSegment([]),
+    );
+    expect(affordances).toHaveLength(0);
+  });
+
+  it("collects affordances from deeply nested children", () => {
+    const nodes = [
+      makeDomNode("div", {}, [
+        makeDomNode("div", {}, [
+          makeDomNode("div", {}, [
+            makeDomNode("button", {}, [], { textContent: "Deep Button" }),
+          ]),
+        ]),
+      ]),
+    ];
+    const affordances = inferAffordances(
+      makeCandidate("form"),
+      makeSegment(nodes),
+    );
+    const click = affordances.find((a) => a.type === "click");
+    expect(click).toBeDefined();
+    expect(click!.expectedOutcome).toBe("Deep Button");
+  });
+});
