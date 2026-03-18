@@ -19,6 +19,7 @@ import {
   LLMParseError,
   EndpointValidationError,
 } from "./errors.js";
+import { InputSanitizer, InjectionDetector, CredentialGuard } from "../security/index.js";
 import {
   EndpointSchema,
   EndpointTypeSchema,
@@ -39,7 +40,7 @@ const logger = pino({ name: "semantic:endpoint-generator" });
 // ============================================================================
 
 const EndpointCandidateSchema = z.object({
-  type: z.string(),
+  type: z.enum(["auth","form","checkout","commerce","search","navigation","support","content","consent","media","social","settings"]),
   label: z.string(),
   description: z.string(),
   confidence: z.number().min(0).max(1),
@@ -92,13 +93,51 @@ export async function generateEndpoints(
   const { llmClient, pruneOptions, maxRetries = 2 } = options;
   const allCandidates: EndpointCandidate[] = [];
 
-  for (const segment of segments) {
+  // Security-Module initialisieren
+  const sanitizer = new InputSanitizer();
+  const injectionDetector = new InjectionDetector();
+  const credentialGuard = new CredentialGuard();
+
+  // Segment-Pre-Filtering: Skip Segmente mit wenig Interaktivitaet
+  const INTERACTIVE_SEGMENT_TYPES = new Set(["form", "search", "checkout"]);
+  const filteredSegments = segments.filter((seg) => {
+    if (seg.interactiveElementCount >= 2) return true;
+    if (INTERACTIVE_SEGMENT_TYPES.has(seg.type)) return true;
+    logger.debug({ segmentId: seg.id, type: seg.type, interactive: seg.interactiveElementCount }, "Skipping low-interactivity segment");
+    return false;
+  });
+  logger.debug({ before: segments.length, after: filteredSegments.length }, "Segment pre-filter applied");
+
+  for (const segment of filteredSegments) {
     try {
       // 1. DOM Pruning
       const pruned = pruneForLLM(segment, pruneOptions);
 
-      // 2. Prompt aufbauen
-      const userPrompt = buildExtractionPrompt(pruned, context);
+      // 2. Security: Sanitize, Injection-Check, Credential-Redaction
+      const sanitizedText = sanitizer.sanitizeForLLM(pruned.textRepresentation);
+
+      const injectionResult = injectionDetector.detect(sanitizedText);
+      if (injectionResult.verdict === "blocked") {
+        logger.warn({ segmentId: segment.id, score: injectionResult.score }, "Segment blocked by injection detector — skipping");
+        continue;
+      }
+
+      const credScan = credentialGuard.scan(sanitizedText);
+      let cleanText = sanitizedText;
+      if (credScan.hasCredentials) {
+        // Credentials rueckwaerts redacten (Positionen stabil halten)
+        const sorted = [...credScan.findings].sort((a, b) => b.position - a.position);
+        for (const finding of sorted) {
+          cleanText = cleanText.slice(0, finding.position) + "[CREDENTIAL_REDACTED]" + cleanText.slice(finding.position + finding.length);
+        }
+        logger.warn({ segmentId: segment.id, count: credScan.findings.length }, "Credentials redacted before LLM call");
+      }
+
+      // Sanitized text zurueck in pruned-Objekt schreiben
+      const securePruned = { ...pruned, textRepresentation: cleanText };
+
+      // 3. Prompt aufbauen
+      const userPrompt = buildExtractionPrompt(securePruned, context);
 
       // 3. LLM-Call mit Retry
       const request: LLMRequest = {
@@ -171,7 +210,7 @@ export async function generateEndpoints(
   }
 
   // 6. Confidence-Filter: niedrige Confidence raus
-  const MIN_CANDIDATE_CONFIDENCE = 0.55;
+  const MIN_CANDIDATE_CONFIDENCE = 0.60;
   const filtered = allCandidates.filter(
     (c) => c.confidence >= MIN_CANDIDATE_CONFIDENCE,
   );
@@ -184,7 +223,7 @@ export async function generateEndpoints(
   const deduped = deduplicateCandidates(filtered);
 
   // 8. Global Cap: Top-N nach Confidence
-  const MAX_TOTAL_ENDPOINTS = 8;
+  const MAX_TOTAL_ENDPOINTS = 5;
   const capped = deduped
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_TOTAL_ENDPOINTS);
@@ -376,7 +415,7 @@ function deduplicateCandidates(
     const duplicate = result.find(
       (existing) =>
         existing.type === candidate.type &&
-        labelSimilarity(existing.label, candidate.label) > 0.75,
+        labelSimilarity(existing.label, candidate.label) > 0.50,
     );
 
     if (duplicate) {

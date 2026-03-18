@@ -17,7 +17,7 @@ RULES:
 - Each endpoint must have a type, label, description, confidence score, DOM anchors, and affordances.
 - Confidence ranges from 0.0 to 1.0 — use 0.9+ only when extremely certain.
 - Return valid JSON matching the expected schema.
-- Return at most 5 endpoints per segment. Only the most important, distinct ones.
+- Return at most 3 endpoints per segment. Only the most important, distinct ones.
 - Only return endpoints that represent DISTINCT, user-facing interaction points. Do NOT return decorative elements, repeated navigation links, generic content sections, or footer links.
 - Focus on PRIMARY functionality: main search bar, login/signup forms, checkout/cart, and the single most prominent navigation. Skip secondary nav, social links, language selectors, and cookie banners.
 - If unsure whether something is a meaningful endpoint, include it with a LOW confidence score (0.3-0.5) rather than omitting it entirely. The confidence filter will handle borderline cases.
@@ -73,7 +73,13 @@ Each endpoint object:
   "anchors": [{ "selector": "...", "ariaRole": "...", "ariaLabel": "...", "textContent": "..." }],
   "affordances": [{ "type": "...", "expectedOutcome": "...", "reversible": true/false }],
   "reasoning": "<why this is this type>"
-}`;
+}
+
+CONFIDENCE CALIBRATION:
+- 0.9-1.0: Certain — primary interactive element (login form, main search bar)
+- 0.7-0.9: Likely real but secondary (newsletter signup, secondary nav)
+- 0.5-0.7: Might be an endpoint — borderline cases
+- Below 0.5: Probably not a meaningful endpoint — omit or assign very low confidence`;
 
 // ============================================================================
 // Few-Shot Examples
@@ -190,6 +196,40 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
       ],
       reasoning:
         "Search landmark with input[type=search] and submit button is a search endpoint.",
+    },
+  },
+  {
+    input: `SEGMENT [navigation] confidence=0.85
+  NAV[aria-label="User navigation"]
+    UL
+      LI > LINK: "Login"
+      LI > LINK: "Sign Up"
+      LI > LINK: "Cart (0)"
+      LI > LINK: "Help"`,
+    output: {
+      endpoints: [
+        {
+          type: "navigation",
+          label: "User Navigation",
+          description:
+            "Navigation section with links to auth pages, cart, and help. These are navigation LINKS, not interactive forms — the container type (navigation) takes precedence over individual link labels.",
+          confidence: 0.8,
+          anchors: [
+            {
+              selector: "nav",
+              ariaRole: "navigation",
+              ariaLabel: "User navigation",
+            },
+          ],
+          affordances: [
+            { type: "navigate", expectedOutcome: "Navigate to auth/cart/help pages", reversible: true },
+          ],
+          reasoning:
+            "Although links say 'Login' and 'Sign Up', this is a NAV container with links — NOT a form with credential inputs. Container type (navigation) determines endpoint type, not link labels. Only classify as 'auth' if there are actual input fields for credentials.",
+        },
+      ],
+      reasoning:
+        "Navigation container with auth-related links is still a navigation endpoint. Container type > link label content.",
     },
   },
 ];
