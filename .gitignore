@@ -26,6 +26,10 @@ desktop.ini
 __pycache__/
 *.pyc
 .venv/
+*.egg-info/
+build/
+*.whl
+.pytest_cache/
 
 # Temp
 tmp/
