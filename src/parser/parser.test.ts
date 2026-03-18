@@ -762,3 +762,214 @@ describe("Parser Module — Zusaetzliche Tests", () => {
     expect(result.removedByReason["hidden_and_aria_hidden"]).toBe(1);
   });
 });
+
+// ============================================================================
+// Segmenter Verbesserungen — Search/Form/Interactive Detection
+// ============================================================================
+
+describe("Segmenter — Search Detection (FIX 3)", () => {
+  it("16. input[type=search] wird als eigenes search-Segment erkannt", () => {
+    const dom: DomNode = {
+      tagName: "header",
+      attributes: {},
+      isVisible: true,
+      isInteractive: false,
+      boundingBox: { x: 0, y: 0, width: 1280, height: 80 },
+      children: [
+        {
+          tagName: "input",
+          attributes: { type: "search", placeholder: "Search..." },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+      ],
+    };
+    const parsed = parseDom(dom);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    const searchSegments = segments.filter((s) => s.type === "search");
+    expect(searchSegments.length).toBeGreaterThanOrEqual(1);
+    expect(searchSegments[0]!.confidence).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it("17. input mit role=searchbox wird als search-Segment erkannt", () => {
+    const dom: DomNode = {
+      tagName: "div",
+      attributes: {},
+      isVisible: true,
+      isInteractive: false,
+      children: [
+        {
+          tagName: "input",
+          attributes: { type: "text", role: "searchbox", placeholder: "Suche..." },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+      ],
+    };
+    const parsed = parseDom(dom);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    const searchSegments = segments.filter((s) => s.type === "search");
+    expect(searchSegments.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("18. input mit search-Placeholder wird als search-Segment erkannt", () => {
+    const dom: DomNode = {
+      tagName: "div",
+      attributes: {},
+      isVisible: true,
+      isInteractive: false,
+      children: [
+        {
+          tagName: "input",
+          attributes: { type: "text", placeholder: "Find products..." },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+      ],
+    };
+    const parsed = parseDom(dom);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    const searchSegments = segments.filter((s) => s.type === "search");
+    expect(searchSegments.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("Segmenter — Isolated Interactive Elements (FIX 1)", () => {
+  it("19. Einzelnes input in einem header wird als eigenes Segment erkannt", () => {
+    const dom: DomNode = {
+      tagName: "header",
+      attributes: {},
+      isVisible: true,
+      isInteractive: false,
+      boundingBox: { x: 0, y: 0, width: 1280, height: 80 },
+      children: [
+        {
+          tagName: "nav",
+          attributes: {},
+          isVisible: true,
+          isInteractive: false,
+          children: [
+            {
+              tagName: "a",
+              attributes: { href: "/home" },
+              textContent: "Home",
+              isVisible: true,
+              isInteractive: true,
+              children: [],
+            },
+          ],
+        },
+        {
+          tagName: "input",
+          attributes: { type: "text", placeholder: "Email" },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+      ],
+    };
+    const parsed = parseDom(dom);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    // Das isolierte input sollte ein eigenes form-Segment sein
+    const formSegments = segments.filter((s) => s.type === "form");
+    expect(formSegments.length).toBeGreaterThanOrEqual(1);
+    // Das form-Segment sollte genau 1 interaktives Element haben
+    const miniForm = formSegments.find((s) => s.interactiveElementCount === 1);
+    expect(miniForm).toBeDefined();
+  });
+
+  it("20. Inputs innerhalb eines form-Segments erzeugen KEINE redundanten Mini-Segmente", () => {
+    const parsed = parseDom(FORM_DOM);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    // Es sollte genau 1 form-Segment geben (das <form>), nicht 3 zusaetzliche fuer die Inputs
+    const formSegments = segments.filter((s) => s.type === "form");
+    expect(formSegments.length).toBe(1);
+    expect(formSegments[0]!.interactiveElementCount).toBe(3);
+  });
+});
+
+describe("Segmenter — Implicit Form Detection (FIX 2)", () => {
+  it("21. Div mit Login-Feldern (ohne form-Tag) wird als form erkannt", () => {
+    const loginDiv: DomNode = {
+      tagName: "div",
+      attributes: { class: "login-container" },
+      isVisible: true,
+      isInteractive: false,
+      boundingBox: { x: 300, y: 200, width: 400, height: 250 },
+      children: [
+        {
+          tagName: "input",
+          attributes: { type: "email", placeholder: "Email" },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+        {
+          tagName: "input",
+          attributes: { type: "password", placeholder: "Password" },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+        {
+          tagName: "button",
+          attributes: { type: "submit" },
+          textContent: "Login",
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+      ],
+    };
+    const parsed = parseDom(loginDiv);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    const formSegments = segments.filter((s) => s.type === "form");
+    expect(formSegments.length).toBeGreaterThanOrEqual(1);
+    expect(formSegments[0]!.interactiveElementCount).toBe(3);
+  });
+
+  it("22. ARIA role=search erzeugt search-Segment statt navigation", () => {
+    const dom: DomNode = {
+      tagName: "div",
+      attributes: { role: "search" },
+      isVisible: true,
+      isInteractive: false,
+      boundingBox: { x: 200, y: 10, width: 500, height: 50 },
+      children: [
+        {
+          tagName: "input",
+          attributes: { type: "text", placeholder: "Search" },
+          isVisible: true,
+          isInteractive: true,
+          children: [],
+        },
+      ],
+    };
+    const parsed = parseDom(dom);
+    const aria = parseAria(parsed.root, MINIMAL_AX_TREE);
+    const segments = segmentUI(parsed.root, aria);
+
+    const searchSegments = segments.filter((s) => s.type === "search");
+    expect(searchSegments.length).toBeGreaterThanOrEqual(1);
+    // Darf NICHT als navigation erkannt werden
+    const navFromSearch = segments.filter(
+      (s) => s.type === "navigation" && s.semanticRole === "search"
+    );
+    expect(navFromSearch.length).toBe(0);
+  });
+});

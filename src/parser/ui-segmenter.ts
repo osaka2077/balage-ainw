@@ -38,7 +38,7 @@ const LANDMARK_TO_SEGMENT: Record<string, UISegmentType> = {
   complementary: "sidebar",
   form: "form",
   region: "content",
-  search: "navigation",
+  search: "search",
 };
 
 /** CSS-Klassen-Muster -> UISegmentType (case-insensitive Matching) */
@@ -53,6 +53,7 @@ const CLASS_PATTERNS: Array<{ pattern: RegExp; type: UISegmentType; weight: numb
   { pattern: /\bmenu\b/i, type: "navigation", weight: 0.4 },
   { pattern: /\bcontent\b/i, type: "content", weight: 0.3 },
   { pattern: /\bmain\b/i, type: "content", weight: 0.4 },
+  { pattern: /\bsearch\b/i, type: "search", weight: 0.55 },
 ];
 
 /** Interaktive HTML-Elemente */
@@ -148,6 +149,35 @@ function classifyByPosition(
   return undefined;
 }
 
+/** Muster fuer Search-Placeholder (case-insensitive) */
+const SEARCH_PLACEHOLDER_PATTERN = /\b(search|suche|find|recherch|buscar)\b/i;
+
+/**
+ * Erkennt ob ein Node ein Such-Input ist.
+ * Prueft type="search", role="searchbox" und Placeholder-Text.
+ */
+function isSearchInput(node: DomNode): boolean {
+  const tag = node.tagName.toLowerCase();
+  if (tag !== "input" && tag !== "textarea") return false;
+
+  if (node.attributes["type"] === "search") return true;
+  if (node.attributes["role"] === "searchbox") return true;
+
+  const placeholder = node.attributes["placeholder"];
+  if (placeholder !== undefined && SEARCH_PLACEHOLDER_PATTERN.test(placeholder)) return true;
+
+  return false;
+}
+
+/**
+ * Prueft ob ein Node ein isoliertes interaktives Element ist
+ * (input/select/textarea das nicht in einem Form-Kontext liegt).
+ */
+function isStandaloneInteractive(node: DomNode): boolean {
+  const tag = node.tagName.toLowerCase();
+  return tag === "input" || tag === "select" || tag === "textarea";
+}
+
 /**
  * Erkennt implizite Formulare: Divs die Inputs und Buttons enthalten,
  * aber kein <form>-Tag sind.
@@ -160,6 +190,8 @@ function isImplicitForm(node: DomNode): boolean {
 
   function scan(n: DomNode): void {
     const tag = n.tagName.toLowerCase();
+    // Nicht in echte <form>-Elemente hinein scannen — die bekommen ihr eigenes Segment
+    if (tag === "form") return;
     if (tag === "input" || tag === "textarea" || tag === "select") {
       hasInput = true;
     }
@@ -234,6 +266,11 @@ function classifyNode(
     signals.push({ type: "content", weight: 0.95, source: "main-tag" });
   }
 
+  // 8. Such-Input Erkennung (type="search", role="searchbox", Placeholder)
+  if (isSearchInput(node)) {
+    signals.push({ type: "search", weight: 0.8, source: "search-input" });
+  }
+
   // Kein Signal => unknown
   if (signals.length === 0) {
     return { type: "unknown", confidence: 0.1 };
@@ -263,14 +300,19 @@ function classifyNode(
  * Traversiert den DOM-Baum und sammelt segmentierbare Nodes.
  * Ein Node ist segmentierbar wenn er ein semantisches Element oder
  * ein Landmark ist.
+ *
+ * @param insideFormContext — true wenn ein Eltern-Node bereits als form/search Segment erkannt wurde.
+ *   Verhindert redundante Mini-Segmente fuer Inputs die bereits in einem Form-Segment liegen.
  */
 function collectSegmentableNodes(
   node: DomNode,
   ariaAnalysis: AriaAnalysis,
   minConfidence: number,
-  segments: UISegment[]
+  segments: UISegment[],
+  insideFormContext: boolean = false
 ): void {
   const classification = classifyNode(node, ariaAnalysis);
+  let currentIsFormContext = insideFormContext;
 
   if (classification.type !== "unknown" && classification.confidence >= minConfidence) {
     const interactiveCount = countInteractiveElements(node);
@@ -299,13 +341,36 @@ function collectSegmentableNodes(
       );
     }
 
-    // Keine Kinder durchsuchen wenn wir diesen Node bereits als Segment erfasst haben,
-    // es sei denn die Kinder enthalten eigene semantische Strukturen (z.B. Form in Main)
+    // Kinder erben den Form-Kontext wenn dieses Segment ein Form/Search ist
+    if (classification.type === "form" || classification.type === "search") {
+      currentIsFormContext = true;
+    }
+  } else if (!insideFormContext && isStandaloneInteractive(node)) {
+    // FIX 1: Isolierte interaktive Elemente die NICHT in einem Form-Kontext liegen
+    // bekommen ein eigenes Mini-Segment (search oder form)
+    const segType: UISegmentType = isSearchInput(node) ? "search" : "form";
+    const box = getEffectiveBoundingBox(node);
+
+    const miniSegment: UISegment = {
+      id: randomUUID(),
+      type: segType,
+      label: node.attributes["aria-label"]?.slice(0, 256) ?? node.attributes["placeholder"]?.slice(0, 256),
+      confidence: segType === "search" ? 0.7 : 0.5,
+      boundingBox: box,
+      nodes: [node],
+      interactiveElementCount: 1,
+      semanticRole: node.attributes["role"] ?? undefined,
+    };
+
+    const validated = UISegmentSchema.safeParse(miniSegment);
+    if (validated.success) {
+      segments.push(validated.data);
+    }
   }
 
   // Immer Kinder durchsuchen, da verschachtelte Segmente moeglich sind
   for (const child of node.children) {
-    collectSegmentableNodes(child, ariaAnalysis, minConfidence, segments);
+    collectSegmentableNodes(child, ariaAnalysis, minConfidence, segments, currentIsFormContext);
   }
 }
 
