@@ -261,16 +261,16 @@ describe("LLM Retry on Parse Error", () => {
 });
 
 // ============================================================================
-// Confidence Filter Tests (MIN_CANDIDATE_CONFIDENCE = 0.55)
+// Confidence Filter Tests (MIN_CANDIDATE_CONFIDENCE = 0.60)
 // ============================================================================
 
 describe("Confidence Filter", () => {
-  it("filters out candidates below MIN_CANDIDATE_CONFIDENCE (0.55)", async () => {
+  it("filters out candidates below MIN_CANDIDATE_CONFIDENCE (0.60)", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9), // Survives
       makeValidCandidate("form", 0.3), // Filtered
-      makeValidCandidate("search", 0.55), // Survives (exactly at threshold)
-      makeValidCandidate("content", 0.54), // Filtered (just below)
+      makeValidCandidate("search", 0.60), // Survives (exactly at threshold)
+      makeValidCandidate("content", 0.59), // Filtered (just below)
     ];
     const client = createConfidenceTestClient(candidates);
 
@@ -344,7 +344,7 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(8);
+    expect(result).toHaveLength(5);
   });
 
   it("preserves highest-confidence candidates after cap", async () => {
@@ -363,14 +363,14 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    // Top 8 by confidence → types at index 0-7
+    // Top 5 by confidence → types at index 0-4
     const resultTypes = result.map((c) => c.type);
     expect(resultTypes).toContain("auth"); // 0.95
-    expect(resultTypes).toContain("support"); // 0.88
-    expect(resultTypes).not.toContain("settings"); // 0.86 — cut off
+    expect(resultTypes).toContain("content"); // 0.91
+    expect(resultTypes).not.toContain("checkout"); // 0.90 — cut off at cap=5
   });
 
-  it("returns all candidates when count <= 8", async () => {
+  it("returns all candidates when count <= 5", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9),
       makeValidCandidate("search", 0.8),
