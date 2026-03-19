@@ -1,0 +1,35 @@
+# GitHub Actions Self-Hosted Runner
+# Usage:
+#   1. Copy .env.example to .env and fill in values
+#   2. docker compose up -d --build
+#   3. Check logs: docker compose logs -f
+#
+# To stop and deregister: docker compose down
+
+services:
+  github-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: balage-ci-runner
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - RUNNER_NAME=${RUNNER_NAME:-balage-ci-runner}
+      - RUNNER_LABELS=${RUNNER_LABELS:-self-hosted,linux,x64}
+    # Resource limits to prevent CI from eating the whole machine
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    # Tmpfs for faster npm ci (node_modules in RAM)
+    tmpfs:
+      - /tmp:size=512M
+    # Security: no privileged mode, drop unnecessary capabilities
+    security_opt:
+      - no-new-privileges:true
