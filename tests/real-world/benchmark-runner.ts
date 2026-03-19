@@ -8,7 +8,7 @@
  * Voraussetzung: API-Key in .env.local
  */
 
-import { readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync } from "node:fs";
 import { join, basename } from "node:path";
 import { randomUUID } from "node:crypto";
 import { BrowserAdapter, extractStructuredDOM, extractAccessibilityTree } from "../../src/adapter/index.js";
@@ -133,6 +133,11 @@ const TYPE_ALIASES: Record<string, string[]> = {
   consent: ["consent", "form"],
   commerce: ["commerce", "checkout"],
 };
+
+// Diagnostic flags — activated via environment variables
+const DIAG_ENABLED = process.env.BALAGE_DIAG === "1";
+const SAVE_SNAPSHOTS = process.env.BALAGE_SAVE_SNAPSHOTS === "1";
+const SNAPSHOTS_DIR = join(import.meta.dirname!, "snapshots");
 
 // Label-Patterns fuer semantische Zuordnung
 const AUTH_LABEL_PATTERN = /login|sign.?in|auth|password|credential/i;
@@ -302,6 +307,104 @@ function round(n: number): number {
 }
 
 // ============================================================================
+// Diagnostic Helpers
+// ============================================================================
+
+function diag(msg: string): void {
+  if (!DIAG_ENABLED) return;
+  console.log(`[DIAG] ${msg}`);
+}
+
+/** Slug fuer Snapshot-Dateinamen: "outlook.live.com/login" → "outlook-login" */
+function urlToSlug(url: string): string {
+  return url
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .replace(/\.[a-z]{2,4}\//g, "-")
+    .replace(/\.[a-z]{2,4}$/, "")
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
+}
+
+function saveSnapshot(slug: string, html: string): void {
+  if (!SAVE_SNAPSHOTS) return;
+  if (!existsSync(SNAPSHOTS_DIR)) {
+    mkdirSync(SNAPSHOTS_DIR, { recursive: true });
+  }
+  const path = join(SNAPSHOTS_DIR, `${slug}.html`);
+  writeFileSync(path, html, "utf-8");
+  log(`    [SNAPSHOT] Saved ${html.length} bytes → ${path}`);
+}
+
+/** Log die komplette Filter-Kaskade fuer eine Site */
+function logFilterDiagnostics(
+  siteSlug: string,
+  rawSegments: UISegment[],
+  afterConfFilter: UISegment[],
+  afterTopPerType: UISegment[],
+  afterCap: UISegment[],
+): void {
+  if (!DIAG_ENABLED) return;
+
+  diag(`Site: ${siteSlug}`);
+
+  // Stage 0: Raw
+  diag(`  Stage 0 (raw segmentation): ${rawSegments.length} segments`);
+  for (const s of rawSegments) {
+    const nodeInteractive = s.nodes.length > 0 ? s.nodes.some(n => n.isInteractive) : false;
+    const textPreview = s.nodes
+      .map(n => (n.textContent ?? "").trim())
+      .filter(t => t.length > 0)
+      .join(" ")
+      .slice(0, 60);
+    diag(
+      `    - ${s.id.slice(0, 8)}: type=${s.type}, confidence=${s.confidence.toFixed(2)}, ` +
+      `interactive=${s.interactiveElementCount}, isInteractive=${String(nodeInteractive)}, ` +
+      `text="${textPreview}"`,
+    );
+  }
+
+  // Stage 1: Confidence + interactivity filter
+  const rejectedStage1 = rawSegments.filter(s => !afterConfFilter.includes(s));
+  diag(`  Stage 1 (confidence+interactivity filter): ${rawSegments.length} → ${afterConfFilter.length} segments`);
+  for (const s of rejectedStage1) {
+    const reasons: string[] = [];
+    if (s.confidence < 0.50) reasons.push(`confidence=${s.confidence.toFixed(2)} < 0.50`);
+    if (s.interactiveElementCount < 1) reasons.push(`interactive=${s.interactiveElementCount} < 1`);
+    if (!KEY_SEGMENT_TYPES.includes(s.type)) reasons.push(`type=${s.type} not in KEY_TYPES`);
+    const nodeInteractive = s.nodes.some(n => n.isInteractive);
+    reasons.push(`node.isInteractive=${String(nodeInteractive)}`);
+    diag(`    REJECTED: ${s.id.slice(0, 8)} (${reasons.join(", ")})`);
+  }
+  for (const s of afterConfFilter) {
+    let keepReason = "PASS";
+    if (s.type === "form") keepReason = "ALWAYS_KEEP: type=form";
+    else if (s.type === "navigation" && s.confidence >= 0.30) keepReason = `LOW_CONF_KEEP: type=navigation, confidence=${s.confidence.toFixed(2)} >= 0.30`;
+    else if (s.confidence >= 0.50 && KEY_SEGMENT_TYPES.includes(s.type)) keepReason = `HIGH_CONF: confidence=${s.confidence.toFixed(2)} >= 0.50`;
+    else keepReason = `OTHER: interactive=${s.interactiveElementCount}, type=${s.type}`;
+    diag(`    KEPT: ${s.id.slice(0, 8)} (${keepReason})`);
+  }
+
+  // Stage 2: Top-N per type
+  const rejectedStage2 = afterConfFilter.filter(s => !afterTopPerType.includes(s));
+  diag(`  Stage 2 (top-N per type): ${afterConfFilter.length} → ${afterTopPerType.length} segments`);
+  for (const s of rejectedStage2) {
+    diag(`    REJECTED: ${s.id.slice(0, 8)} (exceeded MAX_PER_TYPE=${3} for type=${s.type})`);
+  }
+
+  // Stage 3: Segment cap
+  const rejectedStage3 = afterTopPerType.filter(s => !afterCap.includes(s));
+  diag(`  Stage 3 (segment cap): ${afterTopPerType.length} → ${afterCap.length} segments`);
+  for (const s of rejectedStage3) {
+    diag(`    REJECTED: ${s.id.slice(0, 8)} (exceeded segment cap)`);
+  }
+
+  diag(`  RESULT: ${afterCap.length} segments passed to LLM`);
+}
+
+// ============================================================================
 // Pipeline
 // ============================================================================
 
@@ -325,6 +428,18 @@ async function runPipeline(
     });
     log(`    URL: ${page.url()}`);
     log(`    Title: ${await page.title()}`);
+
+    // 1b. HTML Snapshot Capture (diagnostic)
+    const siteSlug = urlToSlug(url);
+    if (SAVE_SNAPSHOTS || DIAG_ENABLED) {
+      try {
+        const htmlContent = await page.content();
+        saveSnapshot(siteSlug, htmlContent);
+      } catch (snapErr) {
+        const snapMsg = snapErr instanceof Error ? snapErr.message : String(snapErr);
+        log(`    [SNAPSHOT] Failed: ${snapMsg}`);
+      }
+    }
 
     // 2. DOM Extraction
     log("  [2/7] Extracting structured DOM ...");
@@ -394,6 +509,9 @@ async function runPipeline(
       .sort((a, b) => b.confidence - a.confidence)
       .slice(0, segmentCap);
     log(`    Filtered: ${segments.length} → ${withInteractive.length} → ${relevantSegments.length}`);
+
+    // Diagnostic: detailliertes Filter-Logging pro Stage
+    logFilterDiagnostics(siteSlug, segments, withInteractive, topPerType, relevantSegments);
 
     if (relevantSegments.length === 0) {
       errors.push("No relevant segments found after filtering");
