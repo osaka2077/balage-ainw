@@ -17,7 +17,7 @@ RULES:
 - Each endpoint must have a type, label, description, confidence score, DOM anchors, and affordances.
 - Confidence ranges from 0.0 to 1.0 — use 0.9+ only when extremely certain.
 - Return valid JSON matching the expected schema.
-- Return at most 4 endpoints per segment. Only the most important, distinct ones.
+- Return at most 6 endpoints per segment. Only the most important, distinct ones.
 - Prefer fewer, higher-confidence results. Most segments have 1-2 truly distinct endpoints.
 - Only return endpoints that represent DISTINCT, user-facing interaction points. Do NOT return decorative elements, repeated navigation links, generic content sections, or footer links.
 - Focus on PRIMARY functionality: main search bar, login/signup forms, checkout/cart, and the single most prominent navigation. Skip secondary nav, social links, language selectors, and cookie banners.

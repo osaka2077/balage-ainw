@@ -261,16 +261,16 @@ describe("LLM Retry on Parse Error", () => {
 });
 
 // ============================================================================
-// Confidence Filter Tests (MIN_CANDIDATE_CONFIDENCE = 0.60)
+// Confidence Filter Tests (MIN_CANDIDATE_CONFIDENCE = 0.50)
 // ============================================================================
 
 describe("Confidence Filter", () => {
-  it("filters out candidates below MIN_CANDIDATE_CONFIDENCE (0.60)", async () => {
+  it("filters out candidates below MIN_CANDIDATE_CONFIDENCE (0.50)", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9), // Survives
       makeValidCandidate("form", 0.3), // Filtered
-      makeValidCandidate("commerce", 0.60), // Survives (exactly at threshold)
-      makeValidCandidate("content", 0.59), // Filtered (just below)
+      makeValidCandidate("commerce", 0.60), // Survives (above threshold)
+      makeValidCandidate("content", 0.49), // Filtered (just below)
     ];
     const client = createConfidenceTestClient(candidates);
 
@@ -291,8 +291,8 @@ describe("Confidence Filter", () => {
   it("returns empty array when all candidates below threshold", async () => {
     const candidates = [
       makeValidCandidate("form", 0.2),
-      makeValidCandidate("content", 0.4),
-      makeValidCandidate("navigation", 0.54),
+      makeValidCandidate("content", 0.3),
+      makeValidCandidate("navigation", 0.49),
     ];
     const client = createConfidenceTestClient(candidates);
 
@@ -324,14 +324,15 @@ describe("Confidence Filter", () => {
 });
 
 // ============================================================================
-// Global Cap Tests (MAX_TOTAL_ENDPOINTS = 8)
+// Global Cap Tests (MAX_TOTAL_ENDPOINTS = 10)
 // ============================================================================
 
 describe("Global Endpoint Cap", () => {
-  it("caps at MAX_TOTAL_ENDPOINTS (8) when more candidates present", async () => {
+  it("caps at MAX_TOTAL_ENDPOINTS (10) when more candidates present", async () => {
     const types = [
       "auth", "form", "search", "navigation", "content",
       "checkout", "commerce", "support", "social", "settings",
+      "consent", "media",
     ];
     const candidates = types.map((type, i) =>
       makeValidCandidate(type, 0.95 - i * 0.01),
@@ -344,13 +345,14 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(7);
+    expect(result).toHaveLength(10);
   });
 
   it("preserves highest-confidence candidates after cap", async () => {
     const types = [
       "auth", "form", "search", "navigation", "content",
       "checkout", "commerce", "support", "social", "settings",
+      "consent", "media",
     ];
     const candidates = types.map((type, i) =>
       makeValidCandidate(type, 0.95 - i * 0.01),
@@ -363,14 +365,14 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    // Top 7 by confidence → types at index 0-6
+    // Top 10 by confidence (search gets hallucination penalty → drops below cap)
     const resultTypes = result.map((c) => c.type);
     expect(resultTypes).toContain("auth"); // 0.95
-    expect(resultTypes).toContain("commerce"); // 0.89
-    expect(resultTypes).not.toContain("social"); // 0.87 — cut off at cap=7
+    expect(resultTypes).toContain("consent"); // 0.85
+    expect(resultTypes).not.toContain("media"); // 0.84 — cut off at cap=10
   });
 
-  it("returns all candidates when count <= 7", async () => {
+  it("returns all candidates when count <= 10", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9),
       makeValidCandidate("commerce", 0.8),

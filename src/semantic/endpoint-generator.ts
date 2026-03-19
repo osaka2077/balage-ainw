@@ -102,7 +102,7 @@ export async function generateEndpoints(
   // Segment-Pre-Filtering: Skip Segmente mit wenig Interaktivitaet
   const INTERACTIVE_SEGMENT_TYPES = new Set(["form", "search", "checkout"]);
   const filteredSegments = segments.filter((seg) => {
-    if (seg.interactiveElementCount >= 2) return true;
+    if (seg.interactiveElementCount >= 1) return true;
     if (INTERACTIVE_SEGMENT_TYPES.has(seg.type)) return true;
     logger.debug({ segmentId: seg.id, type: seg.type, interactive: seg.interactiveElementCount }, "Skipping low-interactivity segment");
     return false;
@@ -128,7 +128,7 @@ export async function generateEndpoints(
   await Promise.allSettled([...executing]);
 
   // 6. Confidence-Filter: niedrige Confidence raus
-  const MIN_CANDIDATE_CONFIDENCE = 0.60;
+  const MIN_CANDIDATE_CONFIDENCE = 0.50;
   const filtered = allCandidates.filter(
     (c) => c.confidence >= MIN_CANDIDATE_CONFIDENCE,
   );
@@ -141,7 +141,7 @@ export async function generateEndpoints(
   const deduped = deduplicateCandidates(filtered);
 
   // 8. Global Cap: Top-N nach Confidence
-  const MAX_TOTAL_ENDPOINTS = 7;
+  const MAX_TOTAL_ENDPOINTS = 10;
   const capped = deduped
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_TOTAL_ENDPOINTS);

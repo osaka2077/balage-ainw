@@ -18,7 +18,7 @@ const hasApiKey =
   !!process.env["BALAGE_ANTHROPIC_API_KEY"];
 
 describe.skipIf(!hasApiKey)("Real-World Benchmark", () => {
-  it("runs full BALAGE pipeline against 10 websites", async () => {
+  it("runs full BALAGE pipeline against 10 websites", { timeout: 1_800_000 }, async () => {
     const { main } = await import("./benchmark-runner.js");
     const report = await main();
 

@@ -548,7 +548,7 @@ async function runPipeline(
     log(`    Raw segments: ${segments.length}`);
 
     // 4b. Aggressive filtering — confidence + interactivity threshold
-    const MIN_SEGMENT_CONFIDENCE = 0.50;
+    const MIN_SEGMENT_CONFIDENCE = 0.35;
     const MIN_INTERACTIVE_FOR_LOW_CONF = 1;
     // FIX 1: Forms und Navigation weniger aggressiv filtern — fast immer echte Endpoints
     const ALWAYS_KEEP_TYPES = new Set(["form"]);
@@ -580,11 +580,20 @@ async function runPipeline(
       segs.sort((a, b) => b.confidence - a.confidence || b.interactiveElementCount - a.interactiveElementCount);
       topPerType.push(...segs.slice(0, MAX_PER_TYPE));
     }
-    const segmentCap = parsed.nodeCount > 400 ? 5 : 8;
+    const segmentCap = parsed.nodeCount > 400 ? 8 : 12;
     const relevantSegments = topPerType
       .sort((a, b) => b.confidence - a.confidence)
       .slice(0, segmentCap);
     log(`    Filtered: ${segments.length} → ${withInteractive.length} → ${relevantSegments.length}`);
+
+    // Fallback: wenn alle Segmente weggefiltert wurden, Top-3 nach Confidence durchlassen
+    if (relevantSegments.length === 0 && segments.length > 0) {
+      const fallbackSegments = [...segments]
+        .sort((a, b) => b.confidence - a.confidence)
+        .slice(0, 3);
+      log(`    [FALLBACK] 0 segments after filter, forcing top-${fallbackSegments.length} by confidence`);
+      relevantSegments.push(...fallbackSegments);
+    }
 
     // Diagnostic: detailliertes Filter-Logging pro Stage
     logFilterDiagnostics(siteSlug, segments, withInteractive, topPerType, relevantSegments);
