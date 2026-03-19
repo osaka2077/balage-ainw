@@ -119,7 +119,12 @@ export class CachedLLMClient implements LLMClient {
     const hash = createHash("sha256");
     hash.update(request.model ?? "default");
     hash.update(request.systemPrompt);
-    hash.update(request.userPrompt);
+    // Strip dynamic Segment IDs (UUIDs) from prompt before hashing —
+    // otherwise every run generates new UUIDs → cache never hits.
+    const normalizedPrompt = request.userPrompt
+      .replace(/Segment ID: [a-f0-9-]{36}/gi, "Segment ID: NORMALIZED")
+      .replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi, "UUID");
+    hash.update(normalizedPrompt);
     return hash.digest("hex").slice(0, 32);
   }
 
