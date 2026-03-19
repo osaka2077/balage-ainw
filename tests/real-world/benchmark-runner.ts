@@ -139,6 +139,11 @@ const DIAG_ENABLED = process.env.BALAGE_DIAG === "1";
 const SAVE_SNAPSHOTS = process.env.BALAGE_SAVE_SNAPSHOTS === "1";
 const SNAPSHOTS_DIR = join(import.meta.dirname!, "snapshots");
 
+// Fixture mode — opt-in via BALAGE_FIXTURE_MODE=1
+// Loads HTML from local files instead of live fetching via Playwright
+const FIXTURE_MODE = process.env.BALAGE_FIXTURE_MODE === "1";
+const FIXTURES_DIR = join(import.meta.dirname!, "fixtures");
+
 // Label-Patterns fuer semantische Zuordnung
 const AUTH_LABEL_PATTERN = /login|sign.?in|auth|password|credential/i;
 const SEARCH_LABEL_PATTERN = /search|find|query|lookup/i;
@@ -338,6 +343,47 @@ function saveSnapshot(slug: string, html: string): void {
   log(`    [SNAPSHOT] Saved ${html.length} bytes → ${path}`);
 }
 
+// ============================================================================
+// Fixture Helpers
+// ============================================================================
+
+/** Laedt eine HTML-Fixture-Datei fuer den Fixture-Modus. Gibt null zurueck wenn nicht vorhanden. */
+function loadFixture(file: string): string | null {
+  const fixturePath = join(FIXTURES_DIR, `${file}.html`);
+  if (!existsSync(fixturePath)) return null;
+  return readFileSync(fixturePath, "utf-8");
+}
+
+/** Loggt Fixture-Modus-Status beim Start: verfuegbare und fehlende Fixtures */
+function logFixtureStatus(groundTruthFiles: string[]): void {
+  if (!FIXTURE_MODE) return;
+
+  log("[FIXTURE MODE] Loading HTML from local fixtures");
+  log(`[FIXTURE MODE] Fixtures directory: ${FIXTURES_DIR}`);
+
+  const available: string[] = [];
+  const missing: string[] = [];
+
+  for (const file of groundTruthFiles) {
+    const fixturePath = join(FIXTURES_DIR, `${file}.html`);
+    if (existsSync(fixturePath)) {
+      available.push(`${file}.html`);
+    } else {
+      missing.push(`${file}.html`);
+    }
+  }
+
+  if (available.length > 0) {
+    log(`[FIXTURE MODE] Available fixtures: ${available.join(", ")} (${available.length} of ${groundTruthFiles.length})`);
+  } else {
+    log(`[FIXTURE MODE] No fixtures found — all sites will fall back to live fetch`);
+  }
+
+  if (missing.length > 0) {
+    log(`[FIXTURE MODE] Missing fixtures (will fall back to live): ${missing.join(", ")}`);
+  }
+}
+
 /** Log die komplette Filter-Kaskade fuer eine Site */
 function logFilterDiagnostics(
   siteSlug: string,
@@ -412,6 +458,7 @@ async function runPipeline(
   adapter: BrowserAdapter,
   llmClient: FallbackLLMClient,
   url: string,
+  file: string,
 ): Promise<{ endpoints: Endpoint[]; errors: string[] }> {
   const contextId = await adapter.newContext();
   const endpoints: Endpoint[] = [];
@@ -420,12 +467,26 @@ async function runPipeline(
   try {
     const page = await adapter.getPage(contextId);
 
-    // 1. Navigation
-    log(`  [1/7] Navigating to ${url} ...`);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
-    await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {
-      log("    (networkidle timeout — continuing)");
-    });
+    // 1. Navigation (fixture mode or live fetch)
+    if (FIXTURE_MODE) {
+      const fixtureHtml = loadFixture(file);
+      if (fixtureHtml) {
+        log(`  [1/7] [FIXTURE] Loading ${file}.html (${fixtureHtml.length} bytes)`);
+        await page.setContent(fixtureHtml, { waitUntil: "domcontentloaded" });
+      } else {
+        log(`  [1/7] [FIXTURE] No fixture found for ${file}, falling back to live fetch`);
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+        await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {
+          log("    (networkidle timeout — continuing)");
+        });
+      }
+    } else {
+      log(`  [1/7] Navigating to ${url} ...`);
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+      await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {
+        log("    (networkidle timeout — continuing)");
+      });
+    }
     log(`    URL: ${page.url()}`);
     log(`    Title: ${await page.title()}`);
 
@@ -435,6 +496,14 @@ async function runPipeline(
       try {
         const htmlContent = await page.content();
         saveSnapshot(siteSlug, htmlContent);
+
+        // Automatisch als Fixture speichern wenn SAVE_SNAPSHOTS aktiv und Live-Modus
+        if (SAVE_SNAPSHOTS && !FIXTURE_MODE) {
+          const fixturePath = join(FIXTURES_DIR, `${file}.html`);
+          if (!existsSync(FIXTURES_DIR)) mkdirSync(FIXTURES_DIR, { recursive: true });
+          writeFileSync(fixturePath, htmlContent, "utf-8");
+          log(`    [FIXTURE] Updated fixture: ${fixturePath}`);
+        }
       } catch (snapErr) {
         const snapMsg = snapErr instanceof Error ? snapErr.message : String(snapErr);
         log(`    [SNAPSHOT] Failed: ${snapMsg}`);
@@ -809,6 +878,10 @@ export async function main(): Promise<BenchmarkReport> {
   });
   log(`Provider: ${envConfig.llmProvider} | Model: ${envConfig.llmModel} | Fallback: ${envConfig.llmFallbackModel}`);
 
+  // Fixture-Modus-Status loggen
+  const groundTruthFileIds = groundTruths.map((gt) => basename(gt.file, ".json"));
+  logFixtureStatus(groundTruthFileIds);
+
   const results: BenchmarkResult[] = [];
   let prevCalls = 0;
   let prevCost = 0;
@@ -825,8 +898,9 @@ export async function main(): Promise<BenchmarkReport> {
 
     try {
       // Timeout-Wrapper
+      const fileId = basename(file, ".json");
       const pipelineResult = await Promise.race([
-        runPipeline(adapter, llmClient, gt.url),
+        runPipeline(adapter, llmClient, gt.url, fileId),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("TIMEOUT")), WEBSITE_TIMEOUT_MS[gt.difficulty] ?? DEFAULT_TIMEOUT_MS),
         ),
