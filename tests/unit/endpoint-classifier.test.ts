@@ -597,3 +597,218 @@ describe("inferAffordances", () => {
     expect(click!.expectedOutcome).toBe("Deep Button");
   });
 });
+
+// ============================================================================
+// Target.com-Fix: Mixed-Segment Heuristik (R15)
+// ============================================================================
+
+describe("Mixed-Segment Heuristik (Target.com-Fix)", () => {
+  /**
+   * Hilfsfunktion: Erzeugt einen Kandidaten mit spezifischen Anchor-Informationen.
+   * Simuliert Endpoints wie sie aus dem LLM oder einer vorherigen Pipeline-Stufe kommen.
+   */
+  function makeCandidateWithAnchors(
+    type: string,
+    label: string,
+    description: string,
+    anchors: Array<{
+      selector?: string;
+      ariaRole?: string;
+      ariaLabel?: string;
+      textContent?: string;
+    }> = [{ selector: "div" }],
+    confidence: number = 0.8,
+  ): EndpointCandidate {
+    return {
+      type,
+      label,
+      description,
+      confidence,
+      anchors,
+      affordances: [
+        { type: "click", expectedOutcome: "Action", reversible: true },
+      ],
+      reasoning: "test reasoning",
+    };
+  }
+
+  /**
+   * Erzeugt ein Header-Segment wie es bei Target.com vorkommt:
+   * - Search-Input (type=search oder role=search)
+   * - Cart-Link/Button
+   * - Sign-In-Link
+   * - Navigation-Links (Categories, etc.)
+   */
+  function makeTargetHeaderSegment(): UISegment {
+    const nodes = [
+      // Search-Bereich
+      makeDomNode("div", { role: "search" }, [
+        makeDomNode("input", { type: "search", placeholder: "Search Target" }),
+        makeDomNode("button", {}, [], { textContent: "Search" }),
+      ]),
+      // Cart-Bereich
+      makeDomNode("a", { href: "/cart", class: "cart-icon" }, [], {
+        textContent: "Cart",
+      }),
+      // Auth-Bereich
+      makeDomNode("a", { href: "/account", class: "sign-in-link" }, [], {
+        textContent: "Sign In",
+      }),
+      // Navigation-Bereich
+      makeDomNode("a", { href: "/categories" }, [], {
+        textContent: "Categories",
+      }),
+      makeDomNode("a", { href: "/deals" }, [], {
+        textContent: "Deals",
+      }),
+    ];
+    return makeSegment(nodes, "header");
+  }
+
+  it("does NOT override cart endpoint to 'search' in a segment with search input", () => {
+    const segment = makeTargetHeaderSegment();
+    const cartCandidate = makeCandidateWithAnchors(
+      "commerce",
+      "Cart",
+      "Shopping cart with items",
+      [{ selector: "a.cart-icon", textContent: "Cart" }],
+    );
+
+    const result = classifyEndpoint(cartCandidate, segment);
+
+    // search-input-implies-search darf NICHT greifen fuer den Cart-Kandidaten
+    expect(result.correctedType).not.toBe("search");
+    // Der cart-class-implies-checkout Regel sollte stattdessen greifen
+    // (weil das Segment cart-Klassen enthaelt)
+    expect(result.correctedType).toBe("checkout");
+  });
+
+  it("does NOT override auth endpoint to 'search' in a segment with search input", () => {
+    const segment = makeTargetHeaderSegment();
+    const authCandidate = makeCandidateWithAnchors(
+      "navigation",
+      "Sign In",
+      "Sign in to your account",
+      [{ selector: "a.sign-in-link", textContent: "Sign In" }],
+    );
+
+    const result = classifyEndpoint(authCandidate, segment);
+
+    // search-input-implies-search darf NICHT greifen fuer den Auth-Kandidaten
+    expect(result.correctedType).not.toBe("search");
+  });
+
+  it("correctly classifies search endpoint as 'search' in a mixed segment", () => {
+    const segment = makeTargetHeaderSegment();
+    const searchCandidate = makeCandidateWithAnchors(
+      "form",
+      "Search",
+      "Search products on Target",
+      [{ selector: "input[type=search]", ariaRole: "search" }],
+    );
+
+    const result = classifyEndpoint(searchCandidate, segment);
+
+    // search-input-implies-search SOLL greifen fuer den Search-Kandidaten
+    expect(result.correctedType).toBe("search");
+  });
+
+  it("Target.com full header: each endpoint gets correct type", () => {
+    const segment = makeTargetHeaderSegment();
+
+    // Simuliere 4 Endpoints wie sie im Header vorkommen wuerden
+    const searchResult = classifyEndpoint(
+      makeCandidateWithAnchors(
+        "form",
+        "Search Target",
+        "Find products",
+        [{ selector: "input[type=search]" }],
+      ),
+      segment,
+    );
+    const cartResult = classifyEndpoint(
+      makeCandidateWithAnchors(
+        "commerce",
+        "Cart",
+        "View shopping cart",
+        [{ selector: "a.cart-icon", textContent: "Cart" }],
+      ),
+      segment,
+    );
+    const signInResult = classifyEndpoint(
+      makeCandidateWithAnchors(
+        "navigation",
+        "Sign In",
+        "Sign in to your Target account",
+        [{ selector: "a.sign-in-link", textContent: "Sign In" }],
+      ),
+      segment,
+    );
+    const categoriesResult = classifyEndpoint(
+      makeCandidateWithAnchors(
+        "navigation",
+        "Categories",
+        "Browse product categories",
+        [{ selector: "a", textContent: "Categories" }],
+      ),
+      segment,
+    );
+
+    // Search → search (korrekt)
+    expect(searchResult.correctedType).toBe("search");
+
+    // Cart → checkout (nicht search!)
+    expect(cartResult.correctedType).toBe("checkout");
+    expect(cartResult.correctedType).not.toBe("search");
+
+    // Sign In → NICHT search (Nav-Root oder fallback, aber nicht search)
+    expect(signInResult.correctedType).not.toBe("search");
+
+    // Categories → NICHT search (navigation oder fallback)
+    expect(categoriesResult.correctedType).not.toBe("search");
+  });
+
+  it("candidate with no conflicting context still gets 'search' in search segment", () => {
+    const nodes = [
+      makeDomNode("div", { role: "search" }, [
+        makeDomNode("input", { type: "search" }),
+      ]),
+    ];
+    const segment = makeSegment(nodes);
+
+    // Generischer Kandidat ohne spezifischen Kontext
+    const genericCandidate = makeCandidateWithAnchors(
+      "form",
+      "Input Field",
+      "A text input field",
+      [{ selector: "div" }],
+    );
+
+    const result = classifyEndpoint(genericCandidate, segment);
+
+    // Ohne konfligierenden Kontext soll search trotzdem greifen
+    expect(result.correctedType).toBe("search");
+  });
+
+  it("candidate with 'wishlist' label is not overridden to search", () => {
+    const nodes = [
+      makeDomNode("div", { role: "search" }, [
+        makeDomNode("input", { type: "search" }),
+      ]),
+      makeDomNode("a", { href: "/wishlist" }, [], {
+        textContent: "Wish List",
+      }),
+    ];
+    const segment = makeSegment(nodes);
+
+    const wishlistCandidate = makeCandidateWithAnchors(
+      "navigation",
+      "Wish List",
+      "View saved favorites",
+      [{ selector: "a", textContent: "Wish List" }],
+    );
+
+    const result = classifyEndpoint(wishlistCandidate, segment);
+    expect(result.correctedType).not.toBe("search");
+  });
+});

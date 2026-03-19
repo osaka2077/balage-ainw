@@ -19,8 +19,65 @@ const logger = pino({ name: "semantic:endpoint-classifier" });
 interface HeuristicRule {
   name: string;
   correctedType: string;
-  check(segment: UISegment): boolean;
+  check(segment: UISegment, candidate: EndpointCandidate): boolean;
 }
+
+/**
+ * Prueft ob ein Kandidat ueber seine Anchors oder sein Label mit einem bestimmten
+ * DOM-Subtree assoziiert ist. Verhindert dass Segment-weite Heuristiken (z.B. search)
+ * alle Endpoints in einem mixed-content Segment ueberschreiben.
+ */
+function candidateMatchesContext(
+  candidate: EndpointCandidate,
+  patterns: RegExp[],
+): boolean {
+  const labelLower = candidate.label.toLowerCase();
+  const descLower = candidate.description.toLowerCase();
+
+  for (const pat of patterns) {
+    if (pat.test(labelLower) || pat.test(descLower)) return true;
+  }
+
+  for (const anchor of candidate.anchors) {
+    for (const pat of patterns) {
+      if (anchor.ariaLabel && pat.test(anchor.ariaLabel.toLowerCase())) return true;
+      if (anchor.textContent && pat.test(anchor.textContent.toLowerCase())) return true;
+      if (anchor.ariaRole && pat.test(anchor.ariaRole.toLowerCase())) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Prueft ob ein Kandidat NICHT mit bestimmten Kontext-Patterns assoziiert ist.
+ * Gibt true zurueck wenn der Kandidat klar zu einer ANDEREN Kategorie gehoert.
+ */
+function candidateConflictsWithType(
+  candidate: EndpointCandidate,
+  excludePatterns: RegExp[],
+): boolean {
+  return candidateMatchesContext(candidate, excludePatterns);
+}
+
+/** Patterns die auf Nicht-Search-Endpoints hinweisen */
+const NON_SEARCH_PATTERNS: RegExp[] = [
+  /\b(cart|basket|bag|checkout)\b/,
+  /\b(sign[\s-]?in|log[\s-]?in|sign[\s-]?up|register|account|profile)\b/,
+  /\b(menu|categories|departments)\b/,
+  /\b(help|support|contact)\b/,
+  /\b(wish[\s-]?list|favorites|saved)\b/,
+  /\b(orders?|tracking)\b/,
+  /\b(store[\s-]?locator|locations?)\b/,
+];
+
+/** Patterns die auf Search-Endpoints hinweisen */
+const SEARCH_PATTERNS: RegExp[] = [
+  /\bsearch\b/,
+  /\bfind\b/,
+  /\blookup\b/,
+  /\bquery\b/,
+];
 
 const HEURISTIC_RULES: HeuristicRule[] = [
   {
@@ -38,9 +95,22 @@ const HEURISTIC_RULES: HeuristicRule[] = [
   {
     name: "search-input-implies-search",
     correctedType: "search",
-    check: (segment) =>
-      hasInputType(segment.nodes, "search") ||
-      hasRoleAttribute(segment.nodes, "search"),
+    check: (segment, candidate) => {
+      const segmentHasSearch =
+        hasInputType(segment.nodes, "search") ||
+        hasRoleAttribute(segment.nodes, "search");
+      if (!segmentHasSearch) return false;
+
+      // Wenn der Kandidat explizit zu einer anderen Kategorie gehoert,
+      // nicht als search ueberschreiben (Target.com-Fix: mixed header segments)
+      if (candidateConflictsWithType(candidate, NON_SEARCH_PATTERNS)) {
+        return false;
+      }
+
+      // Der Kandidat ist entweder explizit search-bezogen oder hat keinen
+      // klaren Kontext der dagegen spricht
+      return true;
+    },
   },
   {
     name: "nav-root-implies-navigation",
@@ -98,7 +168,7 @@ export function classifyEndpoint(
 
     // Heuristik-basierte Korrektur
     for (const rule of HEURISTIC_RULES) {
-      if (rule.check(segment)) {
+      if (rule.check(segment, candidate)) {
         // Nur korrigieren wenn LLM-Typ nicht bereits korrekt ist
         if (candidate.type !== rule.correctedType) {
           logger.debug(
