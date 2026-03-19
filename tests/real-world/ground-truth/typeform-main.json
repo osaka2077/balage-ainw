@@ -55,7 +55,7 @@
       "phase": 2
     },
     {
-      "type": "form",
+      "type": "consent",
       "label": "Cookie Consent",
       "description": "Cookie consent banner with accept/manage buttons",
       "selector_hint": "button#onetrust-accept-btn-handler, button[data-qa='cookie-accept']",

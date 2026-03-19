@@ -5,7 +5,7 @@
   "notes": "Shopify Dawn theme demo store. Clean Liquid-rendered HTML with Web Components (custom elements). Product cards with quick-add buttons. Cart drawer as slide-over panel. Search with predictive results. Medium complexity from custom elements and cart AJAX updates.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Product Search",
       "description": "Predictive search with autocomplete dropdown showing products, collections, and pages",
       "selector_hint": "form[action='/search'] input[type='search'], predictive-search",

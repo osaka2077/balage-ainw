@@ -5,7 +5,7 @@
   "notes": "Classic server-rendered HTML. Semantic structure, no Shadow DOM, no SPA. Search form is the primary interactive element. Navigation through sidebar and top tabs.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Search Wikipedia",
       "description": "Global search form with text input and submit button",
       "selector_hint": "form#searchform, input#searchInput",
