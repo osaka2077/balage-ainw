@@ -130,6 +130,8 @@ const TYPE_ALIASES: Record<string, string[]> = {
   search: ["search", "form"],
   support: ["support", "navigation"],
   content: ["content", "navigation"],
+  consent: ["consent", "form"],
+  commerce: ["commerce", "checkout"],
 };
 
 // Label-Patterns fuer semantische Zuordnung
@@ -137,7 +139,7 @@ const AUTH_LABEL_PATTERN = /login|sign.?in|auth|password|credential/i;
 const SEARCH_LABEL_PATTERN = /search|find|query|lookup/i;
 
 // Schluesseltypen fuer Segment-Filterung (aus den bestehenden Tests)
-const KEY_SEGMENT_TYPES = ["form", "navigation", "auth", "search", "checkout"];
+const KEY_SEGMENT_TYPES = ["form", "navigation", "auth", "search", "checkout", "table", "content", "list"];
 
 // ============================================================================
 // Matching Logic
@@ -375,20 +377,20 @@ async function runPipeline(
         return s.interactiveElementCount > 0 || KEY_SEGMENT_TYPES.includes(s.type);
       },
     );
-    const bestByType = new Map<string, UISegment>();
+    const MAX_PER_TYPE = 3;
+    const byType = new Map<string, UISegment[]>();
     for (const s of withInteractive) {
-      const existing = bestByType.get(s.type);
-      if (
-        !existing ||
-        s.confidence > existing.confidence ||
-        (s.confidence === existing.confidence &&
-          s.interactiveElementCount > existing.interactiveElementCount)
-      ) {
-        bestByType.set(s.type, s);
-      }
+      const list = byType.get(s.type) ?? [];
+      list.push(s);
+      byType.set(s.type, list);
+    }
+    const topPerType: UISegment[] = [];
+    for (const [_type, segs] of byType) {
+      segs.sort((a, b) => b.confidence - a.confidence || b.interactiveElementCount - a.interactiveElementCount);
+      topPerType.push(...segs.slice(0, MAX_PER_TYPE));
     }
     const segmentCap = parsed.nodeCount > 400 ? 5 : 8;
-    const relevantSegments = [...bestByType.values()]
+    const relevantSegments = topPerType
       .sort((a, b) => b.confidence - a.confidence)
       .slice(0, segmentCap);
     log(`    Filtered: ${segments.length} → ${withInteractive.length} → ${relevantSegments.length}`);
