@@ -29,6 +29,15 @@ const TAG_TO_SEGMENT: Record<string, UISegmentType> = {
   audio: "media",
 };
 
+/** Custom Element Tag-Patterns -> UISegmentType */
+const CUSTOM_ELEMENT_PATTERNS: Array<{ pattern: RegExp; type: UISegmentType; weight: number }> = [
+  { pattern: /cart|basket/i, type: "checkout", weight: 0.7 },
+  { pattern: /product|item/i, type: "content", weight: 0.6 },
+  { pattern: /search|find/i, type: "search", weight: 0.7 },
+  { pattern: /nav|menu/i, type: "navigation", weight: 0.6 },
+  { pattern: /modal|dialog|drawer/i, type: "modal", weight: 0.6 },
+];
+
 /** Mapping: ARIA Landmark role -> UISegmentType */
 const LANDMARK_TO_SEGMENT: Record<string, UISegmentType> = {
   navigation: "navigation",
@@ -237,6 +246,21 @@ function classifyNode(
   const tagSegment = TAG_TO_SEGMENT[tag];
   if (tagSegment !== undefined) {
     signals.push({ type: tagSegment, weight: 0.9, source: "tag" });
+  }
+
+  // 1b. Custom Element Erkennung (tag enthaelt Bindestrich)
+  if (tag.includes("-")) {
+    let bestCustom: { type: UISegmentType; weight: number } | undefined;
+    for (const { pattern, type, weight } of CUSTOM_ELEMENT_PATTERNS) {
+      if (pattern.test(tag)) {
+        if (!bestCustom || weight > bestCustom.weight) {
+          bestCustom = { type, weight };
+        }
+      }
+    }
+    if (bestCustom) {
+      signals.push({ type: bestCustom.type, weight: bestCustom.weight, source: "custom-element" });
+    }
   }
 
   // 2. ARIA Landmarks
