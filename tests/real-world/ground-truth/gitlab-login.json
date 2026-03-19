@@ -1,0 +1,64 @@
+{
+  "url": "https://gitlab.com/users/sign_in",
+  "captured_at": "2026-03-19",
+  "difficulty": "easy",
+  "notes": "GitLab.com sign-in page. Clean layout with username/password form, 'Forgot your password?' link, Remember me checkbox, SSO provider buttons (Google, GitHub, Bitbucket, Salesforce), and Register tab. Replaces outlook-login (bot-protected).",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Sign In Form",
+      "description": "Username or email + password login form with Sign in submit button",
+      "selector_hint": "form#new_user, input#user_login, input#user_password, button[type='submit']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["username", "password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Forgot your password? link leading to password reset page",
+      "selector_hint": "a[href*='password/new']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "SSO Providers",
+      "description": "Sign in with Google, GitHub, Bitbucket, and Salesforce OAuth buttons",
+      "selector_hint": "button[data-provider='google_oauth2'], a[href*='oauth']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Register Tab",
+      "description": "Register tab or link to create a new GitLab account",
+      "selector_hint": "a[href*='sign_up'], a[data-qa-selector='register_link']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Explore GitLab",
+      "description": "Explore link to browse public projects without authentication",
+      "selector_hint": "a[href='/explore']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.80,
+    "min_recall_target": 0.80
+  }
+}

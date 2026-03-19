@@ -1,0 +1,74 @@
+{
+  "url": "https://stackoverflow.com",
+  "captured_at": "2026-03-19",
+  "difficulty": "medium",
+  "notes": "Stack Overflow homepage. Top bar with search and auth links, left sidebar navigation (Home, Questions, Tags, Users, Companies, Collectives), central question feed, right sidebar with community content. Redesigned in early 2026 with simplified navigation. Replaces paypal-signin (bot-protected).",
+  "endpoints": [
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Main search input in top bar for searching questions, answers, and tags",
+      "selector_hint": "input[name='q'], form#search, input.s-input__search",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["q"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Log In",
+      "description": "Log in button/link in the top bar header",
+      "selector_hint": "a[href*='users/login'], a.s-topbar--item__unset",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign Up",
+      "description": "Sign up button/link in the top bar header for new account creation",
+      "selector_hint": "a[href*='users/signup'], a.s-btn__filled",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Left Sidebar Navigation",
+      "description": "Left sidebar with links to Home, Questions, Tags, Users, Companies, and Collectives",
+      "selector_hint": "nav#left-sidebar, ol.nav-links",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Question Feed",
+      "description": "Central list of questions with titles, vote counts, answer counts, and tags",
+      "selector_hint": "div#questions, div.s-post-summary",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Ask Question",
+      "description": "Ask Question button to create a new question post",
+      "selector_hint": "a[href='/questions/ask'], a.s-btn__filled",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.70,
+    "min_recall_target": 0.65
+  }
+}
