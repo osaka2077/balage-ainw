@@ -19,6 +19,10 @@ export { createOpenAIClient, createAnthropicClient, createMockClient } from "./l
 export type { FallbackLLMClient, FallbackLLMClientOptions, CostSummary, CostRecord } from "./fallback-llm-client.js";
 export { createFallbackLLMClient } from "./fallback-llm-client.js";
 
+// Cached LLM Client (Deterministic Benchmark Results)
+export { CachedLLMClient } from "./cached-llm-client.js";
+export type { CacheOptions } from "./cached-llm-client.js";
+
 // Prompts
 export {
   ENDPOINT_EXTRACTION_SYSTEM_PROMPT,

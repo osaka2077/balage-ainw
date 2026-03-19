@@ -40,6 +40,9 @@ tests/real-world/fixtures/*.html
 !tests/real-world/fixtures/.gitkeep
 !tests/real-world/fixtures/README.md
 
+# LLM response cache (local, not versioned)
+tests/real-world/.llm-cache/
+
 # Temp
 tmp/
 *.tmp
