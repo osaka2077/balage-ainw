@@ -29,7 +29,7 @@ const TAG_TO_SEGMENT: Record<string, UISegmentType> = {
   audio: "media",
 };
 
-/** Custom Element Tag-Patterns -> UISegmentType */
+/** Custom Element Tag-Patterns -> UISegmentType (vendor-spezifisch, Fallback) */
 const CUSTOM_ELEMENT_PATTERNS: Array<{ pattern: RegExp; type: UISegmentType; weight: number }> = [
   { pattern: /cart|basket/i, type: "checkout", weight: 0.7 },
   { pattern: /product|item/i, type: "content", weight: 0.6 },
@@ -37,6 +37,40 @@ const CUSTOM_ELEMENT_PATTERNS: Array<{ pattern: RegExp; type: UISegmentType; wei
   { pattern: /nav|menu/i, type: "navigation", weight: 0.6 },
   { pattern: /modal|dialog|drawer/i, type: "modal", weight: 0.6 },
 ];
+
+/**
+ * Generischer Custom Element Suffix -> UISegmentType Mapping.
+ * Per Web Components Spec ist jedes Element mit Bindestrich im Tag-Namen ein Custom Element.
+ * Klassifiziere nach Suffix statt nach Vendor-Prefix — deckt alle Frameworks ab
+ * (Fluent UI, PayPal, Lit, Shoelace, MWC, FAST, etc.)
+ */
+const CUSTOM_ELEMENT_SUFFIX_MAP: Array<{ suffixes: RegExp; type: UISegmentType; weight: number }> = [
+  { suffixes: /-(button|btn)$/i, type: "content", weight: 0.6 },
+  { suffixes: /-(input|textfield|textarea|field|text-field)$/i, type: "form", weight: 0.65 },
+  { suffixes: /-(select|dropdown|combobox|listbox)$/i, type: "form", weight: 0.65 },
+  { suffixes: /-(checkbox|radio|toggle|switch)$/i, type: "form", weight: 0.6 },
+  { suffixes: /-(search|searchbar|search-bar)$/i, type: "search", weight: 0.7 },
+  { suffixes: /-(menu|menuitem|nav|navigation)$/i, type: "navigation", weight: 0.6 },
+  { suffixes: /-(dialog|modal|drawer)$/i, type: "modal", weight: 0.6 },
+  { suffixes: /-(link|anchor)$/i, type: "content", weight: 0.5 },
+  { suffixes: /-(form)$/i, type: "form", weight: 0.7 },
+  { suffixes: /-(tab|tabs|tab-bar)$/i, type: "navigation", weight: 0.55 },
+  { suffixes: /-(cart|basket|checkout)$/i, type: "checkout", weight: 0.7 },
+];
+
+/**
+ * Interaktive Custom-Element-Suffixe.
+ * Wenn ein Custom Element einen dieser Suffixe hat, wird es als interaktiv gezaehlt.
+ */
+const INTERACTIVE_CUSTOM_SUFFIXES = /-(button|btn|input|textfield|textarea|field|text-field|select|dropdown|combobox|listbox|checkbox|radio|toggle|switch|search|searchbar|search-bar|link|anchor|slider|tab|menuitem)$/i;
+
+/** Interaktive ARIA-Rollen (WAI-ARIA 1.2 widget roles) */
+const INTERACTIVE_ROLES = new Set([
+  "button", "link", "textbox", "searchbox", "combobox",
+  "listbox", "menu", "menuitem", "menuitemcheckbox", "menuitemradio",
+  "option", "radio", "checkbox", "switch", "slider",
+  "spinbutton", "tab", "treeitem", "gridcell",
+]);
 
 /** Mapping: ARIA Landmark role -> UISegmentType */
 const LANDMARK_TO_SEGMENT: Record<string, UISegmentType> = {
@@ -81,13 +115,56 @@ const INTERACTIVE_TAGS = new Set([
 const DEFAULT_MIN_CONFIDENCE = 0.4;
 
 /**
+ * Prueft ob ein einzelner Node als interaktiv gilt.
+ * Beruecksichtigt: native HTML-Tags, ARIA-Rollen, tabindex, contenteditable, Custom Elements.
+ */
+function isNodeInteractive(node: DomNode): boolean {
+  const tag = node.tagName.toLowerCase();
+
+  // 1. Bereits als interaktiv markiert oder nativer interaktiver Tag
+  if (node.isInteractive || INTERACTIVE_TAGS.has(tag)) {
+    return true;
+  }
+
+  // 2. Interaktive ARIA-Rolle (role="button", role="link", etc.)
+  const role = node.attributes["role"];
+  if (role !== undefined && INTERACTIVE_ROLES.has(role.toLowerCase())) {
+    return true;
+  }
+
+  // 3. tabindex >= 0 macht ein Element user-interaktiv fokussierbar
+  //    tabindex="-1" ist nur programmatisch fokussierbar, zaehlt NICHT
+  const tabindex = node.attributes["tabindex"];
+  if (tabindex !== undefined) {
+    const parsed = Number.parseInt(tabindex, 10);
+    if (!Number.isNaN(parsed) && parsed >= 0) {
+      return true;
+    }
+  }
+
+  // 4. contenteditable="true" oder contenteditable="" (leerer String = true)
+  const contenteditable = node.attributes["contenteditable"];
+  if (contenteditable === "true" || contenteditable === "") {
+    return true;
+  }
+
+  // 5. Custom Elements: Tag mit Bindestrich + interaktiver Suffix
+  if (tag.includes("-") && INTERACTIVE_CUSTOM_SUFFIXES.test(tag)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Zaehlt interaktive Elemente in einem DomNode-Teilbaum.
- * Pure function.
+ * Pure function. Erkennt native HTML, ARIA-Rollen, tabindex, contenteditable
+ * und Custom Elements mit interaktivem Suffix.
  */
 function countInteractiveElements(node: DomNode): number {
   let count = 0;
 
-  if (node.isInteractive || INTERACTIVE_TAGS.has(node.tagName.toLowerCase())) {
+  if (isNodeInteractive(node)) {
     count++;
   }
 
@@ -232,6 +309,20 @@ function isImplicitForm(node: DomNode): boolean {
 }
 
 /**
+ * Zaehlt ARIA-Attribute eines Nodes (role, aria-label, aria-describedby, etc.).
+ * Wird fuer den Confidence-Boost bei ARIA-reichen Segmenten genutzt.
+ */
+function countAriaAttributes(node: DomNode): number {
+  let count = 0;
+  for (const key of Object.keys(node.attributes)) {
+    if (key === "role" || key.startsWith("aria-")) {
+      count++;
+    }
+  }
+  return count;
+}
+
+/**
  * Bestimmt den Segment-Typ und Confidence fuer einen Node.
  * Kombiniert mehrere Heuristiken mit gewichteter Bewertung.
  */
@@ -248,18 +339,31 @@ function classifyNode(
     signals.push({ type: tagSegment, weight: 0.9, source: "tag" });
   }
 
-  // 1b. Custom Element Erkennung (tag enthaelt Bindestrich)
+  // 1b. Custom Element Erkennung (tag enthaelt Bindestrich = Web Component per Spec)
   if (tag.includes("-")) {
-    let bestCustom: { type: UISegmentType; weight: number } | undefined;
-    for (const { pattern, type, weight } of CUSTOM_ELEMENT_PATTERNS) {
-      if (pattern.test(tag)) {
-        if (!bestCustom || weight > bestCustom.weight) {
-          bestCustom = { type, weight };
-        }
+    // 1b-i. Generischer Suffix-basierter Ansatz (framework-agnostisch)
+    let suffixMatched = false;
+    for (const { suffixes, type, weight } of CUSTOM_ELEMENT_SUFFIX_MAP) {
+      if (suffixes.test(tag)) {
+        signals.push({ type, weight, source: "custom-element-suffix" });
+        suffixMatched = true;
+        break;
       }
     }
-    if (bestCustom) {
-      signals.push({ type: bestCustom.type, weight: bestCustom.weight, source: "custom-element" });
+
+    // 1b-ii. Fallback: vendor-spezifische Patterns (fuer generische Begriffe im Tag)
+    if (!suffixMatched) {
+      let bestCustom: { type: UISegmentType; weight: number } | undefined;
+      for (const { pattern, type, weight } of CUSTOM_ELEMENT_PATTERNS) {
+        if (pattern.test(tag)) {
+          if (!bestCustom || weight > bestCustom.weight) {
+            bestCustom = { type, weight };
+          }
+        }
+      }
+      if (bestCustom) {
+        signals.push({ type: bestCustom.type, weight: bestCustom.weight, source: "custom-element" });
+      }
     }
   }
 
@@ -310,6 +414,26 @@ function classifyNode(
     signals.push({ type: "search", weight: 0.8, source: "search-input" });
   }
 
+  // 9. ARIA dialog Rolle (nicht in LANDMARK_TO_SEGMENT, muss separat behandelt werden)
+  if (explicitRole === "dialog" || explicitRole === "alertdialog") {
+    signals.push({ type: "modal", weight: 0.85, source: "aria-dialog" });
+  }
+
+  // 10. Data-Attribute Patterns (data-testid, data-cy — starke Signale aus Testing-Frameworks)
+  const dataTestId = node.attributes["data-testid"] ?? node.attributes["data-cy"] ?? node.attributes["data-test"];
+  if (dataTestId !== undefined) {
+    const testIdLower = dataTestId.toLowerCase();
+    if (/login|signin|sign-in|auth/.test(testIdLower)) {
+      signals.push({ type: "form", weight: 0.6, source: "data-testid-auth" });
+    } else if (/search/.test(testIdLower)) {
+      signals.push({ type: "search", weight: 0.6, source: "data-testid-search" });
+    } else if (/nav|menu/.test(testIdLower)) {
+      signals.push({ type: "navigation", weight: 0.55, source: "data-testid-nav" });
+    } else if (/checkout|cart|payment/.test(testIdLower)) {
+      signals.push({ type: "checkout", weight: 0.6, source: "data-testid-checkout" });
+    }
+  }
+
   // Kein Signal => unknown
   if (signals.length === 0) {
     return { type: "unknown", confidence: 0.1 };
@@ -326,7 +450,15 @@ function classifyNode(
   const matchingSignals = signals.filter((s) => s.type === bestSignal.type);
   const baseConfidence = bestSignal.weight;
   const agreementBonus = Math.min((matchingSignals.length - 1) * 0.05, 0.1);
-  const confidence = Math.min(baseConfidence + agreementBonus, 1.0);
+  let confidence = Math.min(baseConfidence + agreementBonus, 1.0);
+
+  // 11. OPTIONAL: Confidence-Boost fuer ARIA-reiche Segmente.
+  //     Segmente mit 3+ ARIA-Attributen sind wahrscheinlich bewusst
+  //     zugaenglich gemacht → interaktiv → kleiner Confidence-Boost.
+  const ariaAttrCount = countAriaAttributes(node);
+  if (ariaAttrCount >= 3) {
+    confidence = Math.min(confidence + 0.1, 1.0);
+  }
 
   // Label aus ARIA-Analyse extrahieren
   const nodeId = node.attributes["id"];
