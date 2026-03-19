@@ -19,7 +19,9 @@ import {
 } from "../../src/semantic/endpoint-generator.js";
 import { createFallbackLLMClient } from "../../src/semantic/fallback-llm-client.js";
 import type { FallbackLLMClient } from "../../src/semantic/fallback-llm-client.js";
+import { CachedLLMClient } from "../../src/semantic/cached-llm-client.js";
 import { envConfig } from "../../src/config/env.js";
+import type { LLMClient } from "../../src/semantic/llm-client.js";
 import type { Endpoint, UISegment } from "../../shared_interfaces.js";
 
 // ============================================================================
@@ -138,6 +140,10 @@ const TYPE_ALIASES: Record<string, string[]> = {
 const DIAG_ENABLED = process.env.BALAGE_DIAG === "1";
 const SAVE_SNAPSHOTS = process.env.BALAGE_SAVE_SNAPSHOTS === "1";
 const SNAPSHOTS_DIR = join(import.meta.dirname!, "snapshots");
+
+// LLM response cache — activated via BALAGE_LLM_CACHE=1
+const LLM_CACHE_ENABLED = process.env.BALAGE_LLM_CACHE === "1";
+const LLM_CACHE_DIR = join(import.meta.dirname!, ".llm-cache");
 
 // Fixture mode — opt-in via BALAGE_FIXTURE_MODE=1
 // Loads HTML from local files instead of live fetching via Playwright
@@ -457,6 +463,7 @@ function logFilterDiagnostics(
 async function runPipeline(
   adapter: BrowserAdapter,
   llmClient: FallbackLLMClient,
+  effectiveLlmClient: LLMClient,
   url: string,
   file: string,
 ): Promise<{ endpoints: Endpoint[]; errors: string[] }> {
@@ -598,7 +605,7 @@ async function runPipeline(
     };
 
     const candidates = await generateEndpoints(relevantSegments, context, {
-      llmClient,
+      llmClient: effectiveLlmClient,
     });
     log(`    Candidates from LLM: ${candidates.length}`);
 
@@ -878,6 +885,17 @@ export async function main(): Promise<BenchmarkReport> {
   });
   log(`Provider: ${envConfig.llmProvider} | Model: ${envConfig.llmModel} | Fallback: ${envConfig.llmFallbackModel}`);
 
+  // Optional: LLM-Response-Cache wrappen (spart Kosten bei wiederholten Runs)
+  let effectiveLlmClient: LLMClient = llmClient;
+  if (LLM_CACHE_ENABLED) {
+    effectiveLlmClient = new CachedLLMClient(llmClient, {
+      cacheDir: LLM_CACHE_DIR,
+      enabled: true,
+    });
+    log("[LLM CACHE] Enabled — responses will be cached/served from disk");
+    log(`[LLM CACHE] Cache dir: ${LLM_CACHE_DIR}`);
+  }
+
   // Fixture-Modus-Status loggen
   const groundTruthFileIds = groundTruths.map((gt) => basename(gt.file, ".json"));
   logFixtureStatus(groundTruthFileIds);
@@ -900,7 +918,7 @@ export async function main(): Promise<BenchmarkReport> {
       // Timeout-Wrapper
       const fileId = basename(file, ".json");
       const pipelineResult = await Promise.race([
-        runPipeline(adapter, llmClient, gt.url, fileId),
+        runPipeline(adapter, llmClient, effectiveLlmClient, gt.url, fileId),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("TIMEOUT")), WEBSITE_TIMEOUT_MS[gt.difficulty] ?? DEFAULT_TIMEOUT_MS),
         ),
@@ -993,6 +1011,12 @@ export async function main(): Promise<BenchmarkReport> {
 
   const report = buildReport(results, runDate, runStart, llmClient);
   printFinalReport(report);
+
+  // LLM-Cache-Statistiken loggen
+  if (LLM_CACHE_ENABLED && effectiveLlmClient instanceof CachedLLMClient) {
+    const stats = effectiveLlmClient.getStats();
+    log(`\n  LLM Cache: ${stats.hits} hits, ${stats.misses} misses (${(stats.hitRate * 100).toFixed(0)}% hit rate)`);
+  }
 
   // Finales JSON speichern
   const outPath = join(import.meta.dirname!, `benchmark-results-${runDate}.json`);
