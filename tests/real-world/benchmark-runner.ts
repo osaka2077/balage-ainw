@@ -313,6 +313,71 @@ function computeMetrics(
   };
 }
 
+/**
+ * Phase-1-spezifische Metrik-Berechnung.
+ *
+ * Das Problem mit computeMetrics(gtPhase1, allDetected) ist, dass Precision
+ * = matched / allDetected.length berechnet wird. Wenn 2 Phase-1-Matches in
+ * 10 detected Endpoints stecken, ist Precision = 0.2 — obwohl die Pipeline
+ * die Phase-1-Endpoints korrekt erkannt hat.
+ *
+ * Diese Funktion filtert den detected-Pool auf Endpoints, deren Typ
+ * potentiell zu einem Phase-1-GT-Typ passt (via TYPE_ALIASES), und
+ * berechnet Precision nur gegen diese relevante Teilmenge.
+ */
+function computePhase1Metrics(
+  phase1GroundTruth: GroundTruthEndpoint[],
+  allDetected: Endpoint[],
+): BenchmarkMetrics {
+  if (phase1GroundTruth.length === 0) {
+    return { precision: 0, recall: 0, f1: 0, typeAccuracy: 0 };
+  }
+
+  // Sammle alle GT-Typen die in Phase-1 vorkommen
+  const phase1GtTypes = new Set(phase1GroundTruth.map((e) => e.type));
+
+  // Reverse-Lookup: Welche detected-Typen koennten zu einem Phase-1-GT-Typ matchen?
+  // Ein detected Typ D ist Phase-1-relevant, wenn es einen GT-Typ G gibt so dass
+  // typesMatch(G, D) === true.
+  const phase1RelevantDetectedTypes = new Set<string>();
+  for (const gtType of phase1GtTypes) {
+    // Der GT-Typ selbst
+    phase1RelevantDetectedTypes.add(gtType);
+    // Alle Aliases fuer diesen GT-Typ
+    const aliases = TYPE_ALIASES[gtType];
+    if (aliases) {
+      for (const a of aliases) {
+        phase1RelevantDetectedTypes.add(a);
+      }
+    }
+  }
+
+  // Filtere detected auf Phase-1-relevante Typen
+  const phase1Detected = allDetected.filter((e) =>
+    phase1RelevantDetectedTypes.has(e.type),
+  );
+
+  if (phase1Detected.length === 0) {
+    return { precision: 0, recall: 0, f1: 0, typeAccuracy: 0 };
+  }
+
+  // Matche Phase-1 GT nur gegen Phase-1-relevante detected Endpoints
+  const { matched, details } = computeMatches(phase1GroundTruth, phase1Detected);
+  const exactTypeMatches = details.filter((d) => d.matched && d.typeMatch).length;
+
+  const precision = matched / phase1Detected.length;
+  const recall = matched / phase1GroundTruth.length;
+  const f1 = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+  const typeAccuracy = matched > 0 ? exactTypeMatches / matched : 0;
+
+  return {
+    precision: round(precision),
+    recall: round(recall),
+    f1: round(f1),
+    typeAccuracy: round(typeAccuracy),
+  };
+}
+
 function round(n: number): number {
   return Math.round(n * 1000) / 1000;
 }
@@ -945,7 +1010,7 @@ export async function main(): Promise<BenchmarkReport> {
       // Matching + Metriken
       const { details } = computeMatches(gtAll, detected);
       const metricsAll = computeMetrics(gtAll, detected);
-      const metricsPhase1 = computeMetrics(gtPhase1, detected);
+      const metricsPhase1 = computePhase1Metrics(gtPhase1, detected);
 
       result = {
         url: gt.url,
