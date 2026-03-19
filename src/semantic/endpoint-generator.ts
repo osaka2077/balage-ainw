@@ -402,11 +402,16 @@ async function processSegment(
     // 6. Hallucination Prevention — Post-LLM Validation
     const segText = cleanText.toLowerCase();
     for (const candidate of parsedResponse.endpoints) {
-      if (candidate.type === "search" && !/type=search|role=search|role="search"/.test(segText)) {
-        candidate.confidence *= 0.5;
+      // Search: Penalize if no search-related attributes found in segment HTML
+      const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search/.test(segText)
+        || /input.*search|search.*input|searchbar|search-bar|search_bar/.test(segText);
+      if (candidate.type === "search" && !hasSearchEvidence) {
+        candidate.confidence *= 0.7;
       }
-      if (candidate.type === "auth" && segment.type === "navigation" && !/type=password|type="password"/.test(segText)) {
-        candidate.confidence = Math.min(candidate.confidence, 0.75);
+      // Auth in navigation without credential fields: gentle penalty
+      const hasCredentialFields = /type="?password|type="?email|autocomplete="?(username|email|current-password)/.test(segText);
+      if (candidate.type === "auth" && segment.type === "navigation" && !hasCredentialFields) {
+        candidate.confidence *= 0.85;
       }
     }
 

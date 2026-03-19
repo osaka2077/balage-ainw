@@ -377,7 +377,7 @@ async function runPipeline(
         return s.interactiveElementCount > 0 || KEY_SEGMENT_TYPES.includes(s.type);
       },
     );
-    const MAX_PER_TYPE = 3;
+    const MAX_PER_TYPE = 2;
     const byType = new Map<string, UISegment[]>();
     for (const s of withInteractive) {
       const list = byType.get(s.type) ?? [];

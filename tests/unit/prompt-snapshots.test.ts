@@ -88,9 +88,9 @@ describe("ENDPOINT_EXTRACTION_SYSTEM_PROMPT", () => {
     );
   });
 
-  it("explains dual-endpoint pattern for navigation with many links", () => {
+  it("explains strict auth-link classification rules", () => {
     expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT).toMatch(
-      /MANY links.*5\+.*navigation.*auth/is,
+      /Navigation links.*Login.*NAVIGATION.*not.*auth/is,
     );
   });
 
