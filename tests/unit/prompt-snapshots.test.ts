@@ -88,9 +88,9 @@ describe("ENDPOINT_EXTRACTION_SYSTEM_PROMPT", () => {
     );
   });
 
-  it("explains strict auth-link classification rules", () => {
+  it("explains balanced auth-link classification rules for navigation", () => {
     expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT).toMatch(
-      /Navigation links.*Login.*NAVIGATION.*not.*auth/is,
+      /AUTH LINKS IN NAVIGATION.*balanced rules/is,
     );
   });
 

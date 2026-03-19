@@ -30,10 +30,11 @@ IMPORTANT — SEGMENT TYPE vs ENDPOINT TYPE:
 - The segment type is a HINT, not a constraint.
 - A navigation section that contains search inputs is a SEARCH endpoint, not navigation.
 - A form segment is an AUTH endpoint only if it has password/credential fields. A form without password fields is just "form".
-- AUTH LINKS IN NAVIGATION — strict rules:
-  - Navigation links that happen to include Login/SignUp are PART OF NAVIGATION, not separate auth endpoints. Do NOT emit a separate "auth" endpoint just because navigation contains auth-related links.
-  - Only classify as "auth" if the segment contains ACTUAL credential input fields (password, email+password combo) or if the segment has 1-3 links that are ALL auth-related (Login, Sign Up, Account).
-  - A header with "Products | Pricing | Login | Sign Up" is NAVIGATION, not auth+navigation.
+- AUTH LINKS IN NAVIGATION — balanced rules:
+  - If the segment has FEW links (1-3) and most are auth-related (Login, Sign Up, Account): Classify as "auth".
+  - If the segment has MANY links (5+): The primary endpoint is "navigation". Only emit an ADDITIONAL "auth" endpoint if there are prominent auth BUTTONS (not plain text links) — e.g., a "Sign In" button or "Get Started" CTA button that is visually distinct from regular nav links.
+  - Plain text Login/SignUp links mixed into a navigation list are PART OF navigation. Only standalone buttons or highlighted CTAs warrant a separate auth endpoint.
+  - If the segment contains actual credential input fields (password, email): Always classify as "auth".
 
 ENDPOINT TYPES:
 - auth: Login, register, password reset forms
@@ -255,8 +256,8 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
           type: "navigation",
           label: "Main Navigation",
           description:
-            "Primary site navigation with links to Products, Solutions, Pricing, Resources, Blog, Login, and Get Started. Auth links are part of the navigation, not separate endpoints.",
-          confidence: 0.88,
+            "Primary site navigation with links to Products, Solutions, Pricing, Resources, and Blog.",
+          confidence: 0.85,
           anchors: [
             {
               selector: "nav",
@@ -266,14 +267,30 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
           ],
           affordances: [
             { type: "navigate", expectedOutcome: "Navigate to site section", reversible: true },
-            { type: "navigate", expectedOutcome: "Navigate to login/signup page", reversible: true },
           ],
           reasoning:
-            "NAV element with multiple links including Login and Get Started. Auth links without credential input fields are part of navigation — no separate auth endpoint.",
+            "NAV element with 5+ links covering main site sections — primary navigation endpoint.",
+        },
+        {
+          type: "auth",
+          label: "Login / Get Started",
+          description:
+            "Auth entry points with a Login link and prominent 'Get Started' CTA button in the header.",
+          confidence: 0.65,
+          anchors: [
+            { selector: "div.nav-actions", textContent: "Login" },
+            { selector: "button", textContent: "Get Started" },
+          ],
+          affordances: [
+            { type: "navigate", expectedOutcome: "Navigate to login page", reversible: true },
+            { type: "click", expectedOutcome: "Start registration/onboarding", reversible: true },
+          ],
+          reasoning:
+            "Navigation has 5+ links, so primary endpoint is navigation. But 'Get Started' is a prominent BUTTON (not a plain link) — standalone auth CTA buttons warrant a separate auth endpoint.",
         },
       ],
       reasoning:
-        "Header nav with section links + auth links but no credential fields. Single navigation endpoint — auth links are navigation targets, not auth endpoints.",
+        "Header nav with section links → navigation. 'Get Started' BUTTON is a prominent CTA → separate auth endpoint. (A plain Login link alone would stay as part of navigation.)",
     },
   },
 ];
