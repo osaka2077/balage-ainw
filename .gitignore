@@ -20,6 +20,7 @@ desktop.ini
 
 # Orchestrator state (auto-managed)
 .ai/orchestrator_state.json
+.ai/orchestrator_state.lock
 .ai/round_reports/
 
 # Python
@@ -42,6 +43,18 @@ tests/real-world/fixtures/*.html
 
 # LLM response cache (local, not versioned)
 tests/real-world/.llm-cache/
+
+# SDK build artifacts (generated, not source)
+packages/sdk/src/*.js
+packages/sdk/src/*.js.map
+packages/sdk/src/*.d.ts
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Platform/QA reports (generated)
+.platform/
+.qa/
 
 # Temp
 tmp/
