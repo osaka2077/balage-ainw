@@ -199,7 +199,7 @@ describe("LLM Timeout Handling", () => {
     const result = await generateEndpoints(
       [makeTestSegment(), makeTestSegment()],
       TEST_CONTEXT,
-      { llmClient: client, maxRetries: 1 },
+      { llmClient: client, maxRetries: 1, maxConcurrency: 1 },
     );
 
     // First segment fails (2 calls), second succeeds (1 call)
@@ -269,7 +269,7 @@ describe("Confidence Filter", () => {
     const candidates = [
       makeValidCandidate("auth", 0.9), // Survives
       makeValidCandidate("form", 0.3), // Filtered
-      makeValidCandidate("search", 0.60), // Survives (exactly at threshold)
+      makeValidCandidate("commerce", 0.60), // Survives (exactly at threshold)
       makeValidCandidate("content", 0.59), // Filtered (just below)
     ];
     const client = createConfidenceTestClient(candidates);
@@ -283,7 +283,7 @@ describe("Confidence Filter", () => {
     expect(result).toHaveLength(2);
     const types = result.map((c) => c.type);
     expect(types).toContain("auth");
-    expect(types).toContain("search");
+    expect(types).toContain("commerce");
     expect(types).not.toContain("form");
     expect(types).not.toContain("content");
   });
@@ -308,7 +308,7 @@ describe("Confidence Filter", () => {
   it("keeps all candidates when all above threshold", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.95),
-      makeValidCandidate("search", 0.8),
+      makeValidCandidate("commerce", 0.8),
       makeValidCandidate("navigation", 0.7),
     ];
     const client = createConfidenceTestClient(candidates);
@@ -373,7 +373,7 @@ describe("Global Endpoint Cap", () => {
   it("returns all candidates when count <= 7", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9),
-      makeValidCandidate("search", 0.8),
+      makeValidCandidate("commerce", 0.8),
       makeValidCandidate("navigation", 0.7),
     ];
     const client = createConfidenceTestClient(candidates);

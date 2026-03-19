@@ -82,15 +82,15 @@ describe("ENDPOINT_EXTRACTION_SYSTEM_PROMPT", () => {
     );
   });
 
-  it("states that the CONTAINER determines the type", () => {
+  it("defines nuanced auth-link rules for navigation segments", () => {
     expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT).toContain(
-      "CONTAINER determines the type",
+      "AUTH LINKS IN NAVIGATION",
     );
   });
 
-  it("explains when navigation links should NOT be classified as auth", () => {
+  it("explains dual-endpoint pattern for navigation with many links", () => {
     expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT).toMatch(
-      /navigation.*login.*sign up.*navigation endpoint/is,
+      /MANY links.*5\+.*navigation.*auth/is,
     );
   });
 

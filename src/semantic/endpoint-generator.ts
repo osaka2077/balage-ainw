@@ -75,6 +75,7 @@ export interface EndpointGeneratorOptions {
   llmClient: LLMClient;
   pruneOptions?: PruneForLLMOptions;
   maxRetries?: number;
+  maxConcurrency?: number;
 }
 
 /**
@@ -90,7 +91,7 @@ export async function generateEndpoints(
     return [];
   }
 
-  const { llmClient, pruneOptions, maxRetries = 2 } = options;
+  const { llmClient, pruneOptions, maxRetries = 2, maxConcurrency = 3 } = options;
   const allCandidates: EndpointCandidate[] = [];
 
   // Security-Module initialisieren
@@ -108,106 +109,23 @@ export async function generateEndpoints(
   });
   logger.debug({ before: segments.length, after: filteredSegments.length }, "Segment pre-filter applied");
 
+  const executing = new Set<Promise<void>>();
+
   for (const segment of filteredSegments) {
-    try {
-      // 1. DOM Pruning
-      const pruned = pruneForLLM(segment, pruneOptions);
-
-      // 2. Security: Sanitize, Injection-Check, Credential-Redaction
-      const sanitizedText = sanitizer.sanitizeForLLM(pruned.textRepresentation);
-
-      const injectionResult = injectionDetector.detect(sanitizedText);
-      if (injectionResult.verdict === "blocked") {
-        logger.warn({ segmentId: segment.id, score: injectionResult.score }, "Segment blocked by injection detector — skipping");
-        continue;
-      }
-
-      const credScan = credentialGuard.scan(sanitizedText);
-      let cleanText = sanitizedText;
-      if (credScan.hasCredentials) {
-        // Credentials rueckwaerts redacten (Positionen stabil halten)
-        const sorted = [...credScan.findings].sort((a, b) => b.position - a.position);
-        for (const finding of sorted) {
-          cleanText = cleanText.slice(0, finding.position) + "[CREDENTIAL_REDACTED]" + cleanText.slice(finding.position + finding.length);
-        }
-        logger.warn({ segmentId: segment.id, count: credScan.findings.length }, "Credentials redacted before LLM call");
-      }
-
-      // Sanitized text zurueck in pruned-Objekt schreiben
-      const securePruned = { ...pruned, textRepresentation: cleanText };
-
-      // 3. Prompt aufbauen
-      const userPrompt = buildExtractionPrompt(securePruned, context);
-
-      // 3. LLM-Call mit Retry
-      const request: LLMRequest = {
-        systemPrompt: ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
-        userPrompt,
-        responseSchema: LLMEndpointResponseSchema,
-        temperature: 0,
-        maxTokens: 2048,
-      };
-
-      let response;
-      let lastError: Error | undefined;
-
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          response = await llmClient.complete(request);
-          break;
-        } catch (err) {
-          lastError = err instanceof Error ? err : new Error(String(err));
-          if (err instanceof LLMParseError && attempt < maxRetries) {
-            logger.warn(
-              { attempt, segmentId: segment.id },
-              "LLM parse error, retrying",
-            );
-            continue;
-          }
-          if (attempt === maxRetries) {
-            throw new LLMCallError(
-              `LLM call failed for segment ${segment.id} after ${maxRetries + 1} attempts: ${lastError.message}`,
-              lastError,
-            );
-          }
-        }
-      }
-
-      if (!response) {
-        throw new LLMCallError(
-          `No response received for segment ${segment.id}`,
-          lastError,
-        );
-      }
-
-      // 4. Response parsen
-      const parsedResponse = response.parsedContent as z.infer<
-        typeof LLMEndpointResponseSchema
-      >;
-
-      // 5. Kandidaten sammeln
-      for (const candidate of parsedResponse.endpoints) {
-        allCandidates.push(candidate);
-      }
-
-      logger.debug(
-        {
-          segmentId: segment.id,
-          candidateCount: parsedResponse.endpoints.length,
-        },
-        "Endpoints extracted from segment",
+    const task = (async () => {
+      const candidates = await processSegment(
+        segment, llmClient, maxRetries, pruneOptions,
+        context, sanitizer, injectionDetector, credentialGuard,
       );
-    } catch (err) {
-      // Segment-Fehler loggen aber Pipeline nicht abbrechen
-      logger.error(
-        {
-          segmentId: segment.id,
-          error: err instanceof Error ? err.message : String(err),
-        },
-        "Failed to extract endpoints from segment",
-      );
+      allCandidates.push(...candidates);
+    })();
+    executing.add(task);
+    task.finally(() => executing.delete(task));
+    if (executing.size >= maxConcurrency) {
+      await Promise.race(executing);
     }
   }
+  await Promise.allSettled([...executing]);
 
   // 6. Confidence-Filter: niedrige Confidence raus
   const MIN_CANDIDATE_CONFIDENCE = 0.60;
@@ -399,6 +317,112 @@ export function candidateToEndpoint(
   }
 
   return result.data;
+}
+
+// ============================================================================
+// Segment Processing (extracted for parallelization)
+// ============================================================================
+
+async function processSegment(
+  segment: UISegment,
+  llmClient: LLMClient,
+  maxRetries: number,
+  pruneOptions: PruneForLLMOptions | undefined,
+  context: GenerationContext,
+  sanitizer: InputSanitizer,
+  injectionDetector: InjectionDetector,
+  credentialGuard: CredentialGuard,
+): Promise<EndpointCandidate[]> {
+  try {
+    // 1. DOM Pruning
+    const pruned = pruneForLLM(segment, pruneOptions);
+
+    // 2. Security: Sanitize, Injection-Check, Credential-Redaction
+    const sanitizedText = sanitizer.sanitizeForLLM(pruned.textRepresentation);
+
+    const injectionResult = injectionDetector.detect(sanitizedText);
+    if (injectionResult.verdict === "blocked") {
+      logger.warn({ segmentId: segment.id, score: injectionResult.score }, "Segment blocked by injection detector — skipping");
+      return [];
+    }
+
+    const credScan = credentialGuard.scan(sanitizedText);
+    let cleanText = sanitizedText;
+    if (credScan.hasCredentials) {
+      const sorted = [...credScan.findings].sort((a, b) => b.position - a.position);
+      for (const finding of sorted) {
+        cleanText = cleanText.slice(0, finding.position) + "[CREDENTIAL_REDACTED]" + cleanText.slice(finding.position + finding.length);
+      }
+      logger.warn({ segmentId: segment.id, count: credScan.findings.length }, "Credentials redacted before LLM call");
+    }
+
+    const securePruned = { ...pruned, textRepresentation: cleanText };
+
+    // 3. Prompt aufbauen
+    const userPrompt = buildExtractionPrompt(securePruned, context);
+
+    // 4. LLM-Call mit Retry
+    const request: LLMRequest = {
+      systemPrompt: ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
+      userPrompt,
+      responseSchema: LLMEndpointResponseSchema,
+      temperature: 0,
+      maxTokens: 2048,
+    };
+
+    let response;
+    let lastError: Error | undefined;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        response = await llmClient.complete(request);
+        break;
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        if (err instanceof LLMParseError && attempt < maxRetries) {
+          logger.warn({ attempt, segmentId: segment.id }, "LLM parse error, retrying");
+          continue;
+        }
+        if (attempt === maxRetries) {
+          throw new LLMCallError(
+            `LLM call failed for segment ${segment.id} after ${maxRetries + 1} attempts: ${lastError.message}`,
+            lastError,
+          );
+        }
+      }
+    }
+
+    if (!response) {
+      throw new LLMCallError(`No response received for segment ${segment.id}`, lastError);
+    }
+
+    // 5. Response parsen
+    const parsedResponse = response.parsedContent as z.infer<typeof LLMEndpointResponseSchema>;
+
+    // 6. Hallucination Prevention — Post-LLM Validation
+    const segText = cleanText.toLowerCase();
+    for (const candidate of parsedResponse.endpoints) {
+      if (candidate.type === "search" && !/type=search|role=search|role="search"/.test(segText)) {
+        candidate.confidence *= 0.5;
+      }
+      if (candidate.type === "auth" && segment.type === "navigation" && !/type=password|type="password"/.test(segText)) {
+        candidate.confidence = Math.min(candidate.confidence, 0.75);
+      }
+    }
+
+    logger.debug(
+      { segmentId: segment.id, candidateCount: parsedResponse.endpoints.length },
+      "Endpoints extracted from segment",
+    );
+
+    return parsedResponse.endpoints;
+  } catch (err) {
+    logger.error(
+      { segmentId: segment.id, error: err instanceof Error ? err.message : String(err) },
+      "Failed to extract endpoints from segment",
+    );
+    return [];
+  }
 }
 
 // ============================================================================

@@ -17,7 +17,8 @@ RULES:
 - Each endpoint must have a type, label, description, confidence score, DOM anchors, and affordances.
 - Confidence ranges from 0.0 to 1.0 — use 0.9+ only when extremely certain.
 - Return valid JSON matching the expected schema.
-- Return at most 3 endpoints per segment. Only the most important, distinct ones.
+- Return at most 5 endpoints per segment. Only the most important, distinct ones.
+- For large navigation or content segments, it is acceptable to identify multiple distinct interactive areas.
 - Only return endpoints that represent DISTINCT, user-facing interaction points. Do NOT return decorative elements, repeated navigation links, generic content sections, or footer links.
 - Focus on PRIMARY functionality: main search bar, login/signup forms, checkout/cart, and the single most prominent navigation. Skip secondary nav, social links, language selectors, and cookie banners.
 - If unsure whether something is a meaningful endpoint, include it with a LOW confidence score (0.3-0.5) rather than omitting it entirely. The confidence filter will handle borderline cases.
@@ -26,10 +27,13 @@ RULES:
 
 IMPORTANT — SEGMENT TYPE vs ENDPOINT TYPE:
 - Each segment has a pre-classified type (e.g., "navigation", "form"). This classification is based on DOM structure, NOT content.
-- The segment type is a HINT, not a constraint. A navigation segment may contain auth links — classify them as "navigation", NOT "auth". The CONTAINER determines the type, not individual link labels.
-- A navigation section that contains "Login", "Sign Up", or "Create Account" links is still a NAVIGATION endpoint (links that navigate to auth pages). Only classify as "auth" if the segment contains actual input fields for credentials.
+- The segment type is a HINT, not a constraint.
 - A navigation section that contains search inputs is a SEARCH endpoint, not navigation.
 - A form segment is an AUTH endpoint only if it has password/credential fields. A form without password fields is just "form".
+- AUTH LINKS IN NAVIGATION — nuanced rules:
+  - If the segment has MANY links (5+): The primary endpoint is "navigation". But ADDITIONALLY emit an "auth" endpoint if Login/Signup links are prominently present (separate buttons, highlighted links, or call-to-action styling).
+  - If the segment has FEW links (1-3) and most are auth-related (Login, Sign Up, Account): Classify the endpoint as "auth".
+  - If the segment contains actual input fields for credentials (password fields): Always classify as "auth" regardless of link count.
 
 ENDPOINT TYPES:
 - auth: Login, register, password reset forms
@@ -212,7 +216,7 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
           type: "navigation",
           label: "User Navigation",
           description:
-            "Navigation section with links to auth pages, cart, and help. These are navigation LINKS, not interactive forms — the container type (navigation) takes precedence over individual link labels.",
+            "Small navigation section with 4 links including auth, cart, and help. With only 4 links and mixed purposes, this is primarily a navigation endpoint.",
           confidence: 0.8,
           anchors: [
             {
@@ -225,11 +229,67 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
             { type: "navigate", expectedOutcome: "Navigate to auth/cart/help pages", reversible: true },
           ],
           reasoning:
-            "Although links say 'Login' and 'Sign Up', this is a NAV container with links — NOT a form with credential inputs. Container type (navigation) determines endpoint type, not link labels. Only classify as 'auth' if there are actual input fields for credentials.",
+            "4 links with mixed purposes (auth + commerce + support). Not enough links for dual-endpoint pattern (5+), and auth links are not the majority (2 of 4). Stays as navigation.",
         },
       ],
       reasoning:
-        "Navigation container with auth-related links is still a navigation endpoint. Container type > link label content.",
+        "Small navigation with mixed-purpose links. Auth links are present but not dominant — single navigation endpoint.",
+    },
+  },
+  {
+    input: `SEGMENT [navigation] confidence=0.9
+  HEADER
+    NAV[aria-label="Main"]
+      UL
+        LI > LINK: "Products"
+        LI > LINK: "Solutions"
+        LI > LINK: "Pricing"
+        LI > LINK: "Resources"
+        LI > LINK: "Blog"
+      DIV[class="nav-actions"]
+        LINK: "Login"
+        BUTTON: "Get Started"`,
+    output: {
+      endpoints: [
+        {
+          type: "navigation",
+          label: "Main Navigation",
+          description:
+            "Primary site navigation with links to Products, Solutions, Pricing, Resources, and Blog.",
+          confidence: 0.85,
+          anchors: [
+            {
+              selector: "nav",
+              ariaRole: "navigation",
+              ariaLabel: "Main",
+            },
+          ],
+          affordances: [
+            { type: "navigate", expectedOutcome: "Navigate to site section", reversible: true },
+          ],
+          reasoning:
+            "NAV element with 5+ links covering main site sections — primary navigation endpoint.",
+        },
+        {
+          type: "auth",
+          label: "Login / Sign Up",
+          description:
+            "Auth entry points: Login link and Get Started call-to-action button prominently placed in header navigation.",
+          confidence: 0.7,
+          anchors: [
+            { selector: "div.nav-actions", textContent: "Login" },
+            { selector: "button", textContent: "Get Started" },
+          ],
+          affordances: [
+            { type: "navigate", expectedOutcome: "Navigate to login page", reversible: true },
+            { type: "click", expectedOutcome: "Navigate to registration / onboarding", reversible: true },
+          ],
+          reasoning:
+            "Navigation has 5+ links, so primary endpoint is navigation. But Login + 'Get Started' button are prominent auth entry points that deserve a separate auth endpoint.",
+        },
+      ],
+      reasoning:
+        "Header nav with 5+ section links → navigation endpoint. Prominent Login + Get Started actions → additional auth endpoint (dual-endpoint pattern for 5+ links).",
     },
   },
 ];
