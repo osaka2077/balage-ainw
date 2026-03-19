@@ -315,7 +315,7 @@ function diag(msg: string): void {
   console.log(`[DIAG] ${msg}`);
 }
 
-/** Slug fuer Snapshot-Dateinamen: "outlook.live.com/login" → "outlook-login" */
+/** Slug fuer Snapshot-Dateinamen: "gitlab.com/users/sign_in" → "gitlab-users-sign_in" */
 function urlToSlug(url: string): string {
   return url
     .replace(/^https?:\/\//, "")
