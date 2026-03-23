@@ -20,29 +20,28 @@
         ]
       },
       "detected": {
-        "total": 8,
+        "total": 7,
         "types": [
           "auth",
-          "consent",
-          "navigation"
+          "consent"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.625,
-          "recall": 1,
-          "f1": 0.769,
+          "precision": 0.571,
+          "recall": 0.8,
+          "f1": 0.667,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.25,
+          "precision": 0.333,
           "recall": 1,
-          "f1": 0.4,
+          "f1": 0.5,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 62912,
+        "totalMs": 63183,
         "llmCalls": 10,
         "llmCostUsd": 0.006
       },
@@ -80,12 +79,28 @@
             "label": "Create Account",
             "phase": 2
           },
-          "matched": {
-            "type": "navigation",
-            "label": "Footer Navigation",
-            "confidence": 0.62
-          },
-          "typeMatch": true
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Social Sign In Options",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "consent",
+              "detectedLabel": "Manage Cookies",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=consent)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Sign in with a passkey",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            }
+          ]
         },
         {
           "groundTruth": {
@@ -132,26 +147,25 @@
         "total": 6,
         "types": [
           "auth",
-          "navigation",
           "search"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.667,
-          "recall": 0.8,
-          "f1": 0.727,
+          "precision": 0.5,
+          "recall": 0.6,
+          "f1": 0.545,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.333,
+          "precision": 0.4,
           "recall": 1,
-          "f1": 0.5,
+          "f1": 0.571,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 79952,
+        "totalMs": 81283,
         "llmCalls": 12,
         "llmCostUsd": 0.007
       },
@@ -202,12 +216,28 @@
             "label": "Register Tab",
             "phase": 2
           },
-          "matched": {
-            "type": "navigation",
-            "label": "Language Switcher",
-            "confidence": 0.74
-          },
-          "typeMatch": true
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Social Login Options",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Language Switcher",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Cookie List Search",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
         },
         {
           "groundTruth": {
@@ -219,15 +249,15 @@
           "typeMatch": false,
           "nearMisses": [
             {
-              "detectedType": "navigation",
-              "detectedLabel": "Language Switcher",
-              "confidence": 0.74,
-              "reason": "type-match but already used"
-            },
-            {
               "detectedType": "auth",
               "detectedLabel": "Social Login Options",
               "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Language Switcher",
+              "confidence": 0.8500000000000001,
               "reason": "type-mismatch (gt=navigation, det=auth)"
             },
             {
@@ -254,29 +284,30 @@
         ]
       },
       "detected": {
-        "total": 5,
+        "total": 6,
         "types": [
           "navigation",
           "auth",
+          "content",
           "search"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.8,
-          "recall": 0.8,
-          "f1": 0.8,
-          "typeAccuracy": 1
+          "precision": 0.833,
+          "recall": 1,
+          "f1": 0.909,
+          "typeAccuracy": 0.8
         },
         "phase1Only": {
-          "precision": 0.2,
+          "precision": 1,
           "recall": 1,
-          "f1": 0.333,
+          "f1": 1,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 41619,
+        "totalMs": 43424,
         "llmCalls": 4,
         "llmCostUsd": 0.004
       },
@@ -291,7 +322,7 @@
           "matched": {
             "type": "auth",
             "label": "Login Link",
-            "confidence": 0.6799999999999999
+            "confidence": 0.71
           },
           "typeMatch": true
         },
@@ -316,7 +347,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Hacker News Navigation",
+            "label": "Main Navigation",
             "confidence": 0.74
           },
           "typeMatch": true
@@ -329,7 +360,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Navigation",
+            "label": "Hacker News Navigation",
             "confidence": 0.74
           },
           "typeMatch": true
@@ -340,28 +371,12 @@
             "label": "More Link (Pagination)",
             "phase": 2
           },
-          "matched": null,
-          "typeMatch": false,
-          "nearMisses": [
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Hacker News Articles",
-              "confidence": 0.74,
-              "reason": "type-match but already used"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Hacker News Navigation",
-              "confidence": 0.74,
-              "reason": "type-match but already used"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Main Navigation",
-              "confidence": 0.74,
-              "reason": "type-match but already used"
-            }
-          ]
+          "matched": {
+            "type": "content",
+            "label": "Comments and User Interaction",
+            "confidence": 0.62
+          },
+          "typeMatch": false
         }
       ]
     },
@@ -379,27 +394,27 @@
         ]
       },
       "detected": {
-        "total": 5,
+        "total": 4,
         "types": [
           "auth"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.6,
+          "precision": 0.75,
           "recall": 0.6,
-          "f1": 0.6,
+          "f1": 0.667,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.4,
+          "precision": 0.5,
           "recall": 1,
-          "f1": 0.571,
+          "f1": 0.667,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 74366,
+        "totalMs": 69671,
         "llmCalls": 10,
         "llmCostUsd": 0.006
       },
@@ -442,21 +457,21 @@
           "nearMisses": [
             {
               "detectedType": "auth",
-              "detectedLabel": "LinkedIn Login",
-              "confidence": 0.9000000000000001,
-              "reason": "type-mismatch (gt=navigation, det=auth)"
-            },
-            {
-              "detectedType": "auth",
-              "detectedLabel": "Login with Apple Button",
-              "confidence": 0.8700000000000001,
-              "reason": "type-mismatch (gt=navigation, det=auth)"
-            },
-            {
-              "detectedType": "auth",
               "detectedLabel": "Cookie Consent",
               "confidence": 0.8500000000000001,
               "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login with Apple",
+              "confidence": 0.8400000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
             }
           ]
         },
@@ -468,8 +483,8 @@
           },
           "matched": {
             "type": "auth",
-            "label": "LinkedIn Login",
-            "confidence": 0.9000000000000001
+            "label": "Cookie Consent",
+            "confidence": 0.8500000000000001
           },
           "typeMatch": true
         },
@@ -484,19 +499,19 @@
           "nearMisses": [
             {
               "detectedType": "auth",
-              "detectedLabel": "Login with Apple Button",
-              "confidence": 0.8700000000000001,
-              "reason": "type-mismatch (gt=navigation, det=auth)"
-            },
-            {
-              "detectedType": "auth",
-              "detectedLabel": "Cookie Consent",
-              "confidence": 0.8500000000000001,
+              "detectedLabel": "Login with Apple",
+              "confidence": 0.8400000000000001,
               "reason": "type-mismatch (gt=navigation, det=auth)"
             },
             {
               "detectedType": "auth",
               "detectedLabel": "Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "LinkedIn Sign In Form",
               "confidence": 0.9299999999999999,
               "reason": "already matched to different GT"
             }
@@ -538,7 +553,7 @@
         }
       },
       "timing": {
-        "totalMs": 23392,
+        "totalMs": 25705,
         "llmCalls": 2,
         "llmCostUsd": 0.001
       },
@@ -675,7 +690,7 @@
         }
       },
       "timing": {
-        "totalMs": 19875,
+        "totalMs": 17168,
         "llmCalls": 2,
         "llmCostUsd": 0.001
       },
@@ -796,7 +811,7 @@
         ]
       },
       "detected": {
-        "total": 8,
+        "total": 7,
         "types": [
           "navigation",
           "checkout",
@@ -805,20 +820,20 @@
       },
       "metrics": {
         "all": {
-          "precision": 0.375,
+          "precision": 0.429,
           "recall": 0.6,
-          "f1": 0.462,
+          "f1": 0.5,
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.125,
+          "precision": 1,
           "recall": 1,
-          "f1": 0.222,
+          "f1": 1,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 65994,
+        "totalMs": 72157,
         "llmCalls": 7,
         "llmCostUsd": 0.005
       },
@@ -916,7 +931,7 @@
             {
               "detectedType": "checkout",
               "detectedLabel": "Login / Create Account",
-              "confidence": 0.8200000000000001,
+              "confidence": 0.76,
               "reason": "type-mismatch (gt=auth, det=checkout)"
             }
           ]
@@ -937,7 +952,7 @@
         ]
       },
       "detected": {
-        "total": 4,
+        "total": 3,
         "types": [
           "auth",
           "form"
@@ -946,19 +961,19 @@
       "metrics": {
         "all": {
           "precision": 1,
-          "recall": 0.667,
-          "f1": 0.8,
-          "typeAccuracy": 0.75
+          "recall": 0.5,
+          "f1": 0.667,
+          "typeAccuracy": 0.667
         },
         "phase1Only": {
           "precision": 1,
-          "recall": 1,
-          "f1": 1,
-          "typeAccuracy": 0.75
+          "recall": 0.75,
+          "f1": 0.857,
+          "typeAccuracy": 0.667
         }
       },
       "timing": {
-        "totalMs": 38919,
+        "totalMs": 40219,
         "llmCalls": 5,
         "llmCostUsd": 0.003
       },
@@ -997,11 +1012,11 @@
             "phase": 1
           },
           "matched": {
-            "type": "auth",
-            "label": "Create Account Link",
-            "confidence": 0.62
+            "type": "form",
+            "label": "Language Selection",
+            "confidence": 0.74
           },
-          "typeMatch": true
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -1009,12 +1024,28 @@
             "label": "Forgot Password",
             "phase": 1
           },
-          "matched": {
-            "type": "form",
-            "label": "Language Selection",
-            "confidence": 0.74
-          },
-          "typeMatch": false
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Sign In Form",
+              "confidence": 0.77,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "form",
+              "detectedLabel": "Language Selection",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Input for Sign In",
+              "confidence": 0.71,
+              "reason": "type-match but already used"
+            }
+          ]
         },
         {
           "groundTruth": {
@@ -1093,28 +1124,29 @@
       "detected": {
         "total": 6,
         "types": [
-          "search",
+          "form",
           "navigation",
+          "search",
           "auth"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.333,
-          "recall": 0.333,
-          "f1": 0.333,
-          "typeAccuracy": 1
+          "precision": 0.5,
+          "recall": 0.5,
+          "f1": 0.5,
+          "typeAccuracy": 0.667
         },
         "phase1Only": {
-          "precision": 0.167,
-          "recall": 0.333,
-          "f1": 0.222,
-          "typeAccuracy": 1
+          "precision": 0.5,
+          "recall": 0.667,
+          "f1": 0.571,
+          "typeAccuracy": 0.5
         }
       },
       "timing": {
-        "totalMs": 57755,
-        "llmCalls": 7,
+        "totalMs": 58650,
+        "llmCalls": 8,
         "llmCostUsd": 0.005
       },
       "errors": [],
@@ -1127,8 +1159,8 @@
           },
           "matched": {
             "type": "search",
-            "label": "Language Selector",
-            "confidence": 0.9099999999999999
+            "label": "Theme Details Links",
+            "confidence": 0.8800000000000001
           },
           "typeMatch": true
         },
@@ -1138,28 +1170,12 @@
             "label": "Add to Cart Buttons",
             "phase": 1
           },
-          "matched": null,
-          "typeMatch": false,
-          "nearMisses": [
-            {
-              "detectedType": "search",
-              "detectedLabel": "Theme Details Links",
-              "confidence": 0.8800000000000001,
-              "reason": "type-mismatch (gt=checkout, det=search)"
-            },
-            {
-              "detectedType": "search",
-              "detectedLabel": "Theme Search",
-              "confidence": 0.8700000000000001,
-              "reason": "type-mismatch (gt=checkout, det=search)"
-            },
-            {
-              "detectedType": "search",
-              "detectedLabel": "Theme Navigation",
-              "confidence": 0.8500000000000001,
-              "reason": "type-mismatch (gt=checkout, det=search)"
-            }
-          ]
+          "matched": {
+            "type": "form",
+            "label": "Language Selector",
+            "confidence": 0.77
+          },
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -1184,10 +1200,10 @@
           "typeMatch": false,
           "nearMisses": [
             {
-              "detectedType": "search",
-              "detectedLabel": "Theme Details Links",
-              "confidence": 0.8800000000000001,
-              "reason": "type-mismatch (gt=checkout, det=search)"
+              "detectedType": "form",
+              "detectedLabel": "Language Selector",
+              "confidence": 0.77,
+              "reason": "type-match but already used"
             },
             {
               "detectedType": "search",
@@ -1220,14 +1236,14 @@
             },
             {
               "detectedType": "search",
-              "detectedLabel": "Theme Details Links",
-              "confidence": 0.8800000000000001,
+              "detectedLabel": "Theme Search",
+              "confidence": 0.8700000000000001,
               "reason": "type-mismatch (gt=navigation, det=search)"
             },
             {
               "detectedType": "search",
-              "detectedLabel": "Theme Search",
-              "confidence": 0.8700000000000001,
+              "detectedLabel": "Theme Navigation",
+              "confidence": 0.8500000000000001,
               "reason": "type-mismatch (gt=navigation, det=search)"
             }
           ]
@@ -1249,14 +1265,14 @@
             },
             {
               "detectedType": "search",
-              "detectedLabel": "Theme Details Links",
-              "confidence": 0.8800000000000001,
+              "detectedLabel": "Theme Search",
+              "confidence": 0.8700000000000001,
               "reason": "type-mismatch (gt=navigation, det=search)"
             },
             {
               "detectedType": "search",
-              "detectedLabel": "Theme Search",
-              "confidence": 0.8700000000000001,
+              "detectedLabel": "Theme Navigation",
+              "confidence": 0.8500000000000001,
               "reason": "type-mismatch (gt=navigation, det=search)"
             }
           ]
@@ -1280,8 +1296,8 @@
       "detected": {
         "total": 8,
         "types": [
-          "search",
           "auth",
+          "search",
           "navigation"
         ]
       },
@@ -1293,14 +1309,14 @@
           "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.25,
+          "precision": 0.286,
           "recall": 1,
-          "f1": 0.4,
+          "f1": 0.444,
           "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 67581,
+        "totalMs": 68404,
         "llmCalls": 8,
         "llmCostUsd": 0.005
       },
@@ -1315,7 +1331,7 @@
           "matched": {
             "type": "search",
             "label": "Tags Search",
-            "confidence": 0.8
+            "confidence": 0.77
           },
           "typeMatch": true
         },
@@ -1376,7 +1392,7 @@
             {
               "detectedType": "auth",
               "detectedLabel": "Topic Selection",
-              "confidence": 0.8500000000000001,
+              "confidence": 0.8800000000000001,
               "reason": "type-mismatch (gt=navigation, det=auth)"
             },
             {
@@ -1405,7 +1421,7 @@
             {
               "detectedType": "auth",
               "detectedLabel": "Topic Selection",
-              "confidence": 0.8500000000000001,
+              "confidence": 0.8800000000000001,
               "reason": "type-mismatch (gt=navigation, det=auth)"
             },
             {
@@ -1433,7 +1449,7 @@
         ]
       },
       "detected": {
-        "total": 8,
+        "total": 9,
         "types": [
           "navigation",
           "support",
@@ -1443,20 +1459,20 @@
       },
       "metrics": {
         "all": {
-          "precision": 0.5,
+          "precision": 0.444,
           "recall": 0.667,
-          "f1": 0.571,
+          "f1": 0.533,
           "typeAccuracy": 0.75
         },
         "phase1Only": {
-          "precision": 0.125,
+          "precision": 1,
           "recall": 1,
-          "f1": 0.222,
+          "f1": 1,
           "typeAccuracy": 0
         }
       },
       "timing": {
-        "totalMs": 86697,
+        "totalMs": 79407,
         "llmCalls": 8,
         "llmCostUsd": 0.006
       },
@@ -1590,19 +1606,20 @@
         ]
       },
       "detected": {
-        "total": 8,
+        "total": 9,
         "types": [
           "search",
           "auth",
           "commerce",
-          "navigation"
+          "navigation",
+          "checkout"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.5,
+          "precision": 0.444,
           "recall": 0.571,
-          "f1": 0.533,
+          "f1": 0.5,
           "typeAccuracy": 1
         },
         "phase1Only": {
@@ -1613,9 +1630,9 @@
         }
       },
       "timing": {
-        "totalMs": 82279,
+        "totalMs": 159697,
         "llmCalls": 8,
-        "llmCostUsd": 0.008
+        "llmCostUsd": 0.019
       },
       "errors": [],
       "matchDetails": [
@@ -1687,14 +1704,14 @@
               "reason": "type-match but already used"
             },
             {
-              "detectedType": "commerce",
-              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
-              "confidence": 0.74,
-              "reason": "type-mismatch (gt=navigation, det=commerce)"
+              "detectedType": "checkout",
+              "detectedLabel": "Voice Search Button",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
             },
             {
               "detectedType": "commerce",
-              "detectedLabel": "Add to Cart - 12\" Easter Plastic Willow Basket",
+              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
               "confidence": 0.74,
               "reason": "type-mismatch (gt=navigation, det=commerce)"
             }
@@ -1716,14 +1733,14 @@
               "reason": "type-match but already used"
             },
             {
-              "detectedType": "commerce",
-              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
-              "confidence": 0.74,
-              "reason": "type-mismatch (gt=navigation, det=commerce)"
+              "detectedType": "checkout",
+              "detectedLabel": "Voice Search Button",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
             },
             {
               "detectedType": "commerce",
-              "detectedLabel": "Add to Cart - 12\" Easter Plastic Willow Basket",
+              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
               "confidence": 0.74,
               "reason": "type-mismatch (gt=navigation, det=commerce)"
             }
@@ -1745,14 +1762,14 @@
               "reason": "type-match but already used"
             },
             {
-              "detectedType": "commerce",
-              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
-              "confidence": 0.74,
-              "reason": "type-mismatch (gt=navigation, det=commerce)"
+              "detectedType": "checkout",
+              "detectedLabel": "Voice Search Button",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
             },
             {
               "detectedType": "commerce",
-              "detectedLabel": "Add to Cart - 12\" Easter Plastic Willow Basket",
+              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
               "confidence": 0.74,
               "reason": "type-mismatch (gt=navigation, det=commerce)"
             }
@@ -1776,31 +1793,30 @@
         ]
       },
       "detected": {
-        "total": 6,
+        "total": 7,
         "types": [
           "navigation",
           "consent",
           "support",
-          "auth",
-          "form"
+          "auth"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.833,
-          "recall": 0.833,
-          "f1": 0.833,
-          "typeAccuracy": 0.6
+          "precision": 0.571,
+          "recall": 0.667,
+          "f1": 0.615,
+          "typeAccuracy": 0.75
         },
         "phase1Only": {
-          "precision": 0.5,
-          "recall": 1,
-          "f1": 0.667,
-          "typeAccuracy": 0.333
+          "precision": 1,
+          "recall": 0.667,
+          "f1": 0.8,
+          "typeAccuracy": 0.5
         }
       },
       "timing": {
-        "totalMs": 60433,
+        "totalMs": 70624,
         "llmCalls": 8,
         "llmCostUsd": 0.005
       },
@@ -1825,12 +1841,28 @@
             "label": "Sign Up / Get Started Free",
             "phase": 1
           },
-          "matched": {
-            "type": "form",
-            "label": "Contact and Automations Information",
-            "confidence": 0.5
-          },
-          "typeMatch": false
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login / Sign Up",
+              "confidence": 0.5569999999999999,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Platform Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            }
+          ]
         },
         {
           "groundTruth": {
@@ -1853,8 +1885,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Navigation",
-            "confidence": 0.9000000000000001
+            "label": "Platform Navigation",
+            "confidence": 0.9299999999999999
           },
           "typeMatch": true
         },
@@ -1866,8 +1898,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Footer Navigation",
-            "confidence": 0.8700000000000001
+            "label": "Main Navigation",
+            "confidence": 0.9000000000000001
           },
           "typeMatch": true
         },
@@ -1887,15 +1919,15 @@
               "reason": "type-match but already used"
             },
             {
-              "detectedType": "form",
-              "detectedLabel": "Contact and Automations Information",
-              "confidence": 0.5,
-              "reason": "type-match but already used"
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=consent, det=navigation)"
             },
             {
               "detectedType": "navigation",
-              "detectedLabel": "Main Navigation",
-              "confidence": 0.9000000000000001,
+              "detectedLabel": "Platform Navigation",
+              "confidence": 0.9299999999999999,
               "reason": "already matched to different GT"
             }
           ]
@@ -1940,7 +1972,7 @@
         }
       },
       "timing": {
-        "totalMs": 68029,
+        "totalMs": 88433,
         "llmCalls": 8,
         "llmCostUsd": 0.006
       },
@@ -1968,7 +2000,7 @@
           "matched": {
             "type": "auth",
             "label": "Login and Free Trial",
-            "confidence": 0.5569999999999999
+            "confidence": 0.6080000000000001
           },
           "typeMatch": true
         },
@@ -2057,29 +2089,28 @@
         ]
       },
       "detected": {
-        "total": 7,
+        "total": 6,
         "types": [
           "search",
-          "navigation",
-          "content"
+          "navigation"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.857,
-          "recall": 0.857,
-          "f1": 0.857,
-          "typeAccuracy": 0.333
+          "precision": 0.667,
+          "recall": 0.571,
+          "f1": 0.615,
+          "typeAccuracy": 0.5
         },
         "phase1Only": {
-          "precision": 0.143,
+          "precision": 0.25,
           "recall": 0.5,
-          "f1": 0.222,
+          "f1": 0.333,
           "typeAccuracy": 0
         }
       },
       "timing": {
-        "totalMs": 60292,
+        "totalMs": 66147,
         "llmCalls": 7,
         "llmCostUsd": 0.005
       },
@@ -2128,7 +2159,7 @@
             },
             {
               "detectedType": "search",
-              "detectedLabel": "Search Form",
+              "detectedLabel": "Language and Currency Selection",
               "confidence": 0.8200000000000001,
               "reason": "type-mismatch (gt=auth, det=search)"
             },
@@ -2148,7 +2179,7 @@
           },
           "matched": {
             "type": "search",
-            "label": "Search Form",
+            "label": "Language and Currency Selection",
             "confidence": 0.8200000000000001
           },
           "typeMatch": false
@@ -2172,12 +2203,28 @@
             "label": "Become a Host",
             "phase": 2
           },
-          "matched": {
-            "type": "content",
-            "label": "Language Selection",
-            "confidence": 0.62
-          },
-          "typeMatch": false
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Profile Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Become a Host",
+              "confidence": 0.7989999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
         },
         {
           "groundTruth": {
@@ -2185,12 +2232,28 @@
             "label": "Footer Navigation",
             "phase": 2
           },
-          "matched": {
-            "type": "content",
-            "label": "Currency Selection",
-            "confidence": 0.62
-          },
-          "typeMatch": false
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Profile Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Become a Host",
+              "confidence": 0.7989999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
         }
       ]
     },
@@ -2213,27 +2276,30 @@
         "types": [
           "search",
           "navigation",
-          "commerce"
+          "commerce",
+          "checkout",
+          "auth",
+          "support"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.4,
-          "recall": 0.667,
-          "f1": 0.5,
-          "typeAccuracy": 0.75
+          "precision": 0.5,
+          "recall": 0.833,
+          "f1": 0.625,
+          "typeAccuracy": 0.8
         },
         "phase1Only": {
-          "precision": 0.1,
-          "recall": 0.5,
-          "f1": 0.167,
-          "typeAccuracy": 0
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "typeAccuracy": 0.5
         }
       },
       "timing": {
-        "totalMs": 85369,
+        "totalMs": 106704,
         "llmCalls": 8,
-        "llmCostUsd": 0.008
+        "llmCostUsd": 0.026
       },
       "errors": [],
       "matchDetails": [
@@ -2269,28 +2335,12 @@
             "label": "Sign In / Register",
             "phase": 1
           },
-          "matched": null,
-          "typeMatch": false,
-          "nearMisses": [
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Quick Links Navigation",
-              "confidence": 0.9299999999999999,
-              "reason": "type-mismatch (gt=auth, det=navigation)"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "City Navigation Tabs",
-              "confidence": 0.9000000000000001,
-              "reason": "type-mismatch (gt=auth, det=navigation)"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "City Links",
-              "confidence": 0.8700000000000001,
-              "reason": "type-mismatch (gt=auth, det=navigation)"
-            }
-          ]
+          "matched": {
+            "type": "auth",
+            "label": "Sign In / Register",
+            "confidence": 0.71
+          },
+          "typeMatch": true
         },
         {
           "groundTruth": {
@@ -2369,26 +2419,25 @@
         "types": [
           "checkout",
           "navigation",
-          "content",
-          "search"
+          "content"
         ]
       },
       "metrics": {
         "all": {
-          "precision": 0.6,
-          "recall": 0.75,
-          "f1": 0.667,
-          "typeAccuracy": 0.833
+          "precision": 0.5,
+          "recall": 0.625,
+          "f1": 0.556,
+          "typeAccuracy": 1
         },
         "phase1Only": {
-          "precision": 0.2,
-          "recall": 0.667,
-          "f1": 0.308,
-          "typeAccuracy": 0.5
+          "precision": 0.25,
+          "recall": 0.333,
+          "f1": 0.286,
+          "typeAccuracy": 1
         }
       },
       "timing": {
-        "totalMs": 86154,
+        "totalMs": 96951,
         "llmCalls": 8,
         "llmCostUsd": 0.007
       },
@@ -2400,12 +2449,28 @@
             "label": "Search Bar",
             "phase": 1
           },
-          "matched": {
-            "type": "search",
-            "label": "eBay Search",
-            "confidence": 0.599
-          },
-          "typeMatch": false
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Top Kategorien Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Popular Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            }
+          ]
         },
         {
           "groundTruth": {
@@ -2424,13 +2489,13 @@
             },
             {
               "detectedType": "navigation",
-              "detectedLabel": "Popular Navigation",
+              "detectedLabel": "Top Kategorien Navigation",
               "confidence": 0.9000000000000001,
               "reason": "type-mismatch (gt=auth, det=navigation)"
             },
             {
               "detectedType": "navigation",
-              "detectedLabel": "Top Categories Navigation",
+              "detectedLabel": "Popular Navigation",
               "confidence": 0.9000000000000001,
               "reason": "type-mismatch (gt=auth, det=navigation)"
             }
@@ -2470,7 +2535,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Popular Navigation",
+            "label": "Top Kategorien Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -2483,7 +2548,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Top Categories Navigation",
+            "label": "Popular Navigation",
             "confidence": 0.9000000000000001
           },
           "typeMatch": true
@@ -2498,14 +2563,8 @@
           "typeMatch": false,
           "nearMisses": [
             {
-              "detectedType": "search",
-              "detectedLabel": "eBay Search",
-              "confidence": 0.599,
-              "reason": "type-match but already used"
-            },
-            {
               "detectedType": "navigation",
-              "detectedLabel": "Beliebt Navigation",
+              "detectedLabel": "Top Categories Navigation",
               "confidence": 0.8700000000000001,
               "reason": "type-mismatch (gt=form, det=navigation)"
             },
@@ -2514,6 +2573,12 @@
               "detectedLabel": "Login / Sign Up",
               "confidence": 0.8500000000000001,
               "reason": "type-mismatch (gt=form, det=checkout)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Beliebte Themen Navigation",
+              "confidence": 0.8400000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
             }
           ]
         },
@@ -2525,7 +2590,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Beliebt Navigation",
+            "label": "Top Categories Navigation",
             "confidence": 0.8700000000000001
           },
           "typeMatch": true
@@ -2563,14 +2628,14 @@
           "typeAccuracy": 0.5
         },
         "phase1Only": {
-          "precision": 0.1,
+          "precision": 0.333,
           "recall": 0.333,
-          "f1": 0.154,
+          "f1": 0.333,
           "typeAccuracy": 0
         }
       },
       "timing": {
-        "totalMs": 78883,
+        "totalMs": 92669,
         "llmCalls": 8,
         "llmCostUsd": 0.006
       },
@@ -2600,12 +2665,6 @@
           "nearMisses": [
             {
               "detectedType": "navigation",
-              "detectedLabel": "Main Navigation",
-              "confidence": 0.9299999999999999,
-              "reason": "type-mismatch (gt=auth, det=navigation)"
-            },
-            {
-              "detectedType": "navigation",
               "detectedLabel": "Shop Selection Navigation",
               "confidence": 0.9299999999999999,
               "reason": "type-mismatch (gt=auth, det=navigation)"
@@ -2614,6 +2673,12 @@
               "detectedType": "navigation",
               "detectedLabel": "Main Menu",
               "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
               "reason": "type-mismatch (gt=auth, det=navigation)"
             }
           ]
@@ -2629,12 +2694,6 @@
           "nearMisses": [
             {
               "detectedType": "navigation",
-              "detectedLabel": "Main Navigation",
-              "confidence": 0.9299999999999999,
-              "reason": "type-mismatch (gt=checkout, det=navigation)"
-            },
-            {
-              "detectedType": "navigation",
               "detectedLabel": "Shop Selection Navigation",
               "confidence": 0.9299999999999999,
               "reason": "type-mismatch (gt=checkout, det=navigation)"
@@ -2643,6 +2702,12 @@
               "detectedType": "navigation",
               "detectedLabel": "Main Menu",
               "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=checkout, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
               "reason": "type-mismatch (gt=checkout, det=navigation)"
             }
           ]
@@ -2655,7 +2720,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Navigation",
+            "label": "Shop Selection Navigation",
             "confidence": 0.9299999999999999
           },
           "typeMatch": true
@@ -2668,7 +2733,7 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Shop Selection Navigation",
+            "label": "Main Menu",
             "confidence": 0.9299999999999999
           },
           "typeMatch": true
@@ -2681,8 +2746,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Main Menu",
-            "confidence": 0.9299999999999999
+            "label": "Main Navigation",
+            "confidence": 0.9000000000000001
           },
           "typeMatch": true
         },
@@ -2695,7 +2760,7 @@
           "matched": {
             "type": "search",
             "label": "Gift Cards",
-            "confidence": 0.8200000000000001
+            "confidence": 0.76
           },
           "typeMatch": false
         },
@@ -2707,8 +2772,8 @@
           },
           "matched": {
             "type": "search",
-            "label": "Payment Options",
-            "confidence": 0.79
+            "label": "Product Search",
+            "confidence": 0.74
           },
           "typeMatch": false
         }
@@ -2740,20 +2805,20 @@
       },
       "metrics": {
         "all": {
-          "precision": 0.7,
-          "recall": 0.875,
-          "f1": 0.778,
-          "typeAccuracy": 0.429
+          "precision": 0.6,
+          "recall": 0.75,
+          "f1": 0.667,
+          "typeAccuracy": 0.333
         },
         "phase1Only": {
-          "precision": 0.2,
+          "precision": 0.25,
           "recall": 0.667,
-          "f1": 0.308,
+          "f1": 0.364,
           "typeAccuracy": 0.5
         }
       },
       "timing": {
-        "totalMs": 65836,
+        "totalMs": 85903,
         "llmCalls": 8,
         "llmCostUsd": 0.006
       },
@@ -2847,11 +2912,11 @@
             "phase": 2
           },
           "matched": {
-            "type": "navigation",
-            "label": "Main Navigation",
-            "confidence": 0.8700000000000001
+            "type": "content",
+            "label": "Keyboard Shortcuts Toggle",
+            "confidence": 0.62
           },
-          "typeMatch": true
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -2861,7 +2926,7 @@
           },
           "matched": {
             "type": "search",
-            "label": "Product Search",
+            "label": "Category Search",
             "confidence": 0.77
           },
           "typeMatch": false
@@ -2872,12 +2937,28 @@
             "label": "Orders & Returns",
             "phase": 2
           },
-          "matched": {
-            "type": "content",
-            "label": "Toggle Shortcuts Visibility",
-            "confidence": 0.62
-          },
-          "typeMatch": false
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Keyboard Shortcuts Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "content",
+              "detectedLabel": "Keyboard Shortcuts Toggle",
+              "confidence": 0.62,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Account Settings and List Management",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
+            }
+          ]
         }
       ]
     },
@@ -2895,17 +2976,18 @@
         ]
       },
       "detected": {
-        "total": 4,
+        "total": 5,
         "types": [
-          "navigation"
+          "navigation",
+          "content"
         ]
       },
       "metrics": {
         "all": {
           "precision": 1,
-          "recall": 0.571,
-          "f1": 0.727,
-          "typeAccuracy": 1
+          "recall": 0.714,
+          "f1": 0.833,
+          "typeAccuracy": 0.6
         },
         "phase1Only": {
           "precision": 0,
@@ -2915,7 +2997,7 @@
         }
       },
       "timing": {
-        "totalMs": 59949,
+        "totalMs": 74381,
         "llmCalls": 8,
         "llmCostUsd": 0.005
       },
@@ -2943,10 +3025,10 @@
               "reason": "type-mismatch (gt=form, det=navigation)"
             },
             {
-              "detectedType": "navigation",
+              "detectedType": "content",
               "detectedLabel": "Version Picker",
-              "confidence": 0.6799999999999999,
-              "reason": "type-mismatch (gt=form, det=navigation)"
+              "confidence": 0.62,
+              "reason": "type-mismatch (gt=form, det=content)"
             }
           ]
         },
@@ -2987,21 +3069,21 @@
           "nearMisses": [
             {
               "detectedType": "navigation",
-              "detectedLabel": "Version Picker",
-              "confidence": 0.6799999999999999,
-              "reason": "type-mismatch (gt=form, det=navigation)"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Theme Picker",
-              "confidence": 0.6799999999999999,
-              "reason": "type-mismatch (gt=form, det=navigation)"
-            },
-            {
-              "detectedType": "navigation",
               "detectedLabel": "Top Toolbar Navigation",
               "confidence": 0.74,
               "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Component Navigation",
+              "confidence": 0.74,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "content",
+              "detectedLabel": "Version Picker",
+              "confidence": 0.62,
+              "reason": "type-mismatch (gt=form, det=content)"
             }
           ]
         },
@@ -3013,8 +3095,8 @@
           },
           "matched": {
             "type": "navigation",
-            "label": "Version Picker",
-            "confidence": 0.6799999999999999
+            "label": "Footer Navigation",
+            "confidence": 0.62
           },
           "typeMatch": true
         },
@@ -3025,11 +3107,11 @@
             "phase": 2
           },
           "matched": {
-            "type": "navigation",
-            "label": "Theme Picker",
-            "confidence": 0.6799999999999999
+            "type": "content",
+            "label": "Version Picker",
+            "confidence": 0.62
           },
-          "typeMatch": true
+          "typeMatch": false
         },
         {
           "groundTruth": {
@@ -3037,28 +3119,12 @@
             "label": "Component Tab Sections",
             "phase": 2
           },
-          "matched": null,
-          "typeMatch": false,
-          "nearMisses": [
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Top Toolbar Navigation",
-              "confidence": 0.74,
-              "reason": "type-match but already used"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Component Navigation",
-              "confidence": 0.74,
-              "reason": "type-match but already used"
-            },
-            {
-              "detectedType": "navigation",
-              "detectedLabel": "Version Picker",
-              "confidence": 0.6799999999999999,
-              "reason": "type-match but already used"
-            }
-          ]
+          "matched": {
+            "type": "content",
+            "label": "Theme Picker",
+            "confidence": 0.62
+          },
+          "typeMatch": false
         }
       ]
     }
@@ -3068,19 +3134,19 @@
     "successful": 20,
     "skipped": 0,
     "allEndpoints": {
-      "precision": 0.67,
-      "recall": 0.67,
-      "f1": 0.634,
-      "typeAccuracy": 0.827
+      "precision": 0.645,
+      "recall": 0.641,
+      "f1": 0.606,
+      "typeAccuracy": 0.798
     },
     "phase1Endpoints": {
-      "precision": 0.343,
-      "recall": 0.763,
-      "f1": 0.411,
-      "typeAccuracy": 0.617
+      "precision": 0.594,
+      "recall": 0.758,
+      "f1": 0.612,
+      "typeAccuracy": 0.646
     },
-    "totalLlmCalls": 146,
-    "totalLlmCostUsd": 0.104,
-    "totalTimeMs": 1266497
+    "totalLlmCalls": 147,
+    "totalLlmCostUsd": 0.135,
+    "totalTimeMs": 1461004
   }
 }
