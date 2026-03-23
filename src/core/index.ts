@@ -19,6 +19,7 @@ export const VERSION = "0.1.0-alpha.1";
 export { analyzeFromHTML } from "./analyze.js";
 export { detectFramework } from "./detect-framework.js";
 export { htmlToDomNode } from "./html-to-dom.js";
+export { inferSelector } from "./infer-selector.js";
 
 // Error Classes (value exports fuer instanceof-Checks)
 export { BalageError, BalageInputError, BalageLLMError } from "./types.js";

@@ -22,6 +22,7 @@ async function loadLLMModules() {
 import type { AnalyzeOptions, AnalysisResult, DetectedEndpoint, LLMConfig, EndpointType, AffordanceType } from "./types.js";
 import type { EndpointCandidate } from "../semantic/types.js";
 import { BalageInputError, BalageLLMError } from "./types.js";
+import { inferSelector } from "./infer-selector.js";
 import { VERSION } from "./index.js";
 import { randomUUID } from "node:crypto";
 
@@ -491,12 +492,15 @@ function runHeuristicAnalysis(
       if (signals.formAction) confidence += 0.05;
       confidence = Math.round(Math.min(0.85, confidence) * 100) / 100;
 
+      // Selektor-Inferenz: generiert CSS-Selektoren aus DOM-Struktur
+      const selector = inferSelector(segmentRoot);
+
       return {
         type: endpointType,
         label,
         description,
         confidence,
-        selector: undefined,
+        selector,
         affordances: inferAffordances(endpointType, signals),
         evidence: buildEvidence(s.type, endpointType, signals),
       } satisfies DetectedEndpoint;
