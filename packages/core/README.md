@@ -12,20 +12,33 @@ Identifies interactive endpoints on web pages (login forms, search bars, checkou
 npm install @balage/core
 ```
 
-### Heuristic Mode (no API key, instant)
+### 30-Second Demo (no API key needed)
 
 ```typescript
 import { analyzeFromHTML } from "@balage/core";
 
-const html = await fetch("https://github.com/login").then(r => r.text());
-const result = await analyzeFromHTML(html, {
-  url: "https://github.com/login",
-  // llm defaults to false — no API key needed for heuristic mode
-});
+// Works with any HTML string — no browser, no API key
+const result = await analyzeFromHTML(`
+  <form action="/login">
+    <input type="email" placeholder="Email">
+    <input type="password" placeholder="Password">
+    <button type="submit">Sign In</button>
+  </form>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+  </nav>
+`);
 
 console.log(result.endpoints);
-// [{type: "auth", label: "Login / Sign-In Form", confidence: 0.75, affordances: ["fill", "submit", "click"], ...}]
-console.log(result.timing.totalMs); // ~50ms
+// [
+//   {type: "auth", label: "Login / Sign-In Form", confidence: 0.75,
+//    affordances: ["fill", "submit", "click"],
+//    evidence: ["Contains password input", "Contains email input"]},
+//   {type: "navigation", label: "Navigation Menu", confidence: 0.50,
+//    affordances: ["click", "navigate"], ...}
+// ]
+console.log(result.timing.totalMs); // ~4ms
 ```
 
 ### LLM Mode (higher accuracy)

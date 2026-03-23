@@ -9,13 +9,18 @@ import pino from "pino";
 import { htmlToDomNode } from "./html-to-dom.js";
 import { detectFramework } from "./detect-framework.js";
 import { pruneDom, parseAria, segmentUI } from "../parser/index.js";
-import { generateEndpoints } from "../semantic/endpoint-generator.js";
-import { classifyEndpoint } from "../semantic/endpoint-classifier.js";
-import { createOpenAIClient, createAnthropicClient } from "../semantic/llm-client.js";
-import type { LLMClient } from "../semantic/llm-client.js";
 import type { DomNode, UISegment } from "../../shared_interfaces.js";
-import type { EndpointCandidate } from "../semantic/types.js";
+
+// Lazy imports for LLM — only loaded when LLM mode is used.
+// This prevents "Cannot find module 'openai'" for heuristic-only users.
+async function loadLLMModules() {
+  const { generateEndpoints } = await import("../semantic/endpoint-generator.js");
+  const { classifyEndpoint } = await import("../semantic/endpoint-classifier.js");
+  const { createOpenAIClient, createAnthropicClient } = await import("../semantic/llm-client.js");
+  return { generateEndpoints, classifyEndpoint, createOpenAIClient, createAnthropicClient };
+}
 import type { AnalyzeOptions, AnalysisResult, DetectedEndpoint, LLMConfig } from "./types.js";
+import type { EndpointCandidate } from "../semantic/types.js";
 import { BalageInputError, BalageLLMError } from "./types.js";
 import { VERSION } from "./index.js";
 import { randomUUID } from "node:crypto";
@@ -129,12 +134,22 @@ async function runLLMAnalysis(
   minConfidence: number,
   maxEndpoints: number,
 ): Promise<DetectedEndpoint[]> {
-  let llmClient: LLMClient;
+  // Lazy-load LLM modules (prevents "Cannot find module 'openai'" for heuristic-only users)
+  const { generateEndpoints, classifyEndpoint, createOpenAIClient, createAnthropicClient } = await loadLLMModules();
+
+  let llmClient;
   try {
-    llmClient = createLLMClient(llmConfig);
+    if (llmConfig.provider === "anthropic") {
+      llmClient = createAnthropicClient({ apiKey: llmConfig.apiKey, model: llmConfig.model ?? "claude-haiku-4-5-20251001" });
+    } else if (llmConfig.provider === "openai") {
+      llmClient = createOpenAIClient({ apiKey: llmConfig.apiKey, model: llmConfig.model ?? "gpt-4o-mini" });
+    } else {
+      throw new BalageLLMError(`Unknown provider "${llmConfig.provider}". Supported: "openai", "anthropic".`, llmConfig.provider);
+    }
   } catch (err) {
+    if (err instanceof BalageLLMError) throw err;
     throw new BalageLLMError(
-      `Failed to create ${llmConfig.provider} client. Check your API key and provider name.`,
+      `Failed to create ${llmConfig.provider} client: ${err instanceof Error ? err.message : String(err)}`,
       llmConfig.provider,
       err instanceof Error ? err : undefined,
     );
@@ -519,25 +534,6 @@ function createEmptyResult(
       version: VERSION,
     },
   };
-}
-
-function createLLMClient(config: LLMConfig): LLMClient {
-  if (config.provider === "anthropic") {
-    return createAnthropicClient({
-      apiKey: config.apiKey,
-      model: config.model ?? "claude-haiku-4-5-20251001",
-    });
-  }
-  if (config.provider === "openai") {
-    return createOpenAIClient({
-      apiKey: config.apiKey,
-      model: config.model ?? "gpt-4o-mini",
-    });
-  }
-  throw new BalageLLMError(
-    `Unknown LLM provider "${config.provider}". Supported: "openai", "anthropic".`,
-    config.provider,
-  );
 }
 
 function inferAffordances(
