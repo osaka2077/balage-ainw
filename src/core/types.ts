@@ -62,7 +62,7 @@ export class BalageLLMError extends BalageError {
 export interface AnalyzeOptions {
   /** URL of the page (for context in LLM prompts) */
   url?: string;
-  /** Use LLM for classification. Default: true. Set false for heuristic-only. */
+  /** Use LLM for classification. Default: false (heuristic-only, no API key needed). Pass LLMConfig object to enable. */
   llm?: boolean | LLMConfig;
   /** Minimum confidence threshold. Default: 0.50 */
   minConfidence?: number;

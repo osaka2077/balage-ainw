@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   entry: ["../../src/core/index.ts"],
-  format: ["esm"],
+  format: ["esm", "cjs"],
   dts: false, // DTS handgeschrieben in dist/index.d.ts (rootDir issue mit monorepo)
   splitting: false,
   sourcemap: true,

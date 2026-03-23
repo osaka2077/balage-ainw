@@ -4,15 +4,18 @@
   "description": "Semantic Verification Layer for Browser Agents — classify and verify web page endpoints",
   "license": "BUSL-1.1",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist/", "LICENSE", "README.md"],
+  "sideEffects": false,
+  "files": ["dist/index.js", "dist/index.cjs", "dist/index.d.ts", "LICENSE", "README.md"],
   "scripts": {
     "build": "tsup && cp types/index.d.ts dist/index.d.ts",
     "prepublishOnly": "npm run build",

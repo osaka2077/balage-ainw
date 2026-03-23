@@ -20,11 +20,11 @@ import { analyzeFromHTML } from "@balage/core";
 const html = await fetch("https://github.com/login").then(r => r.text());
 const result = await analyzeFromHTML(html, {
   url: "https://github.com/login",
-  llm: false, // heuristic-only, no API key needed
+  // llm defaults to false — no API key needed for heuristic mode
 });
 
 console.log(result.endpoints);
-// [{type: "form", label: "form", confidence: 0.7, affordances: ["fill", "submit"]}]
+// [{type: "auth", label: "Login / Sign-In Form", confidence: 0.75, affordances: ["fill", "submit", "click"], ...}]
 console.log(result.timing.totalMs); // ~50ms
 ```
 

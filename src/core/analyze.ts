@@ -50,7 +50,7 @@ export async function analyzeFromHTML(
   const start = performance.now();
   const {
     url = "https://unknown",
-    llm = true,
+    llm = false,
     minConfidence = 0.50,
     maxEndpoints = 10,
   } = options;
@@ -154,9 +154,17 @@ async function runLLMAnalysis(
     );
   }
 
+  // Warn if LLM returned 0 candidates for interactive segments
+  const interactiveSegments = segments.filter(s => s.interactiveElementCount >= 1);
+  if (candidates.length === 0 && interactiveSegments.length > 0) {
+    logger.warn(
+      { segmentCount: interactiveSegments.length, provider: llmConfig.provider },
+      "LLM returned 0 endpoints despite interactive segments — check API key and model",
+    );
+  }
+
   const mapped: DetectedEndpoint[] = [];
   for (const c of candidates) {
-    // Candidates don't carry segmentId — use first segment with matching type or fallback
     const matchedSegment = segments.find(s => s.type === c.type) ?? segments[0];
     if (!matchedSegment) continue;
     const classified = classifyEndpoint(c, matchedSegment);
