@@ -154,36 +154,28 @@ async function runLLMAnalysis(
     );
   }
 
-  return candidates
-    .map((c: EndpointCandidate) => {
-      // FIX #5: Richtiges Segment per segmentId finden, nicht blind segments[0]
-      const matchedSegment = segments.find(s => s.id === c.segmentId);
-      if (!matchedSegment) {
-        logger.warn(
-          { candidateType: c.type, segmentId: c.segmentId },
-          "No matching segment for candidate, skipping",
-        );
-        return null;
-      }
-      const classified = classifyEndpoint(c, matchedSegment);
-      return {
-        type: classified.correctedType ?? c.type,
-        label: c.label,
-        description: c.description,
-        confidence: classified.combinedConfidence,
-        selector: c.anchors[0]?.selector,
-        affordances: c.affordances.map((a: { type: string }) => a.type),
-        evidence: [
-          `LLM: ${c.type} (conf ${c.confidence.toFixed(2)})`,
-          classified.correctedType
-            ? `Heuristic correction: ${classified.correctedType}`
-            : "Heuristic: confirmed",
-        ],
-      } satisfies DetectedEndpoint;
-    })
-    .filter((e): e is DetectedEndpoint => e !== null)
-    .filter((e: DetectedEndpoint) => e.confidence >= minConfidence)
-    .sort((a: DetectedEndpoint, b: DetectedEndpoint) => b.confidence - a.confidence)
+  const mapped: DetectedEndpoint[] = [];
+  for (const c of candidates) {
+    // Candidates don't carry segmentId — use first segment with matching type or fallback
+    const matchedSegment = segments.find(s => s.type === c.type) ?? segments[0];
+    if (!matchedSegment) continue;
+    const classified = classifyEndpoint(c, matchedSegment);
+    mapped.push({
+      type: classified.correctedType ?? c.type,
+      label: c.label,
+      description: c.description,
+      confidence: classified.combinedConfidence,
+      selector: c.anchors[0]?.selector,
+      affordances: c.affordances.map((a: { type: string }) => a.type),
+      evidence: [
+        `LLM: ${c.type} (conf ${c.confidence.toFixed(2)})`,
+        classified.correctedType ? `Heuristic correction: ${classified.correctedType}` : "Heuristic: confirmed",
+      ],
+    });
+  }
+  return mapped
+    .filter(e => e.confidence >= minConfidence)
+    .sort((a, b) => b.confidence - a.confidence)
     .slice(0, maxEndpoints);
 }
 
