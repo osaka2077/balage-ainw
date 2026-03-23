@@ -135,7 +135,7 @@ export function createFallbackLLMClient(
   const {
     envConfig: cfg,
     maxCostUsd = cfg.maxCostPerRunUsd,
-    rateLimitTokensPerMinute = 10_000,
+    rateLimitTokensPerMinute = 50_000,
     circuitBreakerThreshold = 3,
     circuitBreakerResetMs = 60_000,
   } = options;

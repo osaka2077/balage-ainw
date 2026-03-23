@@ -124,11 +124,13 @@ const WEBSITE_TIMEOUT_MS: Record<string, number> = {
 const DEFAULT_TIMEOUT_MS = 120_000;
 
 // Typ-Aliase: welche Ground-Truth-Typen zu welchen Detected-Typen passen
+// TYPE_ALIASES: Welche GT-Typen zu welchen Detected-Typen passen
+// "form" bleibt als Alias — auth detected als form ist ein Alias-Match, kein Miss
 const TYPE_ALIASES: Record<string, string[]> = {
   auth: ["auth", "form"],
   form: ["form", "search", "consent"],
   navigation: ["navigation", "content"],
-  checkout: ["checkout", "commerce", "form"],
+  checkout: ["checkout", "commerce"],
   search: ["search", "form"],
   support: ["support", "navigation"],
   content: ["content", "navigation"],

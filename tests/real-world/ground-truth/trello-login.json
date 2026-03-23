@@ -17,12 +17,12 @@
     {
       "type": "auth",
       "label": "Password Input",
-      "description": "Password field with Log In button on second step",
+      "description": "Password field with Log In button on second step (only visible after email submit)",
       "selector_hint": "input#password, input[name='password']",
       "affordances": ["fill", "submit"],
       "risk_class": "high",
       "fields": ["password"],
-      "phase": 1
+      "phase": 2
     },
     {
       "type": "auth",

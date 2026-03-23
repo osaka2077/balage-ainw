@@ -358,7 +358,7 @@ describe("computePhase1Metrics", () => {
     const phase1GT = [makeGT({ type: "auth", label: "Login", phase: 1 })];
     const allDetected = [
       makeDet("auth", "Login Form", 0.9),
-      makeDet("form", "Newsletter Signup", 0.7), // form is auth-relevant but wrong
+      makeDet("form", "Newsletter Signup", 0.7), // form is auth-relevant (alias)
       makeDet("navigation", "Home", 0.6),
     ];
     const m = computePhase1Metrics(phase1GT, allDetected);

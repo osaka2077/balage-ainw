@@ -149,9 +149,16 @@ const HEURISTIC_RULES: HeuristicRule[] = [
   {
     name: "cart-class-implies-checkout",
     correctedType: "checkout",
-    check: (segment) =>
-      segment.type === "checkout" ||
-      segment.nodes.some((n) => findAttrPattern(n, "class", /\b(cart|basket|checkout)\b/i)),
+    check: (segment, candidate) => {
+      const segHasCart = segment.type === "checkout" ||
+        segment.nodes.some((n) => findAttrPattern(n, "class", /\b(cart|basket|checkout)\b/i));
+      if (!segHasCart) return false;
+      // Guard: auth-related Kandidaten nicht zu checkout umschreiben
+      if (candidateMatchesContext(candidate, [
+        /\b(sign[\s_-]?in|log[\s_-]?in|sign[\s_-]?up|register|account|password|anmelden)\b/,
+      ])) return false;
+      return true;
+    },
   },
 ];
 

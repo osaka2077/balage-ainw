@@ -91,7 +91,8 @@ export async function generateEndpoints(
     return [];
   }
 
-  const { llmClient, pruneOptions, maxRetries = 2, maxConcurrency = 3 } = options;
+  const envConcurrency = parseInt(process.env["BALAGE_MAX_CONCURRENCY"] ?? "6", 10);
+  const { llmClient, pruneOptions, maxRetries = 2, maxConcurrency = envConcurrency } = options;
   const allCandidates: EndpointCandidate[] = [];
 
   // Security-Module initialisieren
