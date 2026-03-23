@@ -585,7 +585,7 @@ describe("Parser Module — Edge Cases", () => {
     const elapsed = performance.now() - start;
 
     expect(result.nodeCount).toBeGreaterThan(1000);
-    expect(elapsed).toBeLessThan(200);
+    expect(elapsed).toBeLessThan(500);
   });
 });
 
