@@ -222,6 +222,10 @@ interface DomSignals {
   hasSearchInput: boolean;
   hasSearchRole: boolean;
   hasFileInput: boolean;
+  hasCookieConsent: boolean;
+  hasConsentButtons: boolean;
+  hasAddToCart: boolean;
+  hasProductData: boolean;
   inputCount: number;
   linkCount: number;
   buttonLabels: string[];
@@ -238,6 +242,10 @@ function collectDomSignals(root: DomNode): DomSignals {
     hasSearchInput: false,
     hasSearchRole: false,
     hasFileInput: false,
+    hasCookieConsent: false,
+    hasConsentButtons: false,
+    hasAddToCart: false,
+    hasProductData: false,
     inputCount: 0,
     linkCount: 0,
     buttonLabels: [],
@@ -302,6 +310,48 @@ function collectDomSignals(root: DomNode): DomSignals {
 
     // Search-Role auf jedem Element
     if (role === "search") signals.hasSearchRole = true;
+
+    // Cookie-Consent / GDPR-Banner Erkennung
+    if (
+      (role === "dialog" || role === "alertdialog")
+      && (/cookie|consent|gdpr|privacy/i.test(
+        [attrs["id"] ?? "", attrs["class"] ?? "", attrs["aria-label"] ?? "", node.textContent ?? ""].join(" "),
+      ))
+    ) {
+      signals.hasCookieConsent = true;
+    }
+
+    // Consent-Buttons: "accept all", "reject", "alle akzeptieren" etc.
+    if (
+      tag === "button"
+      || (tag === "input" && (type === "submit" || type === "button"))
+    ) {
+      const btnLabel = (node.textContent ?? attrs["value"] ?? attrs["aria-label"] ?? "").toLowerCase();
+      if (/accept\s*all|reject\s*all?|alle\s*akzeptieren|alle\s*ablehnen|cookie\s*settings/i.test(btnLabel)) {
+        signals.hasConsentButtons = true;
+      }
+    }
+
+    // Commerce: Add-to-Cart Buttons
+    if (
+      tag === "button"
+      || (tag === "input" && (type === "submit" || type === "button"))
+    ) {
+      const btnLabel = (node.textContent ?? attrs["value"] ?? attrs["aria-label"] ?? "").toLowerCase();
+      if (/add\s*to\s*cart|in\s*den\s*warenkorb|buy\s*now|jetzt\s*kaufen|kaufen/i.test(btnLabel)) {
+        signals.hasAddToCart = true;
+      }
+    }
+
+    // Commerce: Product-Data Attribute und Schema.org
+    if (
+      attrs["data-product"] !== undefined
+      || attrs["data-sku"] !== undefined
+      || attrs["data-price"] !== undefined
+      || (attrs["itemtype"] ?? "").toLowerCase().includes("product")
+    ) {
+      signals.hasProductData = true;
+    }
   });
 
   return signals;
@@ -312,6 +362,11 @@ function collectDomSignals(root: DomNode): DomSignals {
  * FIX #1: Statt generischem "form" kommt z.B. "Login / Sign-In Form".
  */
 function inferLabel(segmentType: string, signals: DomSignals): string {
+  // Cookie-Consent / GDPR-Banner (vor Auth, da Consent-Dialoge Password-Felder ueberlagern koennen)
+  if (signals.hasCookieConsent) {
+    return "Cookie Consent Dialog";
+  }
+
   // Auth / Login
   if (signals.hasPasswordInput) {
     if (signals.hasEmailInput || signals.inputCount <= 3) {
@@ -356,6 +411,11 @@ function inferLabel(segmentType: string, signals: DomSignals): string {
   // Checkout
   if (/checkout|payment|bezahl|kasse|cart|warenkorb/i.test(allText)) {
     return "Checkout Form";
+  }
+
+  // Commerce: Add to Cart / Product Page
+  if (signals.hasAddToCart || signals.hasProductData) {
+    return "Product / Add to Cart";
   }
 
   // Navigation
@@ -417,6 +477,9 @@ function inferEndpointType(
   segmentType: string,
   signals: DomSignals,
 ): EndpointType {
+  // Consent-Banner hat hoechste Prioritaet (ueberlagert andere Elemente)
+  if (signals.hasCookieConsent) return "consent";
+
   if (signals.hasPasswordInput) return "auth";
   if (signals.hasSearchRole || signals.hasSearchInput) return "search";
   if (signals.placeholders.some(p => /search|suche|find/i.test(p))) {
@@ -428,6 +491,9 @@ function inferEndpointType(
     ...signals.headingTexts,
   ].join(" ");
   if (/checkout|payment|bezahl|kasse/i.test(allText)) return "checkout";
+
+  // Commerce: Add-to-Cart oder Product-Daten
+  if (signals.hasAddToCart || signals.hasProductData) return "commerce";
 
   if (signals.formAction) {
     const action = signals.formAction.toLowerCase();
@@ -485,12 +551,26 @@ function runHeuristicAnalysis(
       const label = inferLabel(s.type, signals);
       const description = inferDescription(label, signals, endpointType);
 
-      // Confidence: Basis + Bonus fuer starke Signale (BUG-1: round to avoid float issues)
-      let confidence = 0.3 + s.interactiveElementCount * 0.1;
-      if (signals.hasPasswordInput) confidence += 0.15;
-      if (signals.hasSearchRole || signals.hasSearchInput) confidence += 0.1;
-      if (signals.formAction) confidence += 0.05;
-      confidence = Math.round(Math.min(0.85, confidence) * 100) / 100;
+      // Confidence: Signal-staerke-basiert mit korroborierenden Bonus-Signalen
+      const typeConfidence: Record<string, number> = {
+        auth: 0.70,
+        search: 0.65,
+        consent: 0.60,
+        checkout: 0.55,
+        commerce: 0.55,
+        navigation: 0.50,
+        form: 0.40,
+        content: 0.30,
+      };
+      let confidence = typeConfidence[endpointType] ?? 0.30;
+      // Korroborierende Signale erhoehen Confidence
+      if (signals.hasPasswordInput && signals.hasEmailInput) confidence += 0.15;
+      if (signals.formAction && /login|auth|search/.test(signals.formAction)) confidence += 0.10;
+      if (signals.hasSearchRole && signals.hasSearchInput) confidence += 0.10;
+      if (signals.hasCookieConsent && signals.hasConsentButtons) confidence += 0.10;
+      // Interaktive Elemente erhoehen die Basis-Confidence leicht (max +0.15)
+      confidence += Math.min(0.15, s.interactiveElementCount * 0.05);
+      confidence = Math.round(Math.min(0.90, confidence) * 100) / 100;
 
       // Selektor-Inferenz: generiert CSS-Selektoren aus DOM-Struktur
       const selector = inferSelector(segmentRoot);
@@ -560,6 +640,12 @@ function inferAffordances(
     case "checkout":
       affordances.push("click", "fill", "submit");
       break;
+    case "consent":
+      affordances.push("click", "toggle");
+      break;
+    case "commerce":
+      affordances.push("click", "scroll");
+      break;
     default:
       affordances.push("click");
   }
@@ -580,6 +666,10 @@ function buildEvidence(
   if (signals.hasSearchRole) evidence.push("Has role=search");
   if (signals.hasSearchInput) evidence.push("Contains search input");
   if (signals.hasEmailInput) evidence.push("Contains email input");
+  if (signals.hasCookieConsent) evidence.push("Contains cookie/consent dialog");
+  if (signals.hasConsentButtons) evidence.push("Contains consent action buttons");
+  if (signals.hasAddToCart) evidence.push("Contains add-to-cart button");
+  if (signals.hasProductData) evidence.push("Contains product data attributes");
   if (signals.formAction) evidence.push(`Form action: ${signals.formAction}`);
   evidence.push(
     `Interactive elements: ${signals.inputCount} inputs, ${signals.linkCount} links`,

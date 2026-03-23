@@ -20,7 +20,7 @@ RULES:
 - Return at most 6 endpoints per segment. Only the most important, distinct ones.
 - Prefer fewer, higher-confidence results. Most segments have 1-2 truly distinct endpoints.
 - Only return endpoints that represent DISTINCT, user-facing interaction points. Do NOT return decorative elements, repeated navigation links, generic content sections, or footer links.
-- Focus on PRIMARY functionality: main search bar, login/signup forms, checkout/cart, and the single most prominent navigation. Skip secondary nav, social links, language selectors, and cookie banners.
+- Focus on PRIMARY functionality: main search bar, login/signup forms, checkout/cart, cookie/consent banners, and the single most prominent navigation. Skip secondary nav, social links, and language selectors.
 - If unsure whether something is a meaningful endpoint, include it with a LOW confidence score (0.3-0.5) rather than omitting it entirely. The confidence filter will handle borderline cases.
 - A page typically has 3-6 truly important endpoints. Prefer fewer, high-quality results over many low-quality ones.
 - Do NOT return multiple endpoints of the same type unless they serve clearly different purposes (e.g., a login form and a separate registration form are distinct; two navigation menus are NOT).
