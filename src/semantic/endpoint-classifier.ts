@@ -10,7 +10,7 @@ import { ClassificationError } from "./errors.js";
 import type { UISegment, DomNode, Affordance } from "../../shared_interfaces.js";
 import type { EndpointCandidate, ClassifiedEndpoint } from "./types.js";
 
-const logger = pino({ name: "semantic:endpoint-classifier" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:endpoint-classifier" });
 
 // ============================================================================
 // Heuristik-Regeln fuer Typ-Korrektur

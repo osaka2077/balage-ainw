@@ -10,7 +10,7 @@ import pino from "pino";
 import type { DomNode } from "../../shared_interfaces.js";
 import { IframeIntegrationError } from "./errors.js";
 
-const logger = pino({ name: "parser:iframe-handler" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "parser:iframe-handler" });
 
 /** Marker-Tag fuer Cross-Origin iframe Content */
 const CROSS_ORIGIN_MARKER_TAG = "#iframe-cross-origin";

@@ -16,7 +16,7 @@ import type {
 } from "./types.js";
 import { AriaResolutionError } from "./errors.js";
 
-const logger = pino({ name: "parser:aria-parser" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "parser:aria-parser" });
 
 /**
  * Mapping: HTML-Tag -> implizite ARIA-Rolle

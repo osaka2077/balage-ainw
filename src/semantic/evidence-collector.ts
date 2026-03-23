@@ -11,7 +11,7 @@ import { EvidenceSchema } from "../../shared_interfaces.js";
 import type { Evidence, UISegment, DomNode } from "../../shared_interfaces.js";
 import type { EndpointCandidate, LLMEndpointResponse, EvidenceSummary } from "./types.js";
 
-const logger = pino({ name: "semantic:evidence-collector" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:evidence-collector" });
 
 /** Truncate string to fit within schema max length */
 function truncateSignal(s: string, max = 512): string {

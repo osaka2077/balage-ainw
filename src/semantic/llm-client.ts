@@ -12,7 +12,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { LLMCallError, LLMParseError, LLMRateLimitError } from "./errors.js";
 import type { OpenAIConfig, AnthropicConfig } from "./types.js";
 
-const logger = pino({ name: "semantic:llm-client" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:llm-client" });
 
 // ============================================================================
 // Interfaces

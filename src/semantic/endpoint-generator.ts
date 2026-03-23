@@ -33,7 +33,7 @@ import type {
   PruneForLLMOptions,
 } from "./types.js";
 
-const logger = pino({ name: "semantic:endpoint-generator" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:endpoint-generator" });
 
 // ============================================================================
 // Zod-Schema fuer LLM-Response-Validierung

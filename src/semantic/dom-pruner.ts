@@ -11,7 +11,7 @@ import { DomPruningError } from "./errors.js";
 import type { DomNode, UISegment } from "../../shared_interfaces.js";
 import type { PrunedSegment, PruneForLLMOptions } from "./types.js";
 
-const logger = pino({ name: "semantic:dom-pruner" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:dom-pruner" });
 
 /** data-* Attribute mit semantischer Bedeutung (immer behalten) */
 const SEMANTIC_DATA_ATTRS = new Set(["data-testid", "data-action", "data-type"]);

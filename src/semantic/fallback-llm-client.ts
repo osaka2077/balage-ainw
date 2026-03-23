@@ -12,7 +12,7 @@ import type { LLMClient, LLMRequest, LLMResponse } from "./llm-client.js";
 import { LLMCallError } from "./errors.js";
 import type { BalageEnvConfig } from "../config/env.js";
 
-const logger = pino({ name: "semantic:fallback-llm-client" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:fallback-llm-client" });
 
 // ============================================================================
 // Cost Tracking

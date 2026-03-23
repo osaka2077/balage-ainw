@@ -12,7 +12,7 @@ import type { DomNode, UISegment, UISegmentType, BoundingBox } from "../../share
 import type { AriaAnalysis, SegmenterOptions } from "./types.js";
 import { SegmentationError } from "./errors.js";
 
-const logger = pino({ name: "parser:ui-segmenter" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "parser:ui-segmenter" });
 
 /** Mapping: HTML-Tag -> UISegmentType */
 const TAG_TO_SEGMENT: Record<string, UISegmentType> = {

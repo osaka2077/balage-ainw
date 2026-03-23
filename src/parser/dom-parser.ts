@@ -11,7 +11,7 @@ import type { DomNode } from "../../shared_interfaces.js";
 import type { ParsedDom, DomParserOptions } from "./types.js";
 import { DomParseError } from "./errors.js";
 
-const logger = pino({ name: "parser:dom-parser" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "parser:dom-parser" });
 
 /** HTML5 semantische Elemente die als Landmarks/Struktur dienen */
 const SEMANTIC_ELEMENTS = new Set([

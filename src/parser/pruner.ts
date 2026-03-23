@@ -14,7 +14,7 @@ import type { DomNode } from "../../shared_interfaces.js";
 import type { PruneResult } from "./types.js";
 import { PruningError } from "./errors.js";
 
-const logger = pino({ name: "parser:pruner" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "parser:pruner" });
 
 /** Tags die immer entfernt werden */
 const REMOVABLE_TAGS = new Set([

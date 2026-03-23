@@ -10,7 +10,7 @@ import pino from "pino";
 import type { DomNode } from "../../shared_interfaces.js";
 import { ShadowDomError } from "./errors.js";
 
-const logger = pino({ name: "parser:shadow-dom" });
+const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "parser:shadow-dom" });
 
 /** Marker-Tag fuer geschlossene Shadow Roots */
 const CLOSED_SHADOW_TAG = "#shadow-root-closed";

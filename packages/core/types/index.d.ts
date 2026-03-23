@@ -165,10 +165,16 @@ export interface FrameworkDetection {
   evidence: string[];
 }
 
+/** Endpoint type — all recognized UI element categories */
+export type EndpointType = "auth" | "form" | "search" | "navigation" | "checkout" | "commerce" | "content" | "consent" | "support" | "media" | "social" | "settings";
+
+/** Affordance type — all recognized interaction types */
+export type AffordanceType = "click" | "fill" | "select" | "toggle" | "submit" | "navigate" | "upload" | "scroll" | "drag" | "read";
+
 /** Simplified endpoint result for the public API */
 export interface DetectedEndpoint {
-  /** Endpoint type (e.g., "auth", "search", "navigation") */
-  type: string;
+  /** Endpoint type */
+  type: EndpointType;
   /** Human-readable label (e.g., "Login / Sign-In Form") */
   label: string;
   /** Descriptive summary of the endpoint */
@@ -177,8 +183,8 @@ export interface DetectedEndpoint {
   confidence: number;
   /** CSS selector to locate the endpoint, if available */
   selector?: string;
-  /** Possible user interactions (e.g., ["fill", "submit"]) */
-  affordances: string[];
+  /** Possible user interactions */
+  affordances: AffordanceType[];
   /** Evidence supporting the classification */
   evidence: string[];
 }
@@ -298,3 +304,19 @@ export declare function detectFramework(
  * @returns Root DomNode (tagName: "body")
  */
 export declare function htmlToDomNode(html: string): DomNode;
+
+/**
+ * Infer a CSS selector from a DomNode tree.
+ *
+ * Uses a 6-level priority chain:
+ * 1. form[action="..."] — stable backend routes
+ * 2. #element-id — unique IDs (filters dynamic framework IDs)
+ * 3. [role="..."] — ARIA semantic roles
+ * 4. form:has(input[type=...]) — structural selectors
+ * 5. Semantic tags (nav, footer, header)
+ * 6. tag.class — fallback
+ *
+ * @param root - DomNode tree to analyze
+ * @returns CSS selector string or undefined if no stable selector found
+ */
+export declare function inferSelector(root: DomNode): string | undefined;
