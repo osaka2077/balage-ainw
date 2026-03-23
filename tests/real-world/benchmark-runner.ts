@@ -964,7 +964,7 @@ export async function main(): Promise<BenchmarkReport> {
   await adapter.launch();
 
   // Ein LLM-Client fuer alle Websites (geteiltes Cost-Tracking)
-  const llmClient = createFallbackLLMClient({
+  const llmClient = await createFallbackLLMClient({
     envConfig,
     maxCostUsd: 5.0, // Budget fuer 10 Websites
   });

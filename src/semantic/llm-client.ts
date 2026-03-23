@@ -7,9 +7,11 @@
 
 import { z } from "zod";
 import pino from "pino";
-import OpenAI from "openai";
-import Anthropic from "@anthropic-ai/sdk";
 import { LLMCallError, LLMParseError, LLMRateLimitError } from "./errors.js";
+
+// Lazy-loaded SDK references — avoids "Cannot find module 'openai'" for heuristic-only users
+let _OpenAI: any;
+let _Anthropic: any;
 import type { OpenAIConfig, AnthropicConfig } from "./types.js";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:llm-client" });
@@ -45,12 +47,16 @@ export interface LLMResponse {
 // OpenAI-Implementierung
 // ============================================================================
 
-export function createOpenAIClient(config: OpenAIConfig): LLMClient {
-  const client = new OpenAI({
+export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClient> {
+  if (!_OpenAI) {
+    try { _OpenAI = (await import("openai")).default; }
+    catch { throw new LLMCallError("openai package not installed. Run: npm install openai"); }
+  }
+  const client = new _OpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseUrl,
     timeout: config.timeout ?? 30_000,
-    maxRetries: 0, // Wir handlen Retries selbst
+    maxRetries: 0,
   });
 
   const modelId = config.model ?? "gpt-4o";
@@ -117,11 +123,11 @@ export function createOpenAIClient(config: OpenAIConfig): LLMClient {
         } catch (err) {
           if (err instanceof LLMParseError) throw err;
 
-          if (err instanceof OpenAI.RateLimitError) {
+          if (_OpenAI && err instanceof _OpenAI.RateLimitError) {
             lastError = new LLMRateLimitError(
               "OpenAI rate limit reached",
               undefined,
-              err,
+              err instanceof Error ? err : undefined,
             );
             continue;
           }
@@ -143,8 +149,12 @@ export function createOpenAIClient(config: OpenAIConfig): LLMClient {
 // Anthropic-Implementierung
 // ============================================================================
 
-export function createAnthropicClient(config: AnthropicConfig): LLMClient {
-  const client = new Anthropic({
+export async function createAnthropicClient(config: AnthropicConfig): Promise<LLMClient> {
+  if (!_Anthropic) {
+    try { _Anthropic = (await import("@anthropic-ai/sdk")).default; }
+    catch { throw new LLMCallError("@anthropic-ai/sdk package not installed. Run: npm install @anthropic-ai/sdk"); }
+  }
+  const client = new _Anthropic({
     apiKey: config.apiKey,
     timeout: config.timeout ?? 30_000,
     maxRetries: 0,
@@ -180,7 +190,7 @@ export function createAnthropicClient(config: AnthropicConfig): LLMClient {
           });
 
           const latency = Date.now() - start;
-          const textBlock = response.content.find((b) => b.type === "text");
+          const textBlock = response.content.find((b: { type: string }) => b.type === "text");
           const raw = textBlock && "text" in textBlock ? textBlock.text : "";
 
           let parsedContent: unknown;
@@ -212,11 +222,11 @@ export function createAnthropicClient(config: AnthropicConfig): LLMClient {
         } catch (err) {
           if (err instanceof LLMParseError) throw err;
 
-          if (err instanceof Anthropic.RateLimitError) {
+          if (_Anthropic && err instanceof _Anthropic.RateLimitError) {
             lastError = new LLMRateLimitError(
               "Anthropic rate limit reached",
               undefined,
-              err,
+              err instanceof Error ? err : undefined,
             );
             continue;
           }

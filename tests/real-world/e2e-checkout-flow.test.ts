@@ -181,7 +181,7 @@ describe.skipIf(!hasApiKey)("E2E Checkout Flow — saucedemo.com", () => {
     adapter = new BrowserAdapter({ headless: true });
     await adapter.launch();
 
-    llmClient = createFallbackLLMClient({
+    llmClient = await createFallbackLLMClient({
       envConfig,
       maxCostUsd: 2.0,
     });

@@ -129,9 +129,9 @@ export interface CostSummary {
   callsByModel: Record<string, number>;
 }
 
-export function createFallbackLLMClient(
+export async function createFallbackLLMClient(
   options: FallbackLLMClientOptions,
-): FallbackLLMClient {
+): Promise<FallbackLLMClient> {
   const {
     envConfig: cfg,
     maxCostUsd = cfg.maxCostPerRunUsd,
@@ -147,7 +147,7 @@ export function createFallbackLLMClient(
   if (cfg.openaiApiKey) {
     providers.push({
       name: "openai-primary",
-      client: createOpenAIClient({
+      client: await createOpenAIClient({
         apiKey: cfg.openaiApiKey,
         model: cfg.llmModel,
         maxRetries: 1,
@@ -158,7 +158,7 @@ export function createFallbackLLMClient(
     if (cfg.llmFallbackModel !== cfg.llmModel) {
       providers.push({
         name: "openai-fallback",
-        client: createOpenAIClient({
+        client: await createOpenAIClient({
           apiKey: cfg.openaiApiKey,
           model: cfg.llmFallbackModel,
           maxRetries: 1,
@@ -171,7 +171,7 @@ export function createFallbackLLMClient(
   if (cfg.anthropicApiKey) {
     providers.push({
       name: "anthropic",
-      client: createAnthropicClient({
+      client: await createAnthropicClient({
         apiKey: cfg.anthropicApiKey,
         maxRetries: 1,
       }),

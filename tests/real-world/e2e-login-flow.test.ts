@@ -89,7 +89,7 @@ describe.skipIf(!hasApiKey)("E2E Login Flow — the-internet.herokuapp.com", () 
     adapter = new BrowserAdapter({ headless: true });
     await adapter.launch();
 
-    llmClient = createFallbackLLMClient({
+    llmClient = await createFallbackLLMClient({
       envConfig,
       maxCostUsd: 1.0,
     });
