@@ -88,10 +88,12 @@ describe("ENDPOINT_EXTRACTION_SYSTEM_PROMPT", () => {
     );
   });
 
-  it("explains balanced auth-link classification rules for navigation", () => {
+  it("explains auth-link classification rules for navigation", () => {
     expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT).toMatch(
-      /AUTH LINKS IN NAVIGATION.*balanced rules/is,
+      /AUTH LINKS IN NAVIGATION.*rules/is,
     );
+    // Auth links in headers should always be separate endpoints
+    expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT).toMatch(/sign[\s_-]?in.*login.*account.*always/is);
   });
 
   it("defines the expected JSON output format", () => {

@@ -30,11 +30,12 @@ IMPORTANT — SEGMENT TYPE vs ENDPOINT TYPE:
 - The segment type is a HINT, not a constraint.
 - A navigation section that contains search inputs is a SEARCH endpoint, not navigation.
 - A form segment is an AUTH endpoint only if it has password/credential fields. A form without password fields is just "form".
-- AUTH LINKS IN NAVIGATION — balanced rules:
-  - If the segment has FEW links (1-3) and most are auth-related (Login, Sign Up, Account): Classify as "auth".
-  - If the segment has MANY links (5+): The primary endpoint is "navigation". Only emit an ADDITIONAL "auth" endpoint if there are prominent auth BUTTONS (not plain text links) — e.g., a "Sign In" button or "Get Started" CTA button that is visually distinct from regular nav links.
-  - Plain text Login/SignUp links mixed into a navigation list are PART OF navigation. Only standalone buttons or highlighted CTAs warrant a separate auth endpoint.
+- AUTH LINKS IN NAVIGATION — rules:
   - If the segment contains actual credential input fields (password, email): Always classify as "auth".
+  - Sign In / Login / Account links in site headers are ALWAYS a separate "auth" endpoint, even as plain text links. Browser agents need to find these to start authentication flows.
+  - Registration / Sign Up links next to login are also "auth" endpoints.
+  - Cart / Basket / Warenkorb links in headers are ALWAYS a separate "checkout" endpoint. Browser agents need these for purchase flows.
+  - These header utility links (auth, cart) are distinct from the site's main navigation menu.
 
 ENDPOINT TYPES:
 - auth: Login, register, password reset forms

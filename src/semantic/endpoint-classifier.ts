@@ -113,6 +113,24 @@ const HEURISTIC_RULES: HeuristicRule[] = [
     },
   },
   {
+    name: "auth-link-in-header",
+    correctedType: "auth",
+    check: (_segment, candidate) =>
+      candidateMatchesContext(candidate, [
+        /\b(sign[\s_-]?in|log[\s_-]?in|sign[\s_-]?up|register|anmelden|einloggen)\b/,
+        /\b(account|konto|mein\s+konto)\b/,
+      ]),
+  },
+  {
+    name: "cart-link-implies-checkout",
+    correctedType: "checkout",
+    check: (_segment, candidate) =>
+      candidateMatchesContext(candidate, [
+        /\b(cart|basket|warenkorb|einkaufswagen|bag)\b/,
+        /\b(checkout|kasse|zur\s+kasse)\b/,
+      ]),
+  },
+  {
     name: "nav-root-implies-navigation",
     correctedType: "navigation",
     check: (segment) => hasNavRoot(segment.nodes),

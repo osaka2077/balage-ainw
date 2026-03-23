@@ -408,10 +408,16 @@ async function processSegment(
       if (candidate.type === "search" && !hasSearchEvidence) {
         candidate.confidence *= 0.7;
       }
-      // Auth in navigation without credential fields: gentle penalty
+      // Auth: Accept if credential fields OR auth-related links exist
       const hasCredentialFields = /type="?password|type="?email|autocomplete="?(username|email|current-password)/.test(segText);
-      if (candidate.type === "auth" && segment.type === "navigation" && !hasCredentialFields) {
+      const hasAuthLinks = /sign[\s_-]?in|log[\s_-]?in|sign[\s_-]?up|register|anmelden|einloggen|konto|account/i.test(segText);
+      if (candidate.type === "auth" && segment.type === "navigation" && !hasCredentialFields && !hasAuthLinks) {
         candidate.confidence *= 0.85;
+      }
+      // Checkout: Boost if cart/basket evidence in segment
+      const hasCartEvidence = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i.test(segText);
+      if (candidate.type === "checkout" && !hasCartEvidence) {
+        candidate.confidence *= 0.75;
       }
     }
 
