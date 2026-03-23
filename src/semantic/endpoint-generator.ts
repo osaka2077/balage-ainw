@@ -406,7 +406,7 @@ async function processSegment(
       const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search/.test(segText)
         || /input.*search|search.*input|searchbar|search-bar|search_bar/.test(segText);
       if (candidate.type === "search" && !hasSearchEvidence) {
-        candidate.confidence *= 0.7;
+        candidate.confidence *= 0.55;
       }
       // Auth: Accept if credential fields OR auth-related links exist
       const hasCredentialFields = /type="?password|type="?email|autocomplete="?(username|email|current-password)/.test(segText);
@@ -414,10 +414,10 @@ async function processSegment(
       if (candidate.type === "auth" && segment.type === "navigation" && !hasCredentialFields && !hasAuthLinks) {
         candidate.confidence *= 0.85;
       }
-      // Checkout: Boost if cart/basket evidence in segment
+      // Checkout: Hard penalty wenn kein Cart/Basket/Checkout-Evidence im DOM
       const hasCartEvidence = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i.test(segText);
       if (candidate.type === "checkout" && !hasCartEvidence) {
-        candidate.confidence *= 0.75;
+        candidate.confidence *= 0.55;
       }
     }
 
@@ -440,7 +440,7 @@ async function processSegment(
 // Helpers
 // ============================================================================
 
-/** Dedupliziert Kandidaten basierend auf Type + fuzzy Label-Similarity */
+/** Dedupliziert Kandidaten basierend auf Type + fuzzy Label-Similarity + per-type cap */
 function deduplicateCandidates(
   candidates: EndpointCandidate[],
 ): EndpointCandidate[] {
@@ -450,7 +450,7 @@ function deduplicateCandidates(
     const duplicate = result.find(
       (existing) =>
         existing.type === candidate.type &&
-        labelSimilarity(existing.label, candidate.label) > 0.50,
+        labelSimilarity(existing.label, candidate.label) > 0.40,
     );
 
     if (duplicate) {
@@ -464,7 +464,15 @@ function deduplicateCandidates(
     }
   }
 
-  return result;
+  // Per-type cap: max 3 Endpoints gleichen Typs (verhindert auth-Flut auf Login-Pages)
+  const MAX_PER_TYPE = 3;
+  const typeCount = new Map<string, number>();
+  return result.filter((c) => {
+    const count = typeCount.get(c.type) ?? 0;
+    if (count >= MAX_PER_TYPE) return false;
+    typeCount.set(c.type, count + 1);
+    return true;
+  });
 }
 
 /** Berechnet Jaccard-aehnliche Wort-Similarity zwischen zwei Labels */

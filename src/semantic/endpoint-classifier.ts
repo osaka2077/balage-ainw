@@ -115,11 +115,17 @@ const HEURISTIC_RULES: HeuristicRule[] = [
   {
     name: "auth-link-in-header",
     correctedType: "auth",
-    check: (_segment, candidate) =>
-      candidateMatchesContext(candidate, [
+    check: (segment, candidate) => {
+      // Guard: Wenn Segment bereits credential fields hat, greift password-field-implies-auth.
+      // Weitere auth-Korrekturen erzeugen nur Duplikate (LinkedIn-Problem).
+      if (hasInputType(segment.nodes, "password")) return false;
+      // Guard: In form-Segmenten nicht ueberschreiben — eigene Logik.
+      if (segment.type === "form") return false;
+      return candidateMatchesContext(candidate, [
         /\b(sign[\s_-]?in|log[\s_-]?in|sign[\s_-]?up|register|anmelden|einloggen)\b/,
         /\b(account|konto|mein\s+konto)\b/,
-      ]),
+      ]);
+    },
   },
   {
     name: "cart-link-implies-checkout",

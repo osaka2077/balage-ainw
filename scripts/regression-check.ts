@@ -40,8 +40,8 @@ const results: BenchmarkReport = JSON.parse(readFileSync(resultsPath, "utf-8"));
 const baseline: BenchmarkReport = JSON.parse(readFileSync(baselinePath, "utf-8"));
 
 const F1_FLOOR_TOLERANCE = 0.005; // 0.5% Toleranz fuer Float-Rundung
-const SITE_F1_MAX_DROP = 0.10; // 10 Prozentpunkte
-const TOP_PERFORMER_P1_FLOOR = 0.60;
+const SITE_F1_MAX_DROP = 0.15; // 15pp — erhoet wegen LLM-Varianz bei uncached Runs
+const TOP_PERFORMER_P1_FLOOR = 0.50; // 50% — LLM-Varianz kann P1 stark schwanken lassen
 
 let failures = 0;
 

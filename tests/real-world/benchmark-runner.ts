@@ -161,6 +161,18 @@ const KEY_SEGMENT_TYPES = ["form", "navigation", "auth", "search", "checkout", "
 // Matching Logic
 // ============================================================================
 
+/** Jaccard-Similarity zwischen GT-Label und Detected-Label (Wort-basiert) */
+function matchLabelSimilarity(gtLabel: string, detLabel: string): number {
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
+  const wordsA = new Set(normalize(gtLabel));
+  const wordsB = new Set(normalize(detLabel));
+  if (wordsA.size === 0 && wordsB.size === 0) return 1;
+  if (wordsA.size === 0 || wordsB.size === 0) return 0;
+  let intersection = 0;
+  for (const w of wordsA) if (wordsB.has(w)) intersection++;
+  return intersection / new Set([...wordsA, ...wordsB]).size;
+}
+
 export function typesMatch(gtType: string, detectedType: string): boolean {
   if (gtType === detectedType) return true;
   const aliases = TYPE_ALIASES[gtType];
@@ -234,8 +246,7 @@ export function computeMatches(
 
   for (const gt of groundTruth) {
     let bestIdx = -1;
-    let bestPriority = -1;
-    let bestConfidence = -1;
+    let bestScore = -1;
 
     for (let i = 0; i < detected.length; i++) {
       if (usedDetected.has(i)) continue;
@@ -247,15 +258,13 @@ export function computeMatches(
 
       if (!isExact && !isAlias && !isSemantic) continue;
 
-      // Prioritaet: exact(2) > alias(1) > semantic(0), dann Confidence
+      // Scoring: type-priority (exact>alias>semantic), dann label-similarity, dann confidence
       const priority = isExact ? 2 : isAlias ? 1 : 0;
-      if (
-        priority > bestPriority ||
-        (priority === bestPriority && det.confidence > bestConfidence)
-      ) {
+      const labelSim = matchLabelSimilarity(gt.label, det.label.primary);
+      const score = priority * 1000 + labelSim * 10 + det.confidence;
+      if (score > bestScore) {
         bestIdx = i;
-        bestPriority = priority;
-        bestConfidence = det.confidence;
+        bestScore = score;
       }
     }
 
