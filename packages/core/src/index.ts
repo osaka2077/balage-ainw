@@ -1,20 +1,15 @@
 /**
  * @balage/core — Semantic Verification Layer for Browser Agents
  *
- * Identifies interactive endpoints on web pages with confidence scores.
- * Works with raw HTML (no browser needed) or Playwright Page objects.
- *
  * @example
  * ```typescript
- * import { analyzeFromHTML } from "@balage/core";
+ * import { analyzeFromHTML, detectFramework } from "./core/index.js";
  *
  * const result = await analyzeFromHTML("<html>...</html>", {
  *   url: "https://example.com",
  *   llm: { provider: "openai", apiKey: process.env.OPENAI_API_KEY! },
  * });
- *
  * console.log(result.endpoints);
- * // [{type: "auth", label: "Login Form", confidence: 0.92, ...}]
  * ```
  */
 
@@ -25,6 +20,9 @@ export { analyzeFromHTML } from "./analyze.js";
 export { detectFramework } from "./detect-framework.js";
 export { htmlToDomNode } from "./html-to-dom.js";
 
+// Error Classes (value exports fuer instanceof-Checks)
+export { BalageError, BalageInputError, BalageLLMError } from "./types.js";
+
 // Types
 export type {
   AnalyzeOptions,
@@ -33,7 +31,6 @@ export type {
   FrameworkDetection,
   LLMConfig,
   DomNode,
-  AccessibilityNode,
   UISegment,
   Endpoint,
   EndpointType,

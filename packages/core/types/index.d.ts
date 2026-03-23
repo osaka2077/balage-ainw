@@ -1,0 +1,300 @@
+/**
+ * @balage/core — Type Declarations
+ *
+ * Semantic Verification Layer for Browser Agents.
+ * Identifies interactive endpoints on web pages with confidence scores.
+ *
+ * @packageDocumentation
+ */
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/** Current package version */
+export declare const VERSION: string;
+
+// ============================================================================
+// Core Types
+// ============================================================================
+
+/** Structured DOM node — minimal representation for parsing */
+export interface DomNode {
+  tagName: string;
+  attributes: Record<string, string>;
+  textContent?: string;
+  isVisible: boolean;
+  isInteractive: boolean;
+  boundingBox?: BoundingBox;
+  computedStyles?: {
+    display: string;
+    visibility: string;
+    opacity: number;
+  };
+  domPath?: string;
+  children: DomNode[];
+}
+
+/** Bounding box in pixels */
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Accessibility tree node */
+export interface AccessibilityNode {
+  role: string;
+  name: string;
+  value?: string;
+  description?: string;
+  checked?: "true" | "false" | "mixed";
+  disabled: boolean;
+  required: boolean;
+  expanded?: boolean;
+  selected?: boolean;
+  level?: number;
+  boundingBox?: BoundingBox;
+  children: AccessibilityNode[];
+}
+
+/** UI segment types */
+export type UISegmentType =
+  | "form"
+  | "navigation"
+  | "content"
+  | "header"
+  | "footer"
+  | "sidebar"
+  | "modal"
+  | "overlay"
+  | "banner"
+  | "table"
+  | "list"
+  | "media"
+  | "search"
+  | "checkout"
+  | "unknown";
+
+/** Segmented UI fragment */
+export interface UISegment {
+  id: string;
+  type: UISegmentType;
+  label?: string;
+  confidence: number;
+  boundingBox: BoundingBox;
+  nodes: DomNode[];
+  interactiveElementCount: number;
+  semanticRole?: string;
+  parentSegmentId?: string;
+}
+
+/** Endpoint category */
+export type EndpointType =
+  | "form"
+  | "checkout"
+  | "support"
+  | "navigation"
+  | "auth"
+  | "search"
+  | "commerce"
+  | "content"
+  | "consent"
+  | "media"
+  | "social"
+  | "settings";
+
+/** Full endpoint (internal pipeline result) */
+export interface Endpoint {
+  id: string;
+  type: EndpointType;
+  label: string;
+  description: string;
+  confidence: number;
+  url?: string;
+  selector?: string;
+  affordances: string[];
+  evidence: string[];
+}
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+/** Options for analyzeFromHTML */
+export interface AnalyzeOptions {
+  /** URL of the page (for context in LLM prompts) */
+  url?: string;
+  /**
+   * Use LLM for classification.
+   * - `true` (default): Enables LLM mode, requires LLMConfig.
+   * - `false`: Heuristic-only mode, no API key needed.
+   * - `LLMConfig`: LLM mode with explicit configuration.
+   */
+  llm?: boolean | LLMConfig;
+  /** Minimum confidence threshold (0-1). Default: 0.50 */
+  minConfidence?: number;
+  /** Maximum endpoints to return. Default: 10 */
+  maxEndpoints?: number;
+}
+
+/** LLM provider configuration */
+export interface LLMConfig {
+  /** LLM provider to use */
+  provider: "openai" | "anthropic";
+  /** API key for the provider */
+  apiKey: string;
+  /** Model name override (optional) */
+  model?: string;
+}
+
+// ============================================================================
+// Results
+// ============================================================================
+
+/** Detected framework information */
+export interface FrameworkDetection {
+  /** Framework name (e.g., "react", "nextjs", "shopify") */
+  framework: string;
+  /** Detection confidence (0-1) */
+  confidence: number;
+  /** Detected version, if available */
+  version?: string;
+  /** Evidence that led to the detection */
+  evidence: string[];
+}
+
+/** Simplified endpoint result for the public API */
+export interface DetectedEndpoint {
+  /** Endpoint type (e.g., "auth", "search", "navigation") */
+  type: string;
+  /** Human-readable label (e.g., "Login / Sign-In Form") */
+  label: string;
+  /** Descriptive summary of the endpoint */
+  description: string;
+  /** Confidence score (0-1) */
+  confidence: number;
+  /** CSS selector to locate the endpoint, if available */
+  selector?: string;
+  /** Possible user interactions (e.g., ["fill", "submit"]) */
+  affordances: string[];
+  /** Evidence supporting the classification */
+  evidence: string[];
+}
+
+/** Complete analysis result returned by analyzeFromHTML */
+export interface AnalysisResult {
+  /** Detected endpoints, sorted by confidence (descending) */
+  endpoints: DetectedEndpoint[];
+  /** Detected web framework, if any */
+  framework?: FrameworkDetection;
+  /** Performance timing */
+  timing: {
+    /** Total analysis time in milliseconds */
+    totalMs: number;
+    /** Number of LLM API calls made (0 in heuristic mode) */
+    llmCalls: number;
+  };
+  /** Analysis metadata */
+  meta: {
+    /** URL that was analyzed */
+    url?: string;
+    /** Analysis mode used */
+    mode: "llm" | "heuristic";
+    /** Package version */
+    version: string;
+  };
+}
+
+// ============================================================================
+// Error Classes
+// ============================================================================
+
+/**
+ * Base error class for all @balage/core errors.
+ * Supports `instanceof` checks and includes a machine-readable `code`.
+ */
+export declare class BalageError extends Error {
+  readonly code: string;
+  readonly cause?: Error;
+  constructor(message: string, code?: string, cause?: Error);
+}
+
+/**
+ * Thrown when invalid input is provided (e.g., html is not a string).
+ */
+export declare class BalageInputError extends BalageError {
+  constructor(message: string, cause?: Error);
+}
+
+/**
+ * Thrown when the LLM provider returns an error
+ * (invalid API key, rate limit, timeout, etc.).
+ */
+export declare class BalageLLMError extends BalageError {
+  readonly provider: string;
+  constructor(message: string, provider: string, cause?: Error);
+}
+
+// ============================================================================
+// Functions
+// ============================================================================
+
+/**
+ * Analyze raw HTML and return detected endpoints.
+ *
+ * Works without a browser — pass any HTML string.
+ * Use `llm: false` for fast heuristic-only analysis (no API key needed).
+ *
+ * @example
+ * ```typescript
+ * // Heuristic mode (no API key needed)
+ * const result = await analyzeFromHTML(html, {
+ *   url: "https://example.com",
+ *   llm: false,
+ * });
+ *
+ * // LLM mode (requires API key)
+ * const result = await analyzeFromHTML(html, {
+ *   url: "https://example.com",
+ *   llm: { provider: "openai", apiKey: process.env.OPENAI_API_KEY! },
+ * });
+ * ```
+ *
+ * @param html - Raw HTML string of the page
+ * @param options - Configuration options
+ * @returns Analysis result with endpoints, framework detection, and timing
+ *
+ * @throws {BalageInputError} When html is not a string
+ * @throws {BalageLLMError} When LLM provider returns an error
+ * @throws {BalageError} For unexpected internal errors
+ */
+export declare function analyzeFromHTML(
+  html: string,
+  options?: AnalyzeOptions,
+): Promise<AnalysisResult>;
+
+/**
+ * Detect the web framework used by the page.
+ *
+ * Checks for React, Next.js, Angular, Vue, Svelte,
+ * Shopify, WordPress, and Salesforce.
+ *
+ * @param html - Raw HTML string
+ * @returns Framework detection result or null if no framework detected
+ */
+export declare function detectFramework(
+  html: string,
+): FrameworkDetection | null;
+
+/**
+ * Parse raw HTML into a DomNode tree.
+ *
+ * Handles real-world HTML including self-closing tags,
+ * malformed markup, and edge cases without throwing.
+ *
+ * @param html - Raw HTML string
+ * @returns Root DomNode (tagName: "body")
+ */
+export declare function htmlToDomNode(html: string): DomNode;

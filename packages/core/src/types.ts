@@ -1,10 +1,7 @@
 /**
- * @balage/core — Public Types
- *
- * Re-exports from shared_interfaces + core-specific types.
+ * @balage/core — Public Types & Error Classes
  */
 
-// Re-export the core types that consumers need
 export type {
   DomNode,
   AccessibilityNode,
@@ -18,11 +15,54 @@ export type {
   SemanticFingerprint,
 } from "../../shared_interfaces.js";
 
-/** Options for analyzeFromHTML */
+// ============================================================================
+// Error Types — spezifische Fehlerklassen fuer klare Diagnose
+// ============================================================================
+
+/**
+ * Basis-Fehlerklasse fuer alle @balage/core Fehler.
+ * Ermoeglicht instanceof-Checks und hat einen maschinenlesbaren `code`.
+ */
+export class BalageError extends Error {
+  readonly code: string;
+  readonly cause?: Error;
+
+  constructor(message: string, code: string = "BALAGE_ERROR", cause?: Error) {
+    super(message);
+    this.name = "BalageError";
+    this.code = code;
+    this.cause = cause;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+/** Fehler bei ungueltigem Input (z.B. html ist kein String). */
+export class BalageInputError extends BalageError {
+  constructor(message: string, cause?: Error) {
+    super(message, "BALAGE_INPUT_ERROR", cause);
+    this.name = "BalageInputError";
+  }
+}
+
+/** Fehler bei LLM-Kommunikation (falscher API-Key, Rate Limit, Timeout). */
+export class BalageLLMError extends BalageError {
+  readonly provider: string;
+
+  constructor(message: string, provider: string, cause?: Error) {
+    super(message, "BALAGE_LLM_ERROR", cause);
+    this.name = "BalageLLMError";
+    this.provider = provider;
+  }
+}
+
+// ============================================================================
+// Configuration Types
+// ============================================================================
+
 export interface AnalyzeOptions {
   /** URL of the page (for context in LLM prompts) */
   url?: string;
-  /** Use LLM for classification. Default: true. Set false for heuristic-only mode. */
+  /** Use LLM for classification. Default: true. Set false for heuristic-only. */
   llm?: boolean | LLMConfig;
   /** Minimum confidence threshold. Default: 0.50 */
   minConfidence?: number;
@@ -30,14 +70,16 @@ export interface AnalyzeOptions {
   maxEndpoints?: number;
 }
 
-/** LLM configuration */
 export interface LLMConfig {
   provider: "openai" | "anthropic";
   apiKey: string;
   model?: string;
 }
 
-/** Detected framework info */
+// ============================================================================
+// Result Types
+// ============================================================================
+
 export interface FrameworkDetection {
   framework: string;
   confidence: number;
@@ -45,7 +87,6 @@ export interface FrameworkDetection {
   evidence: string[];
 }
 
-/** Simplified endpoint result for the public API */
 export interface DetectedEndpoint {
   type: string;
   label: string;
@@ -56,17 +97,9 @@ export interface DetectedEndpoint {
   evidence: string[];
 }
 
-/** Analysis result */
 export interface AnalysisResult {
   endpoints: DetectedEndpoint[];
   framework?: FrameworkDetection;
-  timing: {
-    totalMs: number;
-    llmCalls: number;
-  };
-  meta: {
-    url?: string;
-    mode: "llm" | "heuristic";
-    version: string;
-  };
+  timing: { totalMs: number; llmCalls: number };
+  meta: { url?: string; mode: "llm" | "heuristic"; version: string };
 }

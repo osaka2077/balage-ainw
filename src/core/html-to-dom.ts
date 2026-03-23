@@ -24,17 +24,54 @@ interface ParseState {
   path: string;
 }
 
-/** Simple HTML→DomNode parser. Handles real-world HTML including self-closing tags. */
+/**
+ * Simple HTML → DomNode parser. Handles real-world HTML including
+ * self-closing tags, malformed markup, and edge cases.
+ *
+ * Fuer kaputtes HTML wird ein best-effort Ergebnis zurueckgegeben,
+ * niemals ein throw. Das Ergebnis ist immer ein valider DomNode-Baum.
+ */
 export function htmlToDomNode(html: string): DomNode {
-  const state: ParseState = { pos: 0, html, path: "" };
-  const children = parseChildren(state, null);
+  // Guard: nicht-string Input abfangen (JS-Consumer ohne TypeScript)
+  if (typeof html !== "string") {
+    return createEmptyBody();
+  }
 
+  const trimmed = html.trim();
+  if (trimmed.length === 0) {
+    return createEmptyBody();
+  }
+
+  // Limitierung: Extrem grosses HTML (>10MB) abschneiden, um OOM zu vermeiden
+  const MAX_HTML_LENGTH = 10 * 1024 * 1024;
+  const safeHtml = trimmed.length > MAX_HTML_LENGTH
+    ? trimmed.slice(0, MAX_HTML_LENGTH)
+    : trimmed;
+
+  try {
+    const state: ParseState = { pos: 0, html: safeHtml, path: "" };
+    const children = parseChildren(state, null);
+
+    return {
+      tagName: "body",
+      attributes: {},
+      isVisible: true,
+      isInteractive: false,
+      children,
+    };
+  } catch {
+    // Bei jedem unerwarteten Parser-Fehler: leeren Body zurueckgeben
+    return createEmptyBody();
+  }
+}
+
+function createEmptyBody(): DomNode {
   return {
     tagName: "body",
     attributes: {},
     isVisible: true,
     isInteractive: false,
-    children,
+    children: [],
   };
 }
 

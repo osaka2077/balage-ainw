@@ -14,7 +14,7 @@
   },
   "files": ["dist/", "LICENSE", "README.md"],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && cp types/index.d.ts dist/index.d.ts",
     "prepublishOnly": "npm run build",
     "test": "cd ../.. && npx vitest run tests/unit/core-analyze.test.ts",
     "lint": "cd ../.. && npx tsc --noEmit"
