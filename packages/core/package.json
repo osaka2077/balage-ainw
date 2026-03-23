@@ -12,12 +12,12 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist/", "LICENSE"],
+  "files": ["dist/", "LICENSE", "README.md"],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "prepublishOnly": "npm run build",
-    "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "test": "cd ../.. && npx vitest run tests/unit/core-analyze.test.ts",
+    "lint": "cd ../.. && npx tsc --noEmit"
   },
   "keywords": [
     "browser-agent",
@@ -31,21 +31,23 @@
     "browser-use",
     "playwright"
   ],
-  "peerDependencies": {
-    "playwright": ">=1.40.0"
-  },
-  "peerDependenciesMeta": {
-    "playwright": {
-      "optional": true
-    }
-  },
   "dependencies": {
     "zod": "^3.24.0",
     "pino": "^9.0.0"
   },
+  "peerDependencies": {
+    "openai": ">=4.0.0",
+    "@anthropic-ai/sdk": ">=0.30.0",
+    "playwright": ">=1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": { "optional": true },
+    "@anthropic-ai/sdk": { "optional": true },
+    "playwright": { "optional": true }
+  },
   "devDependencies": {
+    "tsup": "^8.5.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
     "@types/node": "^22.0.0"
   },
   "engines": {
