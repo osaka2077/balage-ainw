@@ -8,7 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: false, // NICHT dist/ loeschen — index.d.ts ist handgeschrieben
   outDir: "dist",
-  external: ["playwright", "openai", "@anthropic-ai/sdk", "pino", "zod"],
+  external: ["playwright", "openai", "@anthropic-ai/sdk", "pino", "zod", "node:crypto", "crypto"],
   treeshake: true,
   minify: false,
 });

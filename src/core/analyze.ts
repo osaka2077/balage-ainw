@@ -17,9 +17,10 @@ import type { DomNode, UISegment } from "../../shared_interfaces.js";
 import type { EndpointCandidate } from "../semantic/types.js";
 import type { AnalyzeOptions, AnalysisResult, DetectedEndpoint, LLMConfig } from "./types.js";
 import { BalageInputError, BalageLLMError } from "./types.js";
+import { VERSION } from "./index.js";
 import { randomUUID } from "node:crypto";
 
-const logger = pino({ name: "balage:core", level: process.env["LOG_LEVEL"] ?? "warn" });
+const logger = pino({ name: "balage:core", level: process.env["LOG_LEVEL"] ?? "silent" });
 
 /**
  * Analyze raw HTML and return detected endpoints.
@@ -113,7 +114,7 @@ export async function analyzeFromHTML(
     endpoints,
     framework,
     timing: { totalMs, llmCalls },
-    meta: { url, mode, version: "0.1.0-alpha.1" },
+    meta: { url, mode, version: VERSION },
   };
 }
 
@@ -468,12 +469,12 @@ function runHeuristicAnalysis(
       const label = inferLabel(s.type, signals);
       const description = inferDescription(label, signals, endpointType);
 
-      // Confidence: Basis + Bonus fuer starke Signale
+      // Confidence: Basis + Bonus fuer starke Signale (BUG-1: round to avoid float issues)
       let confidence = 0.3 + s.interactiveElementCount * 0.1;
       if (signals.hasPasswordInput) confidence += 0.15;
       if (signals.hasSearchRole || signals.hasSearchInput) confidence += 0.1;
       if (signals.formAction) confidence += 0.05;
-      confidence = Math.min(0.85, confidence);
+      confidence = Math.round(Math.min(0.85, confidence) * 100) / 100;
 
       return {
         type: endpointType,
@@ -487,6 +488,14 @@ function runHeuristicAnalysis(
     })
     .filter((e: DetectedEndpoint) => e.confidence >= minConfidence)
     .sort((a: DetectedEndpoint, b: DetectedEndpoint) => b.confidence - a.confidence)
+    .reduce((deduped: DetectedEndpoint[], ep) => {
+      // BUG-2: Deduplicate by type+label — keep highest confidence
+      const key = `${ep.type}:${ep.label}`;
+      if (!deduped.some(d => `${d.type}:${d.label}` === key)) {
+        deduped.push(ep);
+      }
+      return deduped;
+    }, [])
     .slice(0, maxEndpoints);
 }
 
@@ -507,7 +516,7 @@ function createEmptyResult(
       mode: (options.llm && typeof options.llm !== "boolean")
         ? "llm"
         : "heuristic",
-      version: "0.1.0-alpha.1",
+      version: VERSION,
     },
   };
 }
