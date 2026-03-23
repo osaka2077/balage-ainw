@@ -19,7 +19,7 @@ async function loadLLMModules() {
   const { createOpenAIClient, createAnthropicClient } = await import("../semantic/llm-client.js");
   return { generateEndpoints, classifyEndpoint, createOpenAIClient, createAnthropicClient };
 }
-import type { AnalyzeOptions, AnalysisResult, DetectedEndpoint, LLMConfig } from "./types.js";
+import type { AnalyzeOptions, AnalysisResult, DetectedEndpoint, LLMConfig, EndpointType, AffordanceType } from "./types.js";
 import type { EndpointCandidate } from "../semantic/types.js";
 import { BalageInputError, BalageLLMError } from "./types.js";
 import { VERSION } from "./index.js";
@@ -56,7 +56,7 @@ export async function analyzeFromHTML(
   const start = performance.now();
   const {
     url = "https://unknown",
-    llm = false,
+    llm = false as false | LLMConfig,
     minConfidence = 0.50,
     maxEndpoints = 10,
   } = options;
@@ -98,11 +98,9 @@ export async function analyzeFromHTML(
 
   let endpoints: DetectedEndpoint[];
   let llmCalls = 0;
-  const mode = (llm && typeof llm !== "boolean")
-    ? "llm" as const
-    : "heuristic" as const;
+  const mode = llm ? "llm" as const : "heuristic" as const;
 
-  if (llm && typeof llm !== "boolean") {
+  if (llm) {
     endpoints = await runLLMAnalysis(
       segments, llm, url, minConfidence, maxEndpoints,
     );
@@ -185,12 +183,12 @@ async function runLLMAnalysis(
     if (!matchedSegment) continue;
     const classified = classifyEndpoint(c, matchedSegment);
     mapped.push({
-      type: classified.correctedType ?? c.type,
+      type: (classified.correctedType ?? c.type) as EndpointType,
       label: c.label,
       description: c.description,
       confidence: classified.combinedConfidence,
       selector: c.anchors[0]?.selector,
-      affordances: c.affordances.map((a: { type: string }) => a.type),
+      affordances: c.affordances.map((a: { type: string }) => a.type) as AffordanceType[],
       evidence: [
         `LLM: ${c.type} (conf ${c.confidence.toFixed(2)})`,
         classified.correctedType ? `Heuristic correction: ${classified.correctedType}` : "Heuristic: confirmed",
@@ -411,11 +409,13 @@ function capitalizeFirst(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+const VALID_ENDPOINT_TYPES = new Set<EndpointType>(["auth","form","search","navigation","checkout","commerce","content","consent","support","media","social","settings"]);
+
 /** Bestimmt den Endpoint-Typ aus DOM-Signalen (verbessert den Segment-Typ). */
 function inferEndpointType(
   segmentType: string,
   signals: DomSignals,
-): string {
+): EndpointType {
   if (signals.hasPasswordInput) return "auth";
   if (signals.hasSearchRole || signals.hasSearchInput) return "search";
   if (signals.placeholders.some(p => /search|suche|find/i.test(p))) {
@@ -434,7 +434,7 @@ function inferEndpointType(
     if (/search/i.test(action)) return "search";
   }
 
-  return segmentType;
+  return VALID_ENDPOINT_TYPES.has(segmentType as EndpointType) ? segmentType as EndpointType : "content";
 }
 
 function inferDescription(
@@ -528,9 +528,7 @@ function createEmptyResult(
     timing: { totalMs: Math.round(elapsedMs), llmCalls: 0 },
     meta: {
       url: options.url,
-      mode: (options.llm && typeof options.llm !== "boolean")
-        ? "llm"
-        : "heuristic",
+      mode: options.llm ? "llm" : "heuristic",
       version: VERSION,
     },
   };
@@ -539,8 +537,8 @@ function createEmptyResult(
 function inferAffordances(
   endpointType: string,
   signals: DomSignals,
-): string[] {
-  const affordances: string[] = [];
+): AffordanceType[] {
+  const affordances: AffordanceType[] = [];
   switch (endpointType) {
     case "auth":
       affordances.push("fill", "submit", "click");

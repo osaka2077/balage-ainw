@@ -7,7 +7,6 @@ export type {
   AccessibilityNode,
   UISegment,
   Endpoint,
-  EndpointType,
   Evidence,
   BoundingBox,
   SemanticLabel,
@@ -59,11 +58,17 @@ export class BalageLLMError extends BalageError {
 // Configuration Types
 // ============================================================================
 
+/** Endpoint type union — all recognized UI element categories */
+export type EndpointType = "auth" | "form" | "search" | "navigation" | "checkout" | "commerce" | "content" | "consent" | "support" | "media" | "social" | "settings";
+
+/** Affordance type union — all recognized interaction types */
+export type AffordanceType = "click" | "fill" | "select" | "toggle" | "submit" | "navigate" | "upload" | "scroll" | "drag" | "read";
+
 export interface AnalyzeOptions {
   /** URL of the page (for context in LLM prompts) */
   url?: string;
-  /** Use LLM for classification. Default: false (heuristic-only, no API key needed). Pass LLMConfig object to enable. */
-  llm?: boolean | LLMConfig;
+  /** LLM config for higher accuracy. Default: false (heuristic-only, no API key needed). */
+  llm?: false | LLMConfig;
   /** Minimum confidence threshold. Default: 0.50 */
   minConfidence?: number;
   /** Maximum endpoints to return. Default: 10 */
@@ -88,12 +93,12 @@ export interface FrameworkDetection {
 }
 
 export interface DetectedEndpoint {
-  type: string;
+  type: EndpointType;
   label: string;
   description: string;
   confidence: number;
   selector?: string;
-  affordances: string[];
+  affordances: AffordanceType[];
   evidence: string[];
 }
 

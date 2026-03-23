@@ -126,4 +126,4 @@ Parses raw HTML into BALAGE's `DomNode` format. No browser dependency.
 
 ## License
 
-Business Source License 1.1 (BSL). Converts to Apache 2.0 after 3 years. See [LICENSE](./LICENSE).
+MIT

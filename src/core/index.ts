@@ -30,8 +30,7 @@ export type {
   DetectedEndpoint,
   FrameworkDetection,
   LLMConfig,
-  DomNode,
-  UISegment,
-  Endpoint,
   EndpointType,
+  AffordanceType,
+  DomNode,
 } from "./types.js";

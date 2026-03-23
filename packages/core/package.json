@@ -1,8 +1,8 @@
 {
   "name": "@balage/core",
   "version": "0.1.0-alpha.1",
-  "description": "Semantic Verification Layer for Browser Agents — classify and verify web page endpoints",
-  "license": "BUSL-1.1",
+  "description": "Detect login forms, search bars, and checkout flows in HTML. Confidence scores for browser agents. No browser needed.",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -23,16 +23,21 @@
     "lint": "cd ../.. && npx tsc --noEmit"
   },
   "keywords": [
-    "browser-agent",
-    "verification",
-    "semantic",
-    "endpoint-detection",
-    "ai-agent",
-    "trust-layer",
-    "mcp",
-    "stagehand",
+    "browser-automation",
+    "web-scraping",
+    "playwright",
     "browser-use",
-    "playwright"
+    "stagehand",
+    "ai-agent",
+    "page-analysis",
+    "form-detection",
+    "login-detection",
+    "confidence-score",
+    "dom-parser",
+    "mcp",
+    "element-detection",
+    "ui-testing",
+    "web-agent"
   ],
   "dependencies": {
     "zod": "^3.24.0",
