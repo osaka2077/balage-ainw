@@ -1,0 +1,38 @@
+{
+  "name": "balage-mcp",
+  "version": "0.1.0-alpha.1",
+  "description": "MCP server for BALAGE — semantic page analysis for AI agents. Works with Claude, ChatGPT, Cursor.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "balage-mcp": "./dist/index.js"
+  },
+  "files": ["dist/", "LICENSE", "README.md"],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp", "model-context-protocol", "ai-agent", "browser-automation",
+    "claude", "chatgpt", "cursor", "page-analysis", "web-agent"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0"
+  },
+  "peerDependencies": {
+    "balage-core": ">=0.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osaka2077/balage-ainw",
+    "directory": "packages/mcp"
+  }
+}
