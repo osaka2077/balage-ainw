@@ -1,0 +1,3151 @@
+{
+  "runDate": "2026-03-23",
+  "config": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "fallbackModel": "gpt-4o"
+  },
+  "results": [
+    {
+      "url": "https://github.com/login",
+      "file": "github-login",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 5,
+        "phase1": 2,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 7,
+        "types": [
+          "auth",
+          "consent"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.571,
+          "recall": 0.8,
+          "f1": 0.667,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 0.333,
+          "recall": 1,
+          "f1": 0.5,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 3927,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Login Form",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign In Form",
+            "confidence": 0.77
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign in with SSO (SAML)",
+            "phase": 2
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Continue with Google",
+            "confidence": 0.77
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Create Account",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Social Sign In Options",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "consent",
+              "detectedLabel": "Manage Cookies",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=consent)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Sign in with a passkey",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Forgot Password",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Social Sign In Options",
+            "confidence": 0.6799999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign in with Passkey",
+            "phase": 2
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign in with a passkey",
+            "confidence": 0.6799999999999999
+          },
+          "typeMatch": true
+        }
+      ]
+    },
+    {
+      "url": "https://gitlab.com/users/sign_in",
+      "file": "gitlab-login",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 5,
+        "phase1": 2,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 6,
+        "types": [
+          "auth",
+          "search"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.5,
+          "recall": 0.6,
+          "f1": 0.545,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 0.4,
+          "recall": 1,
+          "f1": 0.571,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 534,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In Form",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign In Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Forgot Password",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Passkey Login Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "SSO Providers",
+            "phase": 2
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Google Sign In",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Register Tab",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Social Login Options",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Language Switcher",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Cookie List Search",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Explore GitLab",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Social Login Options",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Language Switcher",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Cookie List Search",
+              "confidence": 0.6799999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://news.ycombinator.com",
+      "file": "hacker-news",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 5,
+        "phase1": 1,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 6,
+        "types": [
+          "navigation",
+          "auth",
+          "content",
+          "search"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.833,
+          "recall": 1,
+          "f1": 0.909,
+          "typeAccuracy": 0.8
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 557,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Login Link",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Login Link",
+            "confidence": 0.71
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Header Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Hacker News Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Story Links",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Hacker News Articles",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Story Metadata Links",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "More Link (Pagination)",
+            "phase": 2
+          },
+          "matched": {
+            "type": "content",
+            "label": "Comments and User Interaction",
+            "confidence": 0.62
+          },
+          "typeMatch": false
+        }
+      ]
+    },
+    {
+      "url": "https://www.linkedin.com/login",
+      "file": "linkedin-login",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 5,
+        "phase1": 2,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 4,
+        "types": [
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.75,
+          "recall": 0.6,
+          "f1": 0.667,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.667,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 1468,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Login Form",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "LinkedIn Login Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Forgot Password",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "LinkedIn Sign In Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Join Now",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Cookie Consent",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login with Apple",
+              "confidence": 0.8400000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "LinkedIn Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign in with Google",
+            "phase": 2
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Cookie Consent",
+            "confidence": 0.8500000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Footer Links",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login with Apple",
+              "confidence": 0.8400000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "LinkedIn Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "LinkedIn Sign In Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.notion.so/login",
+      "file": "notion-login",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 5,
+        "phase1": 2,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 2,
+        "types": [
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 1,
+          "recall": 0.4,
+          "f1": 0.571,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 314,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Email Login",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Login Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Continue with Google",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Email Authentication Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Continue with Apple",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Authentication Form",
+              "confidence": 0.9299999999999999,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Continue with SAML SSO",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Authentication Form",
+              "confidence": 0.9299999999999999,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Sign Up",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Authentication Form",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://trello.com/login",
+      "file": "trello-login",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 4,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 1,
+        "types": [
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 1,
+          "recall": 0.167,
+          "f1": 0.286,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 0.25,
+          "f1": 0.4,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 1142,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Email Input",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Login Form",
+            "confidence": 0.5
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Password Input",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.5,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Continue with Google",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.5,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Continue with Microsoft",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.5,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Can't Log In",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.5,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Create Account",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login Form",
+              "confidence": 0.5,
+              "reason": "already matched to different GT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Main_Page",
+      "file": "wikipedia-main",
+      "difficulty": "easy",
+      "status": "success",
+      "groundTruth": {
+        "total": 5,
+        "phase1": 1,
+        "types": [
+          "search",
+          "navigation",
+          "auth"
+        ]
+      },
+      "detected": {
+        "total": 7,
+        "types": [
+          "navigation",
+          "search",
+          "checkout"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.429,
+          "recall": 0.6,
+          "f1": 0.5,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 2441,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "search",
+            "label": "Search Wikipedia",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Wikipedia Search",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Main Navigation Tabs",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Language Selector",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Contribute Navigation",
+            "confidence": 0.8700000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Featured Article Links",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Contribute Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Size Selection Form",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Log In / Create Account",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Size Selection Form",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=auth, det=checkout)"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Theme Selection",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=auth, det=checkout)"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Login / Create Account",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=auth, det=checkout)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://accounts.google.com",
+      "file": "google-accounts",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 4,
+        "types": [
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 3,
+        "types": [
+          "auth",
+          "form"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 1,
+          "recall": 0.5,
+          "f1": 0.667,
+          "typeAccuracy": 0.667
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 0.75,
+          "f1": 0.857,
+          "typeAccuracy": 0.667
+        }
+      },
+      "timing": {
+        "totalMs": 277,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Identifier Step — Email/Phone",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign In Form",
+            "confidence": 0.77
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Password Step",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Email Input for Sign In",
+            "confidence": 0.71
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Forgot Email",
+            "phase": 1
+          },
+          "matched": {
+            "type": "form",
+            "label": "Language Selection",
+            "confidence": 0.74
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Forgot Password",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Sign In Form",
+              "confidence": 0.77,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "form",
+              "detectedLabel": "Language Selection",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Input for Sign In",
+              "confidence": 0.71,
+              "reason": "type-match but already used"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Create Account",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Sign In Form",
+              "confidence": 0.77,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "form",
+              "detectedLabel": "Language Selection",
+              "confidence": 0.74,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Input for Sign In",
+              "confidence": 0.71,
+              "reason": "already matched to different GT"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Language Selector",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Sign In Form",
+              "confidence": 0.77,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "form",
+              "detectedLabel": "Language Selection",
+              "confidence": 0.74,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Email Input for Sign In",
+              "confidence": 0.71,
+              "reason": "already matched to different GT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://themes.shopify.com/themes/dawn/styles/default/preview",
+      "file": "shopify-demo",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 3,
+        "types": [
+          "search",
+          "checkout",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 6,
+        "types": [
+          "form",
+          "navigation",
+          "search",
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.5,
+          "recall": 0.5,
+          "f1": 0.5,
+          "typeAccuracy": 0.667
+        },
+        "phase1Only": {
+          "precision": 0.5,
+          "recall": 0.667,
+          "f1": 0.571,
+          "typeAccuracy": 0.5
+        }
+      },
+      "timing": {
+        "totalMs": 16367,
+        "llmCalls": 1,
+        "llmCostUsd": 0.001
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "search",
+            "label": "Product Search",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Theme Navigation",
+            "confidence": 0.8800000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "checkout",
+            "label": "Add to Cart Buttons",
+            "phase": 1
+          },
+          "matched": {
+            "type": "form",
+            "label": "Language Selector",
+            "confidence": 0.77
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "checkout",
+            "label": "Cart Drawer",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "form",
+              "detectedLabel": "Language Selector",
+              "confidence": 0.77,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Theme Search",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=checkout, det=search)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Theme Details Links",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=checkout, det=search)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Product Cards",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Theme Search",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Theme Details Links",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Footer Navigation",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Theme Search",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Theme Details Links",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://stackoverflow.com",
+      "file": "stackoverflow-main",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 2,
+        "types": [
+          "search",
+          "auth",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 8,
+        "types": [
+          "auth",
+          "search",
+          "navigation"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.5,
+          "recall": 0.667,
+          "f1": 0.571,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 0.286,
+          "recall": 1,
+          "f1": 0.444,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 3017,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "search",
+            "label": "Search Bar",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Tags Search",
+            "confidence": 0.77
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Log In",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign Up Form",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign Up",
+            "phase": 2
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Filter Questions",
+            "confidence": 0.9099999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Left Sidebar Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Footer Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Question Feed",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Topic Selection",
+              "confidence": 0.8800000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Next Button",
+              "confidence": 0.78,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Ask Question",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Topic Selection",
+              "confidence": 0.8800000000000001,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            },
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Next Button",
+              "confidence": 0.78,
+              "reason": "type-mismatch (gt=navigation, det=auth)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://docs.stripe.com",
+      "file": "stripe-docs",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 1,
+        "types": [
+          "form",
+          "navigation",
+          "auth"
+        ]
+      },
+      "detected": {
+        "total": 9,
+        "types": [
+          "navigation",
+          "support",
+          "auth",
+          "search"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.444,
+          "recall": 0.667,
+          "f1": 0.533,
+          "typeAccuracy": 0.75
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "typeAccuracy": 0
+        }
+      },
+      "timing": {
+        "totalMs": 4672,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Documentation Search",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Documentation Search",
+            "confidence": 0.5780000000000001
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Sidebar Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Use Cases Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Breadcrumbs",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Development Resources Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Code Example Controls",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Use Cases Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Development Resources Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "support",
+              "detectedLabel": "Contact Customer Support",
+              "confidence": 0.71,
+              "reason": "type-mismatch (gt=navigation, det=support)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In / Dashboard",
+            "phase": 2
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Login Form",
+            "confidence": 0.71
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Top Navigation",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Use Cases Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Development Resources Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "support",
+              "detectedLabel": "Contact Customer Support",
+              "confidence": 0.71,
+              "reason": "type-mismatch (gt=navigation, det=support)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.target.com",
+      "file": "target-main",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 7,
+        "phase1": 3,
+        "types": [
+          "search",
+          "auth",
+          "commerce",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 10,
+        "types": [
+          "search",
+          "auth",
+          "commerce",
+          "navigation",
+          "checkout"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.4,
+          "recall": 0.571,
+          "f1": 0.471,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 0.333,
+          "recall": 1,
+          "f1": 0.5,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 1410,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "search",
+            "label": "Product Search",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Search Input",
+            "confidence": 0.77
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign Up Form",
+            "confidence": 0.77
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "commerce",
+            "label": "Cart",
+            "phase": 1
+          },
+          "matched": {
+            "type": "commerce",
+            "label": "Add to Cart - Squishmallows",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Category Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Product Categories Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Store Locator",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Product Categories Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Voice Search Button",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
+            },
+            {
+              "detectedType": "commerce",
+              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
+              "confidence": 0.74,
+              "reason": "type-mismatch (gt=navigation, det=commerce)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Deals and Promotions",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Product Categories Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Voice Search Button",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
+            },
+            {
+              "detectedType": "commerce",
+              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
+              "confidence": 0.74,
+              "reason": "type-mismatch (gt=navigation, det=commerce)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Product Carousel",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Product Categories Navigation",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Voice Search Button",
+              "confidence": 0.76,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
+            },
+            {
+              "detectedType": "commerce",
+              "detectedLabel": "Add to Cart - Spring Easter Milk Chocolate Bunny",
+              "confidence": 0.74,
+              "reason": "type-mismatch (gt=navigation, det=commerce)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.typeform.com",
+      "file": "typeform-main",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 3,
+        "types": [
+          "auth",
+          "form",
+          "navigation",
+          "consent"
+        ]
+      },
+      "detected": {
+        "total": 7,
+        "types": [
+          "navigation",
+          "consent",
+          "support",
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.571,
+          "recall": 0.667,
+          "f1": 0.615,
+          "typeAccuracy": 0.75
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 0.667,
+          "f1": 0.8,
+          "typeAccuracy": 0.5
+        }
+      },
+      "timing": {
+        "totalMs": 1558,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Login",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Login / Sign Up",
+            "confidence": 0.5569999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign Up / Get Started Free",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "auth",
+              "detectedLabel": "Login / Sign Up",
+              "confidence": 0.5569999999999999,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Platform Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Hero CTA — Get Started",
+            "phase": 1
+          },
+          "matched": {
+            "type": "consent",
+            "label": "Cookie Consent",
+            "confidence": 0.74
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Product Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Platform Navigation",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Templates Gallery",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "consent",
+            "label": "Cookie Consent",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "consent",
+              "detectedLabel": "Cookie Consent",
+              "confidence": 0.74,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=consent, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Platform Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "already matched to different GT"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://support.zendesk.com",
+      "file": "zendesk-support",
+      "difficulty": "medium",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 4,
+        "types": [
+          "form",
+          "auth",
+          "support",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 10,
+        "types": [
+          "navigation",
+          "search",
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.5,
+          "recall": 0.833,
+          "f1": 0.625,
+          "typeAccuracy": 0.6
+        },
+        "phase1Only": {
+          "precision": 0.4,
+          "recall": 1,
+          "f1": 0.571,
+          "typeAccuracy": 0.25
+        }
+      },
+      "timing": {
+        "totalMs": 1285,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Help Center Search",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Cookie Consent",
+            "confidence": 0.8800000000000001
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Login and Free Trial",
+            "confidence": 0.6080000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "support",
+            "label": "Submit a Request",
+            "phase": 1
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Global Navigation",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Help Center Categories",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Footer Navigation",
+            "confidence": 0.8700000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Community Forum",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Legal Links",
+            "confidence": 0.78
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "support",
+            "label": "Contact Support",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Global Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Legal Links",
+              "confidence": 0.78,
+              "reason": "type-match but already used"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.airbnb.com",
+      "file": "airbnb-main",
+      "difficulty": "hard",
+      "status": "success",
+      "groundTruth": {
+        "total": 7,
+        "phase1": 2,
+        "types": [
+          "form",
+          "navigation",
+          "auth"
+        ]
+      },
+      "detected": {
+        "total": 6,
+        "types": [
+          "search",
+          "navigation"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.667,
+          "recall": 0.571,
+          "f1": 0.615,
+          "typeAccuracy": 0.5
+        },
+        "phase1Only": {
+          "precision": 0.25,
+          "recall": 0.5,
+          "f1": 0.333,
+          "typeAccuracy": 0
+        }
+      },
+      "timing": {
+        "totalMs": 1346,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Search Form",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Destination Search",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Category Filter Bar",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Footer Navigation",
+            "confidence": 0.8700000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign Up / Log In",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Profile Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Language and Currency Selection",
+              "confidence": 0.8200000000000001,
+              "reason": "type-mismatch (gt=auth, det=search)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Become a Host",
+              "confidence": 0.7989999999999999,
+              "reason": "type-mismatch (gt=auth, det=search)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Cookie Consent Banner",
+            "phase": 2
+          },
+          "matched": {
+            "type": "search",
+            "label": "Language and Currency Selection",
+            "confidence": 0.8200000000000001
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Listing Cards",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Profile Navigation",
+            "confidence": 0.8700000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Become a Host",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Profile Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Become a Host",
+              "confidence": 0.7989999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Footer Navigation",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Footer Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Profile Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Become a Host",
+              "confidence": 0.7989999999999999,
+              "reason": "type-mismatch (gt=navigation, det=search)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://www.booking.com",
+      "file": "booking-main",
+      "difficulty": "hard",
+      "status": "success",
+      "groundTruth": {
+        "total": 6,
+        "phase1": 2,
+        "types": [
+          "form",
+          "navigation",
+          "auth"
+        ]
+      },
+      "detected": {
+        "total": 10,
+        "types": [
+          "search",
+          "navigation",
+          "commerce",
+          "checkout",
+          "auth"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.5,
+          "recall": 0.833,
+          "f1": 0.625,
+          "typeAccuracy": 0.8
+        },
+        "phase1Only": {
+          "precision": 1,
+          "recall": 1,
+          "f1": 1,
+          "typeAccuracy": 0.5
+        }
+      },
+      "timing": {
+        "totalMs": 2023,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Accommodation Search Form",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Property Search",
+            "confidence": 0.77
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Property Type Tabs",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Quick Links Navigation",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In / Register",
+            "phase": 1
+          },
+          "matched": {
+            "type": "auth",
+            "label": "Sign In / Register",
+            "confidence": 0.71
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Cookie Consent Banner",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "search",
+              "detectedLabel": "Property Search",
+              "confidence": 0.77,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "City Navigation Tabs",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Trending Destinations",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Currency/Language Selector",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "City Navigation Tabs",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        }
+      ]
+    },
+    {
+      "url": "https://www.ebay.de",
+      "file": "ebay-de-main",
+      "difficulty": "hard",
+      "status": "success",
+      "groundTruth": {
+        "total": 8,
+        "phase1": 3,
+        "types": [
+          "form",
+          "auth",
+          "navigation",
+          "checkout"
+        ]
+      },
+      "detected": {
+        "total": 10,
+        "types": [
+          "navigation",
+          "checkout",
+          "content"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.5,
+          "recall": 0.625,
+          "f1": 0.556,
+          "typeAccuracy": 1
+        },
+        "phase1Only": {
+          "precision": 0.25,
+          "recall": 0.333,
+          "f1": 0.286,
+          "typeAccuracy": 1
+        }
+      },
+      "timing": {
+        "totalMs": 1895,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Search Bar",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Top Kategorien Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Popular Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Top Kategorien Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Popular Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Register",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "checkout",
+            "label": "Shopping Cart",
+            "phase": 1
+          },
+          "matched": {
+            "type": "checkout",
+            "label": "Cookie Consent",
+            "confidence": 0.8800000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Category Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Top Kategorien Navigation",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Sell Button",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Popular Navigation",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Cookie Consent Banner",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Top Categories Navigation",
+              "confidence": 0.8700000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Login / Sign Up",
+              "confidence": 0.8500000000000001,
+              "reason": "type-mismatch (gt=form, det=checkout)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Beliebte Themen Navigation",
+              "confidence": 0.8400000000000001,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "My eBay (Watchlist/Orders)",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Top Categories Navigation",
+            "confidence": 0.8700000000000001
+          },
+          "typeMatch": true
+        }
+      ]
+    },
+    {
+      "url": "https://www.zalando.de",
+      "file": "zalando-de-main",
+      "difficulty": "hard",
+      "status": "success",
+      "groundTruth": {
+        "total": 8,
+        "phase1": 3,
+        "types": [
+          "form",
+          "auth",
+          "checkout",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 10,
+        "types": [
+          "navigation",
+          "search",
+          "support"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.6,
+          "recall": 0.75,
+          "f1": 0.667,
+          "typeAccuracy": 0.5
+        },
+        "phase1Only": {
+          "precision": 0.333,
+          "recall": 0.333,
+          "f1": 0.333,
+          "typeAccuracy": 0
+        }
+      },
+      "timing": {
+        "totalMs": 1027,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Search Bar",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Registration Form",
+            "confidence": 0.9099999999999999
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In / Account",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Shop Selection Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Menu",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=auth, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "checkout",
+            "label": "Shopping Cart",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Shop Selection Navigation",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=checkout, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Menu",
+              "confidence": 0.9299999999999999,
+              "reason": "type-mismatch (gt=checkout, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Main Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-mismatch (gt=checkout, det=navigation)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Wishlist",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Shop Selection Navigation",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Gender Navigation",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Menu",
+            "confidence": 0.9299999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Category Mega-Menu",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Main Navigation",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Cookie Consent Modal",
+            "phase": 2
+          },
+          "matched": {
+            "type": "search",
+            "label": "Gift Cards",
+            "confidence": 0.76
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Newsletter Signup",
+            "phase": 2
+          },
+          "matched": {
+            "type": "search",
+            "label": "Product Search",
+            "confidence": 0.74
+          },
+          "typeMatch": false
+        }
+      ]
+    },
+    {
+      "url": "https://www.amazon.de",
+      "file": "amazon-de-main",
+      "difficulty": "extreme",
+      "status": "success",
+      "groundTruth": {
+        "total": 8,
+        "phase1": 3,
+        "types": [
+          "form",
+          "navigation",
+          "auth",
+          "checkout"
+        ]
+      },
+      "detected": {
+        "total": 10,
+        "types": [
+          "checkout",
+          "search",
+          "navigation",
+          "content"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 0.6,
+          "recall": 0.75,
+          "f1": 0.667,
+          "typeAccuracy": 0.333
+        },
+        "phase1Only": {
+          "precision": 0.25,
+          "recall": 0.667,
+          "f1": 0.364,
+          "typeAccuracy": 0.5
+        }
+      },
+      "timing": {
+        "totalMs": 2198,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Search Bar",
+            "phase": 1
+          },
+          "matched": {
+            "type": "search",
+            "label": "Cookie and Advertising Preferences",
+            "confidence": 0.8800000000000001
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Category Mega-Menu",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Keyboard Shortcuts Navigation",
+            "confidence": 0.9000000000000001
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "auth",
+            "label": "Sign In",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Sign In Form",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=auth, det=checkout)"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Account Settings and List Management",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=auth, det=checkout)"
+            },
+            {
+              "detectedType": "search",
+              "detectedLabel": "Product Links",
+              "confidence": 0.8800000000000001,
+              "reason": "type-mismatch (gt=auth, det=search)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "checkout",
+            "label": "Shopping Cart",
+            "phase": 1
+          },
+          "matched": {
+            "type": "checkout",
+            "label": "Sign In Form",
+            "confidence": 0.9099999999999999
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Delivery Location Selector",
+            "phase": 2
+          },
+          "matched": {
+            "type": "search",
+            "label": "Product Links",
+            "confidence": 0.8800000000000001
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Top Navigation Bar",
+            "phase": 2
+          },
+          "matched": {
+            "type": "content",
+            "label": "Keyboard Shortcuts Toggle",
+            "confidence": 0.62
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Cookie Consent Banner",
+            "phase": 2
+          },
+          "matched": {
+            "type": "search",
+            "label": "Category Search",
+            "confidence": 0.77
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Orders & Returns",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Keyboard Shortcuts Navigation",
+              "confidence": 0.9000000000000001,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "content",
+              "detectedLabel": "Keyboard Shortcuts Toggle",
+              "confidence": 0.62,
+              "reason": "type-match but already used"
+            },
+            {
+              "detectedType": "checkout",
+              "detectedLabel": "Account Settings and List Management",
+              "confidence": 0.9099999999999999,
+              "reason": "type-mismatch (gt=navigation, det=checkout)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "url": "https://material.angular.io/components/categories",
+      "file": "angular-material-demo",
+      "difficulty": "extreme",
+      "status": "success",
+      "groundTruth": {
+        "total": 7,
+        "phase1": 1,
+        "types": [
+          "form",
+          "navigation"
+        ]
+      },
+      "detected": {
+        "total": 5,
+        "types": [
+          "navigation",
+          "content"
+        ]
+      },
+      "metrics": {
+        "all": {
+          "precision": 1,
+          "recall": 0.714,
+          "f1": 0.833,
+          "typeAccuracy": 0.6
+        },
+        "phase1Only": {
+          "precision": 0,
+          "recall": 0,
+          "f1": 0,
+          "typeAccuracy": 0
+        }
+      },
+      "timing": {
+        "totalMs": 530,
+        "llmCalls": 0,
+        "llmCostUsd": 0
+      },
+      "errors": [],
+      "matchDetails": [
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Demo Form Components",
+            "phase": 2
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Top Toolbar Navigation",
+              "confidence": 0.74,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Component Navigation",
+              "confidence": 0.74,
+              "reason": "type-mismatch (gt=form, det=navigation)"
+            },
+            {
+              "detectedType": "content",
+              "detectedLabel": "Version Picker",
+              "confidence": 0.62,
+              "reason": "type-mismatch (gt=form, det=content)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Component Sidebar",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Top Toolbar Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Code Example Toggle",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Component Navigation",
+            "confidence": 0.74
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "form",
+            "label": "Search Components",
+            "phase": 1
+          },
+          "matched": null,
+          "typeMatch": false,
+          "nearMisses": [
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Top Toolbar Navigation",
+              "confidence": 0.74,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "navigation",
+              "detectedLabel": "Component Navigation",
+              "confidence": 0.74,
+              "reason": "already matched to different GT"
+            },
+            {
+              "detectedType": "content",
+              "detectedLabel": "Version Picker",
+              "confidence": 0.62,
+              "reason": "type-mismatch (gt=form, det=content)"
+            }
+          ]
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Top Navigation Bar",
+            "phase": 2
+          },
+          "matched": {
+            "type": "navigation",
+            "label": "Footer Navigation",
+            "confidence": 0.62
+          },
+          "typeMatch": true
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Theme Toggle",
+            "phase": 2
+          },
+          "matched": {
+            "type": "content",
+            "label": "Version Picker",
+            "confidence": 0.62
+          },
+          "typeMatch": false
+        },
+        {
+          "groundTruth": {
+            "type": "navigation",
+            "label": "Component Tab Sections",
+            "phase": 2
+          },
+          "matched": {
+            "type": "content",
+            "label": "Theme Picker",
+            "confidence": 0.62
+          },
+          "typeMatch": false
+        }
+      ]
+    }
+  ],
+  "aggregate": {
+    "totalWebsites": 20,
+    "successful": 20,
+    "skipped": 0,
+    "allEndpoints": {
+      "precision": 0.643,
+      "recall": 0.641,
+      "f1": 0.604,
+      "typeAccuracy": 0.798
+    },
+    "phase1Endpoints": {
+      "precision": 0.592,
+      "recall": 0.758,
+      "f1": 0.61,
+      "typeAccuracy": 0.646
+    },
+    "totalLlmCalls": 1,
+    "totalLlmCostUsd": 0.001,
+    "totalTimeMs": 48338
+  }
+}

@@ -28,7 +28,7 @@ import type { Endpoint, UISegment } from "../../shared_interfaces.js";
 // Types
 // ============================================================================
 
-interface GroundTruthEndpoint {
+export interface GroundTruthEndpoint {
   type: string;
   label: string;
   description: string;
@@ -161,14 +161,14 @@ const KEY_SEGMENT_TYPES = ["form", "navigation", "auth", "search", "checkout", "
 // Matching Logic
 // ============================================================================
 
-function typesMatch(gtType: string, detectedType: string): boolean {
+export function typesMatch(gtType: string, detectedType: string): boolean {
   if (gtType === detectedType) return true;
   const aliases = TYPE_ALIASES[gtType];
   return aliases ? aliases.includes(detectedType) : false;
 }
 
 /** Label-basierte semantische Zuordnung als Fallback wenn Type-Aliases nicht greifen */
-function labelBasedMatch(gtType: string, detType: string, detLabel: string): boolean {
+export function labelBasedMatch(gtType: string, detType: string, detLabel: string): boolean {
   const label = detLabel.toLowerCase();
   // detected "form" mit Auth-Keywords → matcht GT "auth"
   if (detType === "form" && gtType === "auth" && AUTH_LABEL_PATTERN.test(label)) return true;
@@ -185,7 +185,7 @@ interface NearMiss {
   reason: string;
 }
 
-function findNearMisses(
+export function findNearMisses(
   gt: GroundTruthEndpoint,
   detected: Endpoint[],
   usedIndices: Set<number>,
@@ -224,7 +224,7 @@ function findNearMisses(
   return misses.slice(0, 3).map(({ score: _s, ...rest }) => rest);
 }
 
-function computeMatches(
+export function computeMatches(
   groundTruth: GroundTruthEndpoint[],
   detected: Endpoint[],
 ): { matched: number; details: MatchDetail[] } {
@@ -283,7 +283,7 @@ function computeMatches(
   return { matched, details };
 }
 
-function computeMetrics(
+export function computeMetrics(
   groundTruth: GroundTruthEndpoint[],
   detected: Endpoint[],
 ): BenchmarkMetrics {
@@ -325,7 +325,7 @@ function computeMetrics(
  * potentiell zu einem Phase-1-GT-Typ passt (via TYPE_ALIASES), und
  * berechnet Precision nur gegen diese relevante Teilmenge.
  */
-function computePhase1Metrics(
+export function computePhase1Metrics(
   phase1GroundTruth: GroundTruthEndpoint[],
   allDetected: Endpoint[],
 ): BenchmarkMetrics {
