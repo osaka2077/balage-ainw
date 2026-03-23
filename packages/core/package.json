@@ -1,0 +1,59 @@
+{
+  "name": "@balage/core",
+  "version": "0.1.0-alpha.1",
+  "description": "Semantic Verification Layer for Browser Agents — classify and verify web page endpoints",
+  "license": "BUSL-1.1",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist/", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "browser-agent",
+    "verification",
+    "semantic",
+    "endpoint-detection",
+    "ai-agent",
+    "trust-layer",
+    "mcp",
+    "stagehand",
+    "browser-use",
+    "playwright"
+  ],
+  "peerDependencies": {
+    "playwright": ">=1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "zod": "^3.24.0",
+    "pino": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/osaka2077/balage-ainw",
+    "directory": "packages/core"
+  }
+}
