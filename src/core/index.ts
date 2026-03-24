@@ -17,6 +17,8 @@ export const VERSION = "0.1.0-alpha.2";
 
 // High-Level API
 export { analyzeFromHTML } from "./analyze.js";
+export { verify, verifyFromHTML } from "./verify.js";
+export type { VerifyInput, VerifyOutput } from "./verify.js";
 export { detectFramework } from "./detect-framework.js";
 export { htmlToDomNode } from "./html-to-dom.js";
 export { inferSelector } from "./infer-selector.js";
@@ -35,3 +37,25 @@ export type {
   AffordanceType,
   DomNode,
 } from "./types.js";
+
+// Verify Types
+export type {
+  ActionSnapshot,
+  PageState,
+  CookieInfo,
+  NetworkRequest,
+  ActionInfo,
+  VerificationExpectation,
+  VerificationScenario,
+  VerifyOptions,
+  VerificationResult,
+  VerificationVerdict,
+  CheckResult,
+  CheckSource,
+  DomDiffResult,
+  ElementChange,
+  TextChange,
+  AttributeChange,
+  AuditEntry,
+  CustomCheckDefinition,
+} from "./verify-types.js";
