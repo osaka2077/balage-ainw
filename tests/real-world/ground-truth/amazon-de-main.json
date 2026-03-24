@@ -5,7 +5,7 @@
   "notes": "Extremely complex page. Dense DOM with thousands of elements, dynamic content loading, personalization, A/B testing, multiple overlapping navigation systems. Category mega-menu with nested flyouts. Cookie/privacy banner. Delivery location modal. Many endpoints are context-dependent (logged-in vs. guest).",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Search Bar",
       "description": "Product search with category dropdown filter and autocomplete suggestions",
       "selector_hint": "form[action='/s'] input#twotabsearchtextbox, #nav-search-submit-button",

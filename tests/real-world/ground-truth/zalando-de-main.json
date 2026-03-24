@@ -5,7 +5,7 @@
   "notes": "Large fashion e-commerce site. Complex header with search, auth, wishlist, cart. Heavy client-side rendering with React. Cookie consent modal. Gender-based navigation (Damen/Herren/Kinder). Size/filter complexity on search results pages. A/B testing causes DOM variation.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Search Bar",
       "description": "Product search input with autocomplete suggestions and search submit",
       "selector_hint": "input[name='q'], input[data-testid='searchInput'], button[data-testid='search-button']",
@@ -65,7 +65,7 @@
       "phase": 2
     },
     {
-      "type": "form",
+      "type": "consent",
       "label": "Cookie Consent Modal",
       "description": "GDPR consent modal with Accept All / Settings buttons on first visit",
       "selector_hint": "button[data-testid='consent-accept-all'], #uc-btn-accept-banner",

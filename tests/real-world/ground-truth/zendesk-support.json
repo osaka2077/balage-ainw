@@ -5,7 +5,7 @@
   "notes": "Zendesk's own support/help center. Search-centric with category cards. Contact form accessible via Submit a Request. Sign In link for existing customers. Clean Zendesk Guide theme. Moderate DOM complexity — standard help center layout.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Help Center Search",
       "description": "Search bar for finding help articles and documentation",
       "selector_hint": "input#query, input[type='search'], form[role='search']",

@@ -5,7 +5,7 @@
   "notes": "Complex e-commerce homepage with search, auth, cart, category navigation, and personalized content. Heavy JS with dynamic loading. Cookie banner. Multiple overlapping navigation elements. Category dropdown in search bar adds complexity.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Search Bar",
       "description": "Product search input with category dropdown filter and search button",
       "selector_hint": "input#gh-ac, select#gh-cat, button#gh-btn",
@@ -65,7 +65,7 @@
       "phase": 2
     },
     {
-      "type": "form",
+      "type": "consent",
       "label": "Cookie Consent Banner",
       "description": "GDPR cookie banner with Accept/Reject/Settings buttons",
       "selector_hint": "#gdpr-banner-accept, button[id*='accept']",

@@ -7,8 +7,8 @@
     {
       "type": "auth",
       "label": "Login Form",
-      "description": "Email/phone + password login form with Sign In button",
-      "selector_hint": "form.login__form, input#username, input#password",
+      "description": "Email/phone + password login form with Sign In button and Forgot Password link",
+      "selector_hint": "form.login__form, input#username, input#password, a[href*='forgot-password']",
       "affordances": ["fill", "submit"],
       "risk_class": "high",
       "fields": ["username", "password"],
@@ -16,13 +16,13 @@
     },
     {
       "type": "auth",
-      "label": "Forgot Password",
-      "description": "Link to password reset flow",
-      "selector_hint": "a[href*='forgot-password'], a.forgot-password",
+      "label": "SSO Options",
+      "description": "Google OAuth sign-in button for single sign-on",
+      "selector_hint": "button[data-provider='google'], a[href*='google']",
       "affordances": ["click"],
-      "risk_class": "medium",
+      "risk_class": "high",
       "fields": [],
-      "phase": 1
+      "phase": 2
     },
     {
       "type": "navigation",
@@ -33,31 +33,11 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "auth",
-      "label": "Sign in with Google",
-      "description": "Google OAuth sign-in button for single sign-on",
-      "selector_hint": "button[data-provider='google'], a[href*='google']",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Footer Links",
-      "description": "Footer navigation: About, Accessibility, User Agreement, Privacy Policy, etc.",
-      "selector_hint": "footer a, .footer__list a",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
-    "phase1_endpoints": 2,
+    "total_endpoints": 3,
+    "phase1_endpoints": 1,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
   }

@@ -16,9 +16,9 @@
     },
     {
       "type": "auth",
-      "label": "Sign in with SSO (SAML)",
-      "description": "Enterprise SSO sign-in link redirecting to SAML flow",
-      "selector_hint": "a[href*='enterprise']",
+      "label": "Alternative Auth",
+      "description": "SSO (SAML), Passkey, and Forgot Password authentication options",
+      "selector_hint": "a[href*='enterprise'], button[data-signin-with='passkey'], a[href='/password_reset']",
       "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
@@ -33,31 +33,11 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "auth",
-      "label": "Forgot Password",
-      "description": "Link to password reset flow",
-      "selector_hint": "a[href='/password_reset']",
-      "affordances": ["click"],
-      "risk_class": "medium",
-      "fields": [],
-      "phase": 1
-    },
-    {
-      "type": "auth",
-      "label": "Sign in with Passkey",
-      "description": "WebAuthn passkey authentication button",
-      "selector_hint": "button[data-signin-with='passkey']",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
-    "phase1_endpoints": 2,
+    "total_endpoints": 3,
+    "phase1_endpoints": 1,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
   }

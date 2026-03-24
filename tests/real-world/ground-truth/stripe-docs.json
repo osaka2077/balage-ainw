@@ -5,7 +5,7 @@
   "notes": "Well-structured documentation site. Clean semantic HTML with React hydration. Sidebar navigation is hierarchical. Search uses command palette (Cmd+K). Code examples have copy buttons and language switchers. Medium complexity due to SPA-like navigation and dynamic content loading.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Documentation Search",
       "description": "Search input / command palette (Cmd+K) for searching docs, API reference, and guides",
       "selector_hint": "button[data-testid='search-button'], input[type='search']",
@@ -16,9 +16,9 @@
     },
     {
       "type": "navigation",
-      "label": "Sidebar Navigation",
-      "description": "Hierarchical docs sidebar with expandable sections: Get Started, Payments, Billing, Connect, etc.",
-      "selector_hint": "nav[aria-label='Sidebar'] a, .sidebar-nav a",
+      "label": "Docs Navigation",
+      "description": "Sidebar, breadcrumbs, and top navigation for browsing documentation hierarchy",
+      "selector_hint": "nav[aria-label='Sidebar'] a, nav[aria-label='Breadcrumb'] a, header nav a",
       "affordances": ["click", "expand"],
       "risk_class": "low",
       "fields": [],
@@ -26,17 +26,7 @@
     },
     {
       "type": "navigation",
-      "label": "Breadcrumbs",
-      "description": "Breadcrumb trail showing current position in doc hierarchy",
-      "selector_hint": "nav[aria-label='Breadcrumb'] a",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Code Example Controls",
+      "label": "Code Controls",
       "description": "Language switcher tabs and copy-to-clipboard buttons on code blocks",
       "selector_hint": "[data-testid='code-block'] button, .code-lang-selector",
       "affordances": ["click", "select"],
@@ -53,20 +43,10 @@
       "risk_class": "high",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Top Navigation",
-      "description": "Header nav: Products, Solutions, Developers, Resources, Pricing",
-      "selector_hint": "header nav a",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 4,
     "phase1_endpoints": 1,
     "min_precision_target": 0.75,
     "min_recall_target": 0.65

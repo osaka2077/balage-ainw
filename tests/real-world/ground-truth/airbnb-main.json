@@ -5,7 +5,7 @@
   "notes": "React SPA with complex multi-step search form. Location input with autocomplete, date range picker (calendar), guest counter with increment/decrement buttons. Category filter bar with horizontal scroll. Heavy client-side rendering, A/B testing, dynamic content. Cookie banner for GDPR regions.",
   "endpoints": [
     {
-      "type": "form",
+      "type": "search",
       "label": "Search Form",
       "description": "Multi-field search: Where (location autocomplete), Check in/out (date picker), Who (guest counter), Search button",
       "selector_hint": "form[action='/s'], [data-testid='structured-search-input']",
@@ -35,7 +35,7 @@
       "phase": 1
     },
     {
-      "type": "form",
+      "type": "consent",
       "label": "Cookie Consent Banner",
       "description": "GDPR cookie consent overlay with Accept/Manage Preferences buttons",
       "selector_hint": "[data-testid='cookie-banner'] button, #cookie-banner",

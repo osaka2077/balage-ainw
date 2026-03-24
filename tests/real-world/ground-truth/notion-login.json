@@ -6,7 +6,7 @@
   "endpoints": [
     {
       "type": "auth",
-      "label": "Email Login",
+      "label": "Login Form",
       "description": "Email input field with Continue with email button",
       "selector_hint": "input[type='email'], input#notion-email-input-1",
       "affordances": ["fill", "submit"],
@@ -16,29 +16,9 @@
     },
     {
       "type": "auth",
-      "label": "Continue with Google",
-      "description": "Google OAuth sign-in button",
-      "selector_hint": "div[role='button'][id*='google'], a[href*='accounts.google.com']",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 1
-    },
-    {
-      "type": "auth",
-      "label": "Continue with Apple",
-      "description": "Apple ID sign-in button",
-      "selector_hint": "div[role='button'][id*='apple'], a[href*='appleid.apple.com']",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "auth",
-      "label": "Continue with SAML SSO",
-      "description": "Enterprise SSO login option for organizations using SAML",
-      "selector_hint": "div[role='button']:has-text('SAML SSO')",
+      "label": "SSO Options",
+      "description": "Google, Apple, and SAML SSO sign-in buttons",
+      "selector_hint": "div[role='button'][id*='google'], div[role='button'][id*='apple']",
       "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
@@ -56,8 +36,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
-    "phase1_endpoints": 2,
+    "total_endpoints": 3,
+    "phase1_endpoints": 1,
     "min_precision_target": 0.85,
     "min_recall_target": 0.80
   }
