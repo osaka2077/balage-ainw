@@ -335,7 +335,7 @@ const saas001: CorpusEntry = {
     </form>
     <button data-testid="notifications-btn" aria-label="Notifications" aria-haspopup="true">🔔 3</button>
     <div data-testid="user-menu" role="menu">
-      <button aria-haspopup="true" aria-expanded="false" data-testid="user-avatar">Julius M.</button>
+      <button aria-haspopup="true" aria-expanded="false" data-testid="user-avatar">Alex D.</button>
     </div>
   </header>
   <main>
@@ -383,7 +383,7 @@ const saas002: CorpusEntry = {
     <section role="tabpanel" data-testid="general-settings" aria-label="General settings">
       <form data-testid="profile-form" action="/api/settings/profile" method="post">
         <label for="display-name">Display Name:</label>
-        <input type="text" id="display-name" name="display_name" value="Julius M." aria-required="true" />
+        <input type="text" id="display-name" name="display_name" value="Alex D." aria-required="true" />
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" value="julius@example.com" aria-required="true" />
         <label for="timezone">Timezone:</label>
@@ -521,7 +521,7 @@ const saas005: CorpusEntry = {
     </section>
     <form data-testid="profile-edit-form" action="/api/profile" method="post" aria-label="Edit profile">
       <label for="profile-name">Display Name:</label>
-      <input type="text" id="profile-name" name="display_name" value="Julius M." />
+      <input type="text" id="profile-name" name="display_name" value="Alex D." />
       <label for="profile-bio">Bio:</label>
       <textarea id="profile-bio" name="bio" rows="4" maxlength="500" aria-label="Your bio">Deep Tech Founder</textarea>
       <label for="profile-website">Website:</label>
