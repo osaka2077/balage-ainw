@@ -1,4 +1,4 @@
-# @balage/core
+# balage-core
 
 > Semantic Verification Layer for Browser Agents
 
