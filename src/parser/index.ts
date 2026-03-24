@@ -6,13 +6,15 @@
  * in strukturierte, semantische UISegment-Strukturen.
  */
 
-// Core Parser-Funktionen
-export { parseDom } from "./dom-parser.js";
+// Kern-Exports (benutzt vom npm-Package via src/core/analyze.ts)
+export { pruneDom } from "./pruner.js";
 export { parseAria } from "./aria-parser.js";
 export { segmentUI } from "./ui-segmenter.js";
+
+// Erweiterte Exports (nur fuer Tests/SaaS-Module, nicht im npm-Bundle-Pfad)
+export { parseDom } from "./dom-parser.js";
 export { traverseShadowRoots } from "./shadow-dom.js";
 export { integrateIframes } from "./iframe-handler.js";
-export { pruneDom } from "./pruner.js";
 
 // Typen
 export type {

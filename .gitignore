@@ -91,6 +91,10 @@ docs/api-reference.md
 docs/sdk-guide.md
 docs/cli-reference.md
 
+# Wave/Refactoring prompts (internal)
+WAVE*.md
+REFACTORING-WAVE-PLAN.md
+
 # Temp
 tmp/
 *.tmp

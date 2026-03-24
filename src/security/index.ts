@@ -2,13 +2,14 @@
  * Security Hardening — Public API
  */
 
-// Core
+// Kern-Exports (benutzt vom npm-Package via endpoint-generator.ts)
 export { InputSanitizer } from "./input-sanitizer.js";
 export { InjectionDetector } from "./injection-detector.js";
 export { CredentialGuard } from "./credential-guard.js";
-export { RateLimiter } from "./rate-limiter.js";
-export { CspAnalyzer } from "./csp-analyzer.js";
-export { ActionValidator } from "./action-validator.js";
+
+// RateLimiter, CspAnalyzer, ActionValidator sind NICHT im Barrel:
+// Nur von Tests genutzt (importieren direkt aus ihren Dateien).
+// Verfuegbar via direktem Import: ./rate-limiter.js, ./csp-analyzer.js, ./action-validator.js
 
 // Typen
 export type {
