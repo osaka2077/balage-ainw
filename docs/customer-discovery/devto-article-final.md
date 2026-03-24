@@ -24,7 +24,7 @@ We didn't test agent execution (clicking, typing). We tested something more fund
 | Cookie consent | ~50% miss rate | Banners ignored or misclassified as forms |
 | Navigation | ~20% miss rate | Footer vs. header nav confusion, mega-menus not understood |
 
-**Overall: agents fail to correctly identify ~34% of interactive elements.**
+**Overall F1 score: 66%** — meaning roughly 1 in 3 interactions would target the wrong element or miss the right one entirely.
 
 ## 4 Things That Surprised Us
 
@@ -43,9 +43,9 @@ Same analysis pipeline, wildly different results:
 | Site | F1 Score | Difficulty |
 |------|:---:|---|
 | Google Accounts | 91% | Easy — clean, semantic HTML |
-| Hacker News | 80% | Easy — minimal DOM |
 | Zalando | 89% | Medium — but well-structured |
-| Amazon | 59% | Hard — thousands of DOM elements, dynamic loading |
+| Hacker News | 80% | Easy — minimal DOM |
+| Amazon | 75% | Hard — thousands of DOM elements, dynamic loading |
 | Trello | 29% | Hard — multi-step auth, redirects |
 
 ### 4. Cookie banners are the silent killer
@@ -54,7 +54,7 @@ Almost every European site has a GDPR cookie banner that blocks the page. Agents
 
 ## What We Built
 
-We open-sourced a tool that helps: **[balage-core](https://www.npmjs.com/package/balage-core)** — a semantic page analysis library for browser agents.
+We built a tool that helps: **[balage-core](https://www.npmjs.com/package/balage-core)** — a semantic page analysis library for browser agents (MIT licensed, [source on GitHub](https://github.com/osaka2077/balage-ainw)).
 
 ```bash
 npm install balage-core
@@ -76,7 +76,7 @@ console.log(result.endpoints);
 //   selector: 'form[action="/login"]', affordances: ["fill", "submit", "click"]}]
 ```
 
-It works with raw HTML — **no browser needed, no API key, 6ms response time.**
+It works with raw HTML — **no browser needed, no API key, ~6ms response time** (heuristic mode, no LLM call).
 
 What it does:
 - Detects login forms, search bars, checkout flows, cookie banners, navigation
@@ -91,17 +91,18 @@ What it doesn't do: It's not a browser agent. It doesn't click or type. It tells
 
 Full per-site results from our 20-website benchmark:
 
-| Site | F1 | Best Detection | Worst Detection |
-|------|:---:|---|---|
-| Google Accounts | 91% | Auth (100%) | — |
-| Zalando | 89% | Cart, Auth, Search | — |
-| Typeform | 83% | All P1 endpoints | — |
-| Hacker News | 80% | Login link | Pagination |
-| GitLab | 80% | Login form | Theme toggle |
-| GitHub | 67% | Login (93% conf) | SSO options |
-| Booking.com | 62% | Search, Auth | Cookie banner |
-| Amazon | 59% | Cart, Auth | Search bar mismatch |
-| Trello | 29% | Email input | Multi-step auth |
+| Site | F1 | Notes |
+|------|:---:|---|
+| Google Accounts | 91% | Auth detected at 100% |
+| Zalando | 89% | Cart, Auth, Search all found |
+| Typeform | 83% | Clean structure helps |
+| Hacker News | 80% | Minimal DOM, easy |
+| eBay | 78% | Auth + Cart detected |
+| StackOverflow | 77% | Search + Auth found |
+| Amazon | 75% | Complex DOM but core endpoints found |
+| GitHub | 67% | Login at 93% confidence |
+| Booking.com | 63% | Cookie banner still tricky |
+| Trello | 29% | Multi-step auth breaks detection |
 
 [Full benchmark data (JSON)](https://github.com/osaka2077/balage-ainw/tree/main/tests/real-world)
 

@@ -59,3 +59,4 @@ packages/sdk/src/*.d.ts
 # Temp
 tmp/
 *.tmp
+.mailmap
