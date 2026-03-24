@@ -86,6 +86,11 @@ packages/python-sdk/
 packages/demo/
 packages/landing/
 
+# Obsolete docs (old SaaS architecture)
+docs/api-reference.md
+docs/sdk-guide.md
+docs/cli-reference.md
+
 # Temp
 tmp/
 *.tmp
