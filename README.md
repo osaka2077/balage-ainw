@@ -94,7 +94,7 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `url` | `string` | `"https://unknown"` | Page URL (used in LLM prompts) |
-| `llm` | `boolean \| LLMConfig` | `true` | `false` for heuristic-only (no API key), or LLM config object |
+| `llm` | `false \| LLMConfig` | `false` | Heuristic-only (no API key). Pass LLM config for higher accuracy |
 | `minConfidence` | `number` | `0.50` | Minimum confidence threshold |
 | `maxEndpoints` | `number` | `10` | Maximum endpoints to return |
 

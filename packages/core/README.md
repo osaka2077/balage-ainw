@@ -75,7 +75,7 @@ const fw = detectFramework(html);
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `url` | `string` | `"https://unknown"` | Page URL (used in LLM prompts) |
-| `llm` | `boolean \| LLMConfig` | `true` | `false` for heuristic-only, or LLM config |
+| `llm` | `false \| LLMConfig` | `false` | Heuristic-only (no API key). Pass LLM config for higher accuracy |
 | `minConfidence` | `number` | `0.50` | Minimum confidence threshold |
 | `maxEndpoints` | `number` | `10` | Maximum endpoints to return |
 

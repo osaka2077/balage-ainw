@@ -231,7 +231,7 @@ Each audit entry captures:
 
 ### Trace Correlation
 
-The `traceId` field connects all audit entries from a single workflow execution. Use the [Evidence Chain API](./api-reference.md#get-evidencechaintraceid) to retrieve the full chain:
+The `traceId` field connects all audit entries from a single workflow execution. The full chain can be retrieved programmatically:
 
 ```typescript
 const chain = await client.evidence.getChain(traceId);
