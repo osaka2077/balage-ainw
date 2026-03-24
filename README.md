@@ -59,9 +59,9 @@ Tested on GitHub, Amazon, Airbnb, Booking.com, eBay, LinkedIn, Stripe, and more.
 | Metric | Score |
 |--------|:-----:|
 | **F1** | **66%** |
-| Precision | 69% |
+| Precision | 71% |
 | Recall | 68% |
-| Type Accuracy | 85% |
+| Type Accuracy | 83% |
 
 **Best:** Google Accounts (91%), Zalando (89%), Typeform (83%), Hacker News (80%)
 **Known limits:** Angular Material SPAs, multi-step auth flows, keyboard-shortcut search (Cmd+K)
@@ -70,10 +70,6 @@ Tested on GitHub, Amazon, Airbnb, Booking.com, eBay, LinkedIn, Stripe, and more.
 
 ## MCP Server (Claude Desktop / Cursor)
 
-```bash
-npx balage-mcp
-```
-
 Add to your Claude Desktop config (`claude_desktop_config.json`):
 
 ```json
@@ -81,7 +77,7 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
   "mcpServers": {
     "balage": {
       "command": "npx",
-      "args": ["balage-mcp"]
+      "args": ["-y", "balage-mcp"]
     }
   }
 }
@@ -98,7 +94,7 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `url` | `string` | `"https://unknown"` | Page URL (used in LLM prompts) |
-| `llm` | `boolean \| LLMConfig` | `false` | `true` for LLM-enhanced mode, or config object |
+| `llm` | `boolean \| LLMConfig` | `true` | `false` for heuristic-only (no API key), or LLM config object |
 | `minConfidence` | `number` | `0.50` | Minimum confidence threshold |
 | `maxEndpoints` | `number` | `10` | Maximum endpoints to return |
 

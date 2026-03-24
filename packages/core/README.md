@@ -102,9 +102,9 @@ Parses raw HTML into BALAGE's `DomNode` format. No browser dependency.
 | Metric | Score |
 |--------|:-----:|
 | **F1** | 66% |
-| Precision | 69% |
+| Precision | 71% |
 | Recall | 68% |
-| Type Accuracy | 85% |
+| Type Accuracy | 83% |
 
 **Best performers:** Google Accounts (91%), Zalando (89%), Typeform (83%), Hacker News (80%)
 

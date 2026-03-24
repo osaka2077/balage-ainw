@@ -62,8 +62,29 @@ MARKET_ANALYSIS*.md
 docs/ACTION-PLAN*.md
 docs/PIVOT-PLAN*.md
 docs/customer-discovery/execution-plan*.md
+docs/customer-discovery/outreach-templates.md
+docs/customer-discovery/interview-guide.md
+docs/customer-discovery/tracking.md
 NEXT-SESSION-PROMPT.md
+ERRORS.md
 .ai/
+
+# Internal development tools (never public)
+orchestrate.py
+prompts/
+update.finished
+healthcheck.js
+Dockerfile
+docker-compose.yml
+.dockerignore
+.claude/agents/
+
+# Dead packages (old SaaS architecture)
+packages/sdk/
+packages/cli/
+packages/python-sdk/
+packages/demo/
+packages/landing/
 
 # Temp
 tmp/
