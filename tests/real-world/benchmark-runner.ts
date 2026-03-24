@@ -550,19 +550,14 @@ async function runPipeline(
   try {
     const page = await adapter.getPage(contextId);
 
-    // 1. Navigation (fixture mode or live fetch)
-    if (FIXTURE_MODE) {
-      const fixtureHtml = loadFixture(file);
-      if (fixtureHtml) {
-        log(`  [1/7] [FIXTURE] Loading ${file}.html (${fixtureHtml.length} bytes)`);
-        await page.setContent(fixtureHtml, { waitUntil: "domcontentloaded" });
-      } else {
-        log(`  [1/7] [FIXTURE] No fixture found for ${file}, falling back to live fetch`);
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
-        await page.waitForLoadState("networkidle", { timeout: 15_000 }).catch(() => {
-          log("    (networkidle timeout — continuing)");
-        });
-      }
+    // 1. Navigation — fixture-first, live-fetch fallback
+    const fixtureHtml = loadFixture(file);
+    if (fixtureHtml) {
+      log(`  [1/7] [FIXTURE] Loading ${file}.html (${fixtureHtml.length} bytes)`);
+      await page.setContent(fixtureHtml, { waitUntil: "domcontentloaded" });
+    } else if (FIXTURE_MODE) {
+      log(`  [1/7] [FIXTURE] No fixture found for ${file} — SKIPPING (fixture-only mode)`);
+      return { endpoints, errors: [`No fixture for ${file}`] };
     } else {
       log(`  [1/7] Navigating to ${url} ...`);
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
