@@ -1,6 +1,6 @@
 {
   "name": "balage-mcp",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "MCP server for BALAGE — semantic page analysis for AI agents. Works with Claude, ChatGPT, Cursor.",
   "license": "MIT",
   "type": "module",
