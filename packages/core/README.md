@@ -9,13 +9,13 @@ Identifies interactive endpoints on web pages (login forms, search bars, checkou
 ## Quick Start
 
 ```bash
-npm install @balage/core
+npm install balage-core
 ```
 
 ### 30-Second Demo (no API key needed)
 
 ```typescript
-import { analyzeFromHTML } from "@balage/core";
+import { analyzeFromHTML } from "balage-core";
 
 // Works with any HTML string — no browser, no API key
 const result = await analyzeFromHTML(`
@@ -44,7 +44,7 @@ console.log(result.timing.totalMs); // ~4ms
 ### LLM Mode (higher accuracy)
 
 ```typescript
-import { analyzeFromHTML } from "@balage/core";
+import { analyzeFromHTML } from "balage-core";
 
 const result = await analyzeFromHTML(html, {
   url: "https://github.com/login",
@@ -62,7 +62,7 @@ console.log(result.endpoints);
 ### Framework Detection
 
 ```typescript
-import { detectFramework } from "@balage/core";
+import { detectFramework } from "balage-core";
 
 const fw = detectFramework(html);
 // {framework: "wordpress", confidence: 0.85, version: "6.4", evidence: [...]}

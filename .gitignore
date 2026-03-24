@@ -56,6 +56,15 @@ packages/sdk/src/*.d.ts
 .platform/
 .qa/
 
+# Internal strategy (never public)
+MASTERSPEC/
+MARKET_ANALYSIS*.md
+docs/ACTION-PLAN*.md
+docs/PIVOT-PLAN*.md
+docs/customer-discovery/execution-plan*.md
+NEXT-SESSION-PROMPT.md
+.ai/
+
 # Temp
 tmp/
 *.tmp

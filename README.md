@@ -1,113 +1,132 @@
-# BALAGE -- Semantic Verification Layer for AI-Browser Interaction
+# BALAGE — Semantic Page Analysis for Browser Agents
 
-> Trust layer for browser automation agents. Confidence scores, evidence chains, risk gates.
+> Detect login forms, search bars, checkout flows in raw HTML. Confidence scores + evidence chains. No browser needed.
 
-[![Technical Preview](https://img.shields.io/badge/status-technical%20preview-blue)](https://github.com/osaka2077/balage-ainw)
-[![npm](https://img.shields.io/npm/v/@balage-osaka/sdk)](https://www.npmjs.com/package/@balage-osaka/sdk)
+[![npm](https://img.shields.io/npm/v/balage-core)](https://www.npmjs.com/package/balage-core)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 ---
 
-## Quick Start (under 5 minutes)
+## Quick Start
 
 ```bash
-npm install @balage-osaka/sdk
+npm install balage-core
 ```
 
 ```typescript
-import { BalageClient } from "@balage-osaka/sdk";
+import { analyzeFromHTML } from "balage-core";
 
-const client = new BalageClient({ apiKey: "your-key" });
-const result = await client.analyze("https://example.com/login");
+const result = await analyzeFromHTML(`
+  <form action="/login">
+    <input type="email" placeholder="Email">
+    <input type="password" placeholder="Password">
+    <button type="submit">Sign In</button>
+  </form>
+`);
+
 console.log(result.endpoints);
-// [{type: "auth", label: "Login Form", confidence: 0.93}]
+// [{type: "auth", label: "Login / Sign-In Form", confidence: 0.75,
+//   affordances: ["fill", "submit", "click"],
+//   evidence: ["Contains password input", "Contains email input"]}]
+console.log(result.timing.totalMs); // ~4ms (heuristic mode, no API key needed)
 ```
 
 ---
 
-## What BALAGE Does
+## What It Does
 
-- **Semantic Endpoint Detection** -- Identifies what interactive elements mean (login form, search bar, checkout button), not where they are in the DOM. Survives redesigns.
-- **Confidence Scores with Evidence** -- Every detection includes a calibrated confidence score backed by evidence from DOM, ARIA, text content, layout, and LLM inference. A score of 0.85 means "correct 85% of the time."
-- **Risk Gates with Default-Deny** -- Every action must pass through a risk gate before execution. Higher-risk actions (financial, destructive) require higher evidence thresholds. Blocked by default.
-- **Verified Endpoints as Trust Network** -- Endpoints build a trust graph across pages. Verified interactions increase confidence for future visits to the same site.
+**BALAGE analyzes HTML and tells your browser agent what's on the page — before it acts.**
 
-## What BALAGE is NOT
+- **Endpoint Detection** — Identifies interactive elements semantically (auth, search, checkout, navigation, consent banners)
+- **Confidence Scores** — Every detection has a calibrated score backed by evidence from DOM, ARIA, text content
+- **Framework Detection** — Detects WordPress, Shopify, React, Next.js, Angular, Vue, Svelte, Salesforce
+- **Selector Inference** — Generates stable CSS selectors using a 6-level priority chain
+- **Two Modes** — Heuristic (~4ms, no API key) or LLM-enhanced (~24s, higher accuracy)
 
-BALAGE is **not** a browser agent. It does not navigate, click, or fill forms on its own.
-BALAGE is **not** a scraper. It does not extract data from pages.
+## What It's NOT
 
-BALAGE is a **verification layer** that sits between your browser agent and the web. It tells your agent *what* is on the page and *how confident* it is. Your agent decides what to do.
+BALAGE is **not** a browser agent. It doesn't navigate, click, or fill forms.
+It's a **verification layer** that sits between your agent and the web.
 
 Complementary to: [browser-use](https://github.com/browser-use/browser-use), [Stagehand](https://github.com/browserbase/stagehand), [Skyvern](https://github.com/Skyvern-AI/skyvern).
 
 ---
 
-## Benchmark
+## Benchmark (20 Real Production Sites)
 
-Tested on 20 real production websites (GitHub, Airbnb, Booking.com, Amazon, LinkedIn, Stripe, Hacker News, Wikipedia, and more).
+Tested on GitHub, Amazon, Airbnb, Booking.com, eBay, LinkedIn, Stripe, and more.
 
-| Metric | BALAGE (gpt-4o-mini) | Vision-Only (gpt-4o) |
-|--------|----------------------|----------------------|
-| Precision | 56% | 11% |
-| Recall | 57% | 13% |
-| **F1 Score** | **53%** | **12%** |
-| Model cost | cheap (gpt-4o-mini) | expensive (gpt-4o) |
+| Metric | Score |
+|--------|:-----:|
+| **F1** | **66%** |
+| Precision | 69% |
+| Recall | 68% |
+| Type Accuracy | 85% |
 
-**BALAGE achieves 4.4x the F1 score of vision-only approaches, using a cheaper model.**
-
-Per-site highlights: GitHub Login F1=80%, Hacker News F1=91%, Airbnb F1=80%, Zendesk F1=71%.
-
----
-
-## Architecture: 7-Layer Stack
-
-| Layer | Name | Responsibility |
-|-------|------|---------------|
-| L7 | Developer Experience | REST API, TypeScript SDK, Python SDK, CLI |
-| L6 | Observability | Structured logs, traces, metrics, audit trail |
-| L5 | Orchestration | DAG executor, Navigator, FormFiller, Verifier |
-| L4 | Decision Engine | Confidence engine, risk gates, contradiction detection |
-| L3 | Semantic Engine | Endpoint generator, fingerprints, evidence collector |
-| L2 | Parsing Engine | DOM parser, ARIA extractor, UI segmenter |
-| L1 | Browser Adapter | Playwright/CDP, session manager, anti-detection |
+**Best:** Google Accounts (91%), Zalando (89%), Typeform (83%), Hacker News (80%)
+**Known limits:** Angular Material SPAs, multi-step auth flows, keyboard-shortcut search (Cmd+K)
 
 ---
 
-## Installation
-
-### TypeScript / JavaScript
+## MCP Server (Claude Desktop / Cursor)
 
 ```bash
-npm install @balage-osaka/sdk
+npx balage-mcp
 ```
 
-Requires Node.js 18+. See [SDK Guide](./docs/sdk-guide.md) for full API reference.
+Add to your Claude Desktop config (`claude_desktop_config.json`):
 
-### Python
-
-```bash
-pip install balage
+```json
+{
+  "mcpServers": {
+    "balage": {
+      "command": "npx",
+      "args": ["balage-mcp"]
+    }
+  }
+}
 ```
 
-Requires Python 3.10+. See [SDK Guide](./docs/sdk-guide.md#python-sdk) for async client usage.
-
-### CLI
-
-```bash
-npm install -g @balage-osaka/cli
-```
-
-See [CLI Reference](./docs/cli-reference.md) for all commands and options.
+**Tools:** `analyze_page`, `detect_framework`, `infer_selector`
 
 ---
 
-## Links
+## API
 
-- [Landing Page](./packages/landing/index.html)
-- [SDK Guide](./docs/sdk-guide.md)
-- [CLI Reference](./docs/cli-reference.md)
-- [Architecture](./docs/architecture.md)
-- [API Reference](./docs/api-reference.md)
+### `analyzeFromHTML(html, options?)`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | `"https://unknown"` | Page URL (used in LLM prompts) |
+| `llm` | `boolean \| LLMConfig` | `false` | `true` for LLM-enhanced mode, or config object |
+| `minConfidence` | `number` | `0.50` | Minimum confidence threshold |
+| `maxEndpoints` | `number` | `10` | Maximum endpoints to return |
+
+### `detectFramework(html)`
+
+Detects: WordPress, Shopify, React, Next.js, Angular, Vue, Svelte, Salesforce.
+
+### `inferSelector(domNode)`
+
+Generates CSS selectors with 6 priority levels: form action > element ID > ARIA > structural > semantic > class-based.
+
+---
+
+## Use Cases
+
+- **Browser agent pre-flight** — Know what's on the page before your agent acts
+- **Post-action verification** — Verify the agent interacted with the right element
+- **Compliance/audit** — Log what the agent saw and why it acted
+- **Testing** — Detect UI regressions that break agent workflows
+
+---
+
+## Status
+
+This is an **alpha release**. The API may change. F1=66% means it works well on common patterns but has known gaps.
+
+- [Benchmark details](./tests/real-world/)
+- [Core library docs](./packages/core/README.md)
 
 ---
 

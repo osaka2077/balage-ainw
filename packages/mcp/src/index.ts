@@ -17,8 +17,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-// Dynamic imports — resolved at runtime from the monorepo
-const { analyzeFromHTML, detectFramework, inferSelector, htmlToDomNode, VERSION } = await import("../../src/core/index.js");
+import { analyzeFromHTML, detectFramework, inferSelector, htmlToDomNode, VERSION } from "balage-core";
 
 const server = new McpServer({
   name: "balage",

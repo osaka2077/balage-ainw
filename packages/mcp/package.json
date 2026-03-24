@@ -17,10 +17,9 @@
     "claude", "chatgpt", "cursor", "page-analysis", "web-agent"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.27.0"
-  },
-  "peerDependencies": {
-    "balage-core": ">=0.1.0"
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "balage-core": ">=0.1.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "tsup": "^8.5.0",
