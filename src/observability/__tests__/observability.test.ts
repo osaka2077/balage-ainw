@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { randomUUID } from "node:crypto";
 import { Writable } from "node:stream";
 import pino from "pino";
@@ -11,7 +11,7 @@ import { ReplayPlayer } from "../replay-player.js";
 import { MetricsCollector } from "../metrics-collector.js";
 import { BalageLogger } from "../logger.js";
 import type { Evidence } from "../../../shared_interfaces.js";
-import type { ReplayEvent, ReplayEventType, EvidenceTrailEntry } from "../types.js";
+import type { ReplayEvent } from "../types.js";
 
 // ============================================================================
 // Tracer (3 Tests)

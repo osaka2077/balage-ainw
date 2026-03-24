@@ -8,7 +8,6 @@ import { createLogger } from "../observability/index.js";
 import { ReportGenerationError } from "./errors.js";
 import type {
   BenchmarkRun,
-  BenchmarkSummary,
   CalibrationBucket,
   CorpusCategory,
   ReportConfig,

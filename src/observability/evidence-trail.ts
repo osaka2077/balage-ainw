@@ -6,7 +6,7 @@ import type {
   EvidenceVerification,
 } from "./types.js";
 import { PiiFilter } from "./pii-filter.js";
-import { EvidenceTrailError, EvidenceChainBrokenError } from "./errors.js";
+import { EvidenceTrailError } from "./errors.js";
 
 const DEFAULT_CONFIG: EvidenceTrailConfig = {
   maxEntries: 10000,

@@ -8,14 +8,6 @@
 
 import type { Evidence } from "../../../shared_interfaces.js";
 
-/** Alle moeglichen Evidence-Quell-Typen */
-const ALL_EVIDENCE_TYPES = [
-  "semantic_label", "aria_role", "structural_pattern",
-  "text_content", "layout_position", "historical_match",
-  "fingerprint_similarity", "llm_inference",
-  "user_confirmation", "verification_proof",
-] as const;
-
 /**
  * Berechnet den Evidence Quality Score.
  */

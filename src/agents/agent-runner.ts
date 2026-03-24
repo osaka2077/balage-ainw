@@ -12,13 +12,9 @@ import {
   AgentExecutionError,
   AgentTimeoutError,
   ActionBudgetExceededError,
-  ResultValidationError,
-  SandboxViolationError,
 } from "./errors.js";
 import { FormFillerAgent } from "./templates/form-filler.js";
-import { CheckoutHandlerAgent } from "./templates/checkout-handler.js";
 import { NavigationAgentTemplate } from "./templates/navigation-agent.js";
-import { SearchAgentTemplate } from "./templates/search-agent.js";
 import { AuthHandlerAgent } from "./templates/auth-handler.js";
 
 const logger = pino({ name: "agent-runner" });

@@ -3,7 +3,7 @@
  * Vitest, alle Browser/LLM-Abhaengigkeiten gemockt.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
 import type { SubAgent, AgentTask } from "../../../shared_interfaces.js";
 import { AgentRegistry } from "../agent-registry.js";
@@ -17,7 +17,6 @@ import {
   ActionBudgetExceededError,
   PermissionDeniedError,
   AgentTimeoutError,
-  AgentExecutionError,
 } from "../errors.js";
 
 // --- Test Fixtures ---
@@ -271,8 +270,6 @@ describe("Error/Edge Cases", () => {
   });
 
   it("10. Retry nach Fehler — onError: retry, maxRetries: 2", async () => {
-    let attempts = 0;
-
     const agent = makeAgent({
       type: "form_filler",
       capabilities: {

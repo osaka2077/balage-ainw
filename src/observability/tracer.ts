@@ -9,7 +9,6 @@ import type {
   TraceContext,
   SpanExporter,
 } from "./types.js";
-import { SpanNotFoundError, TraceContextError } from "./errors.js";
 
 /** In-memory span exporter for testing and debugging */
 export class InMemoryExporter implements SpanExporter {

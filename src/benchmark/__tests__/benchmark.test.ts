@@ -6,16 +6,15 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { getCorpus, getCorpusByCategory, getCorpusEntry } from "../corpus.js";
-import { getGroundTruth, getGroundTruthForCorpus, getTotalExpectedEndpoints } from "../ground-truth.js";
+import { getCorpus, getCorpusByCategory } from "../corpus.js";
+import { getGroundTruth, getGroundTruthForCorpus } from "../ground-truth.js";
 import {
   calculateBrierScore,
-  calculateCalibrationBuckets,
   calculateDetectionMetrics,
   calculateLatencyPercentiles,
   calculateMetrics,
 } from "../metrics.js";
-import { generateJsonReport, generateMarkdownReport, generateReport } from "../reporter.js";
+import { generateJsonReport, generateMarkdownReport } from "../reporter.js";
 import { BenchmarkRunner } from "../runner.js";
 import type {
   BenchmarkProgress,

@@ -25,7 +25,6 @@ import type {
 } from "./types.js";
 import {
   WorkflowValidationError,
-  WorkflowExecutionError,
   BudgetExceededError,
   DAGCycleError,
 } from "./errors.js";
@@ -209,7 +208,6 @@ export class WorkflowRunner {
     this.deps.contextManager.updateState("running");
 
     // Context-Felder direkt setzen
-    const ctx = this.deps.contextManager.getSnapshot();
     this.deps.contextManager.set("_workflowId", workflowId);
     this.deps.contextManager.set("_traceId", traceId);
 

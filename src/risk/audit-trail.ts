@@ -7,7 +7,7 @@
 
 import pino from "pino";
 import type { AuditEntry } from "./types.js";
-import { AuditTrailImmutableError, AuditTrailError } from "./errors.js";
+import { AuditTrailImmutableError } from "./errors.js";
 
 const logger = pino({ name: "risk-gate:audit-trail" });
 

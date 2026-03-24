@@ -10,7 +10,9 @@ import pino from "pino";
 import { LLMCallError, LLMParseError, LLMRateLimitError } from "./errors.js";
 
 // Lazy-loaded SDK references — avoids "Cannot find module 'openai'" for heuristic-only users
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _OpenAI: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let _Anthropic: any;
 import type { OpenAIConfig, AnthropicConfig } from "./types.js";
 

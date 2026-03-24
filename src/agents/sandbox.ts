@@ -10,7 +10,6 @@ import {
   ActionBudgetExceededError,
   AgentTimeoutError,
   PermissionDeniedError,
-  SandboxViolationError,
 } from "./errors.js";
 
 const logger = pino({ name: "sandbox" });

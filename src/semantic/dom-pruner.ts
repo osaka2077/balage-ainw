@@ -28,13 +28,6 @@ const INTERACTIVE_TAGS = new Set([
   "details", "summary", "dialog", "label",
 ]);
 
-/** Strukturelle Tags die fuer Hierarchie behalten werden */
-const STRUCTURAL_TAGS = new Set([
-  "form", "fieldset", "legend", "nav", "main", "header", "footer",
-  "section", "article", "aside", "h1", "h2", "h3", "h4", "h5", "h6",
-  "ul", "ol", "li", "table", "thead", "tbody", "tr", "th", "td",
-]);
-
 /**
  * Pruned DOM-Segment fuer LLM-Input optimieren.
  *

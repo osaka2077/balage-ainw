@@ -17,7 +17,6 @@ import { computeAffordanceConsistency } from "./factors/affordance-consistency.j
 import { computeEvidenceQuality } from "./factors/evidence-quality.js";
 import { computeHistoricalSuccess } from "./factors/historical-success.js";
 import { computeAmbiguityPenalty } from "./factors/ambiguity-penalty.js";
-import { ScoreCalculationError } from "./errors.js";
 
 const logger = pino({ name: "confidence:score-calculator" });
 

@@ -12,9 +12,9 @@ import type { Page, Dialog } from "playwright";
 import { randomUUID } from "node:crypto";
 import pino from "pino";
 
-import type { StateChangeEvent, StateChangeType } from "./types.js";
+import type { StateChangeEvent } from "./types.js";
 import { StateChangeEventSchema } from "./types.js";
-import { StateDetectionError, BrowserTimeoutError } from "./errors.js";
+import { StateDetectionError } from "./errors.js";
 
 const logger = pino({
   level: process.env.LOG_LEVEL ?? "info",

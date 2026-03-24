@@ -4,14 +4,13 @@
  * Alle externen Abhaengigkeiten werden gemockt.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { WorkflowRunner } from "../workflow-runner.js";
 import { ContextManager } from "../context-manager.js";
 import { TaskDecomposer } from "../task-decomposer.js";
 import { ResultAggregator } from "../result-aggregator.js";
 import { Pipeline } from "../pipeline.js";
-import { Dispatcher } from "../dispatcher.js";
 import { detectConflicts } from "../result-aggregator.js";
 import {
   DAGCycleError,
@@ -224,7 +223,7 @@ function buildRunner(overrides?: {
   dispatchParallelFn?: (tasks: AgentTask[]) => Promise<AgentResult[]>;
   budgetOverride?: Partial<WorkflowContext["budget"]>;
 }) {
-  const registry = createMockRegistry();
+  createMockRegistry();
   const contextManager = new ContextManager({
     workflowId: randomUUID(),
     traceId: randomUUID(),
@@ -298,7 +297,7 @@ describe("Orchestrator", () => {
     });
 
     it("2. Form-Fill-Workflow — 3 Steps sequentiell, alle erfolgreich", async () => {
-      const { runner, mockDispatcher } = buildRunner({
+      const { runner } = buildRunner({
         dispatchFn: vi.fn(async (task: AgentTask) => {
           if (task.stepId === "nav") {
             return createSuccessResult(task.id, "navigator", { currentUrl: "https://example.com/form" });
@@ -721,7 +720,7 @@ describe("Orchestrator", () => {
         ],
       };
 
-      const result = await runner.run(workflow);
+      await runner.run(workflow);
 
       expect(executedSteps).toContain("primary");
       expect(executedSteps).toContain("fallback");

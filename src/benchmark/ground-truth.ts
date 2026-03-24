@@ -5,7 +5,7 @@
  * Jede Fixture hat 3-12 Endpoints, insgesamt ca. 300.
  */
 
-import type { GroundTruthEntry, GroundTruthEndpoint } from "./types.js";
+import type { GroundTruthEntry } from "./types.js";
 
 const GROUND_TRUTH: GroundTruthEntry[] = [
   // ==========================================================================

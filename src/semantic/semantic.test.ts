@@ -144,43 +144,6 @@ const NAVIGATION_SEGMENT: UISegment = {
   semanticRole: "navigation",
 };
 
-const SEARCH_SEGMENT: UISegment = {
-  id: randomUUID(),
-  type: "form",
-  label: "Search",
-  confidence: 0.8,
-  boundingBox: { x: 400, y: 20, width: 500, height: 40 },
-  nodes: [
-    makeDomNode({
-      tagName: "div",
-      attributes: { role: "search" },
-      children: [
-        makeDomNode({
-          tagName: "form",
-          children: [
-            makeDomNode({
-              tagName: "input",
-              attributes: {
-                type: "search",
-                placeholder: "Search products...",
-                "aria-label": "Search",
-              },
-              isInteractive: true,
-            }),
-            makeDomNode({
-              tagName: "button",
-              attributes: { type: "submit", "aria-label": "Search" },
-              textContent: "Search",
-              isInteractive: true,
-            }),
-          ],
-        }),
-      ],
-    }),
-  ],
-  interactiveElementCount: 2,
-  semanticRole: "search",
-};
 
 const CHECKOUT_SEGMENT: UISegment = {
   id: randomUUID(),
@@ -368,7 +331,7 @@ describe("Endpoint-Generator", () => {
 
   it("should produce endpoints that pass EndpointSchema validation", async () => {
     const mockResponse = makeMockLLMResponse([AUTH_CANDIDATE]);
-    const mockClient = createMockClient(new Map([["endpoint", mockResponse]]));
+    createMockClient(new Map([["endpoint", mockResponse]]));
 
     const llmEndpointResponse: LLMEndpointResponse = {
       endpoints: [AUTH_CANDIDATE],

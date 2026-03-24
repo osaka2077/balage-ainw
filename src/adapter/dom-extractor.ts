@@ -650,12 +650,3 @@ function extractLevel(node: CdpAxNode): number | undefined {
   return Number.isInteger(val) && val > 0 ? val : undefined;
 }
 
-function convertChecked(
-  checked: boolean | "mixed" | undefined
-): "true" | "false" | "mixed" | undefined {
-  if (checked === undefined) return undefined;
-  if (checked === true) return "true";
-  if (checked === false) return "false";
-  if (checked === "mixed") return "mixed";
-  return undefined;
-}

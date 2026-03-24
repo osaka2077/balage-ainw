@@ -35,7 +35,7 @@ describe.skipIf(!hasApiKey)("Real-World: en.wikipedia.org", () => {
     adapter = new BrowserAdapter({ headless: true });
     await adapter.launch();
 
-    llmClient = createFallbackLLMClient({ envConfig });
+    llmClient = await createFallbackLLMClient({ envConfig });
     console.log(`  API Key present: ${!!envConfig.openaiApiKey || !!envConfig.anthropicApiKey}`);
     console.log(`  Provider: ${envConfig.llmProvider}`);
     console.log(`  Model: ${envConfig.llmModel}`);

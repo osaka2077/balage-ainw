@@ -6,12 +6,11 @@
  */
 
 import pino from "pino";
-import type { AgentResult, Endpoint, StateChangeEvent } from "../../shared_interfaces.js";
+import type { AgentResult, Endpoint } from "../../shared_interfaces.js";
 import type {
   WorkflowContext,
   WorkflowState,
   ContextHistoryEntry,
-  BudgetTracker,
   ContextManagerInterface,
 } from "./types.js";
 import { ContextOverflowError } from "./errors.js";

@@ -75,7 +75,7 @@ function createEmptyBody(): DomNode {
   };
 }
 
-function parseChildren(state: ParseState, parentTag: string | null): DomNode[] {
+function parseChildren(state: ParseState, _parentTag: string | null): DomNode[] {
   const nodes: DomNode[] = [];
   let textBuffer = "";
 

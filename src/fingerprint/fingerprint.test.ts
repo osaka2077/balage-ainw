@@ -2,8 +2,6 @@ import { describe, it, expect } from "vitest";
 import type { UISegment } from "./types.js";
 import {
   extractFeatures,
-  extractFormFields,
-  extractActionElements,
 } from "./feature-extractor.js";
 import {
   calculateFingerprint,

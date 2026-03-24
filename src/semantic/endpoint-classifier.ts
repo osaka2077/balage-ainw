@@ -71,14 +71,6 @@ const NON_SEARCH_PATTERNS: RegExp[] = [
   /\b(store[\s-]?locator|locations?)\b/,
 ];
 
-/** Patterns die auf Search-Endpoints hinweisen */
-const SEARCH_PATTERNS: RegExp[] = [
-  /\bsearch\b/,
-  /\bfind\b/,
-  /\blookup\b/,
-  /\bquery\b/,
-];
-
 const HEURISTIC_RULES: HeuristicRule[] = [
   {
     name: "password-field-implies-auth",

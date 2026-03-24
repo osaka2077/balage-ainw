@@ -1,5 +1,4 @@
 import type { MetricsConfig, MetricSnapshot, DashboardData, TimeRange } from "./types.js";
-import { MetricsError } from "./errors.js";
 
 interface CounterValue {
   value: number;
@@ -18,12 +17,6 @@ interface GaugeValue {
 function labelsKey(labels: Record<string, string>): string {
   const sorted = Object.entries(labels).sort(([a], [b]) => a.localeCompare(b));
   return sorted.map(([k, v]) => `${k}="${v}"`).join(",");
-}
-
-function formatLabels(labels: Record<string, string>): string {
-  const entries = Object.entries(labels);
-  if (entries.length === 0) return "";
-  return `{${entries.map(([k, v]) => `${k}="${v}"`).join(",")}}`;
 }
 
 const DEFAULT_CONFIG: MetricsConfig = {

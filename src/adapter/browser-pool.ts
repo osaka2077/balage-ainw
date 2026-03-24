@@ -4,7 +4,7 @@
  * Implementiert Circuit Breaker Pattern fuer Browser-Launches.
  */
 
-import { chromium, type Browser, type BrowserType } from "playwright";
+import { chromium, type BrowserType } from "playwright";
 import pino from "pino";
 import { randomUUID } from "node:crypto";
 

@@ -632,7 +632,7 @@ describe("Parser Module — Error Cases", () => {
     expect(result.liveRegions).toBeDefined();
 
     // Label konnte nicht aufgeloest werden (IDs existieren nicht)
-    const label = result.labelMap.get("my-input");
+    result.labelMap.get("my-input");
     // Label ist entweder undefined oder leer, jedenfalls kein Crash
     expect(result.labelMap).toBeDefined();
   });

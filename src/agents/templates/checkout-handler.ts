@@ -40,7 +40,7 @@ export class CheckoutHandlerAgent implements AgentTemplate {
 
     // Schritt 2: Pflichtfelder ausfuellen
     if (address) {
-      for (const [field, value] of Object.entries(address)) {
+      for (const field of Object.keys(address)) {
         sandbox.enforceOrThrow("fill");
         filledFields.push(field);
         sandbox.recordAction("fill");

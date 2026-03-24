@@ -7,14 +7,14 @@
  * Tests sind isoliert — jeder Test startet/stoppt eigene Browser.
  */
 
-import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { chromium, type Browser, type Page, type BrowserContext } from "playwright";
 
 import { BrowserAdapter } from "./browser-adapter.js";
 import { BrowserPool } from "./browser-pool.js";
 import { extractStructuredDOM, extractAccessibilityTree } from "./dom-extractor.js";
 import { StateDetector } from "./state-detector.js";
-import { checkBrowser, checkPool, checkConnectivity } from "./health-check.js";
+import { checkBrowser, checkConnectivity } from "./health-check.js";
 import {
   BrowserLaunchError,
   BrowserTimeoutError,
@@ -545,7 +545,7 @@ describe("Error Cases", () => {
       healthCheckIntervalMs: 0,
     });
 
-    const instance = await pool.acquire();
+    await pool.acquire();
     expect(pool.size()).toBe(1);
 
     await pool.drain();

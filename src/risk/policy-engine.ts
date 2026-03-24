@@ -7,7 +7,7 @@
  */
 
 import pino from "pino";
-import type { PolicyRule, Endpoint, ActionClass, Evidence } from "./types.js";
+import type { PolicyRule, Endpoint } from "./types.js";
 import type { GateContext, PolicyResult } from "./types.js";
 import { getActionClass } from "./action-classifier.js";
 import { getDefaultRules } from "./policy-rules/default-rules.js";

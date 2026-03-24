@@ -7,22 +7,10 @@ import pino from "pino";
 import { randomUUID } from "node:crypto";
 import type { SubAgent, SubAgentType } from "../../shared_interfaces.js";
 import { SubAgentSchema } from "../../shared_interfaces.js";
-import type { AgentFactory, AgentTemplate } from "./types.js";
+import type { AgentFactory } from "./types.js";
 import { AgentNotFoundError, AgentRegistrationError } from "./errors.js";
-import { FormFillerAgent } from "./templates/form-filler.js";
-import { CheckoutHandlerAgent } from "./templates/checkout-handler.js";
-import { NavigationAgentTemplate } from "./templates/navigation-agent.js";
-import { SearchAgentTemplate } from "./templates/search-agent.js";
-import { AuthHandlerAgent } from "./templates/auth-handler.js";
 
 const logger = pino({ name: "agent-registry" });
-
-/** Template-Map: Template-Klasse nach SubAgentType */
-const DEFAULT_TEMPLATES: Record<string, AgentTemplate> = {
-  navigator: new NavigationAgentTemplate(),
-  form_filler: new FormFillerAgent(),
-  authenticator: new AuthHandlerAgent(),
-};
 
 export class AgentRegistry {
   private readonly factories = new Map<SubAgentType, AgentFactory>();

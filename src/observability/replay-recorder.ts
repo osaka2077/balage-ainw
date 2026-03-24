@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import type {
   ReplayConfig,
   ReplayEvent,
-  ReplayEventType,
   ReplayRecording,
   RecordingSummary,
 } from "./types.js";

@@ -18,11 +18,9 @@ import type {
   AuditEntry,
   RiskLevel,
   GateContext,
-  PolicyResult,
 } from "./types.js";
 import { ConfidenceScoreSchema } from "./types.js";
 import type { ValidationStatus } from "../../shared_interfaces.js";
-import { PROVENANCE_FACTORS } from "../../shared_interfaces.js";
 import { classifyAction } from "./action-classifier.js";
 import { ThresholdManager } from "./threshold-manager.js";
 import { detectContradictions } from "./contradiction-detector.js";

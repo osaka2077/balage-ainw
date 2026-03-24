@@ -44,13 +44,12 @@ vi.mock("../../observability/index.js", () => ({
 
 import { ScreenshotCapturer } from "../screenshot-capturer.js";
 import { MockVisionAnalyzer } from "../vision-analyzer.js";
-import { BaselineRunner, getCorpus, matchEndpoints, calculateSummary } from "../baseline-runner.js";
+import { BaselineRunner, getCorpus, matchEndpoints } from "../baseline-runner.js";
 import { ScreenshotTimeoutError } from "../errors.js";
 import type {
   DetectedEndpoint,
   ScreenshotResult,
   BenchmarkSummary,
-  FixtureResult,
 } from "../types.js";
 
 // ── Helpers ────────────────────────────────────────────────────────────────

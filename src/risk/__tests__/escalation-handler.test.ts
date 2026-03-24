@@ -5,7 +5,7 @@
 import { describe, it, expect } from "vitest";
 import { randomUUID } from "node:crypto";
 import { EscalationHandler } from "../escalation-handler.js";
-import type { EscalationRequest, GateContext } from "../types.js";
+import type { EscalationRequest } from "../types.js";
 
 function makeEscalation(): EscalationRequest {
   return {

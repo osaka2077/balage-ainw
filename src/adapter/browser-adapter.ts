@@ -8,7 +8,6 @@ import {
   firefox,
   webkit,
   type Browser,
-  type BrowserContext,
   type Page,
   type CDPSession,
   type BrowserType,

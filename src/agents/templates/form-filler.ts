@@ -4,7 +4,6 @@
  */
 
 import pino from "pino";
-import { randomUUID } from "node:crypto";
 import type { AgentTask, AgentResult } from "../../../shared_interfaces.js";
 import type { AgentTemplate, AgentCapabilities } from "../types.js";
 import type { Sandbox } from "../sandbox.js";
@@ -34,7 +33,7 @@ export class FormFillerAgent implements AgentTemplate {
       "FormFiller executing",
     );
 
-    for (const [fieldName, value] of Object.entries(fields)) {
+    for (const fieldName of Object.keys(fields)) {
       try {
         sandbox.enforceOrThrow("fill");
         // Simuliere Feld-Befuellung
