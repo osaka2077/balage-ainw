@@ -226,6 +226,8 @@ interface DomSignals {
   hasConsentButtons: boolean;
   hasAddToCart: boolean;
   hasProductData: boolean;
+  hasSettingsElement: boolean;
+  hasCartLink: boolean;
   inputCount: number;
   linkCount: number;
   buttonLabels: string[];
@@ -246,6 +248,8 @@ function collectDomSignals(root: DomNode): DomSignals {
     hasConsentButtons: false,
     hasAddToCart: false,
     hasProductData: false,
+    hasSettingsElement: false,
+    hasCartLink: false,
     inputCount: 0,
     linkCount: 0,
     buttonLabels: [],
@@ -352,6 +356,35 @@ function collectDomSignals(root: DomNode): DomSignals {
     ) {
       signals.hasProductData = true;
     }
+
+    // Settings: select/radio/checkbox/switch mit Settings-bezogenem Text
+    if (
+      tag === "select"
+      || (tag === "input" && (type === "radio" || type === "checkbox"))
+      || role === "switch"
+    ) {
+      const settingsText = [attrs["aria-label"] ?? "", node.textContent ?? "", attrs["name"] ?? ""].join(" ");
+      if (/font[\s-]?size|theme|dark[\s-]?mode|light[\s-]?mode|appearance|language|sprache|locale|color[\s-]?scheme|accessibility/i.test(settingsText)) {
+        signals.hasSettingsElement = true;
+      }
+    }
+
+    // Commerce: Cart-Links (href zu cart/bag/basket)
+    if (tag === "a" && attrs["href"]) {
+      if (/\/(cart|bag|basket|warenkorb)\b/i.test(attrs["href"])) {
+        signals.hasCartLink = true;
+      }
+    }
+
+    // Commerce: Cart-Icons (img/svg mit cart-bezogenem alt/class/aria-label)
+    if (
+      (tag === "img" || tag === "svg")
+      && /cart|bag|basket|warenkorb/i.test(
+        [attrs["alt"] ?? "", attrs["class"] ?? "", attrs["aria-label"] ?? ""].join(" "),
+      )
+    ) {
+      signals.hasCartLink = true;
+    }
   });
 
   return signals;
@@ -418,6 +451,16 @@ function inferLabel(segmentType: string, signals: DomSignals): string {
     return "Product / Add to Cart";
   }
 
+  // Commerce: Cart Link/Icon
+  if (signals.hasCartLink) {
+    return "Shopping Cart";
+  }
+
+  // Settings / Preferences
+  if (signals.hasSettingsElement) {
+    return "Settings / Preferences";
+  }
+
   // Navigation
   if (segmentType === "navigation") {
     if (signals.linkCount > 5) return "Main Navigation Menu";
@@ -481,6 +524,8 @@ function inferEndpointType(
   if (signals.hasCookieConsent) return "consent";
 
   if (signals.hasPasswordInput) return "auth";
+  // Settings VOR search: verhindert Fehlklassifizierung von Dropdowns als search
+  if (signals.hasSettingsElement && !signals.hasSearchInput && !signals.hasSearchRole) return "settings";
   if (signals.hasSearchRole || signals.hasSearchInput) return "search";
   if (signals.placeholders.some(p => /search|suche|find/i.test(p))) {
     return "search";
@@ -492,8 +537,8 @@ function inferEndpointType(
   ].join(" ");
   if (/checkout|payment|bezahl|kasse/i.test(allText)) return "checkout";
 
-  // Commerce: Add-to-Cart oder Product-Daten
-  if (signals.hasAddToCart || signals.hasProductData) return "commerce";
+  // Commerce: Add-to-Cart, Product-Daten oder Cart-Links/Icons
+  if (signals.hasAddToCart || signals.hasProductData || signals.hasCartLink) return "commerce";
 
   if (signals.formAction) {
     const action = signals.formAction.toLowerCase();
@@ -588,7 +633,15 @@ function runHeuristicAnalysis(
     .filter((e: DetectedEndpoint) => e.confidence >= minConfidence)
     .sort((a: DetectedEndpoint, b: DetectedEndpoint) => b.confidence - a.confidence)
     .reduce((deduped: DetectedEndpoint[], ep) => {
-      // BUG-2: Deduplicate by type+label — keep highest confidence
+      // Navigation: bis zu 4 Endpoints erlauben (Header, Sidebar, Footer, Breadcrumbs)
+      if (ep.type === "navigation") {
+        const navCount = deduped.filter(d => d.type === "navigation").length;
+        if (navCount < 4) {
+          deduped.push(ep);
+        }
+        return deduped;
+      }
+      // Andere Typen: Deduplicate by type+label — keep highest confidence
       const key = `${ep.type}:${ep.label}`;
       if (!deduped.some(d => `${d.type}:${d.label}` === key)) {
         deduped.push(ep);
@@ -643,6 +696,9 @@ function inferAffordances(
     case "consent":
       affordances.push("click", "toggle");
       break;
+    case "settings":
+      affordances.push("click", "toggle", "select");
+      break;
     case "commerce":
       affordances.push("click", "scroll");
       break;
@@ -670,6 +726,8 @@ function buildEvidence(
   if (signals.hasConsentButtons) evidence.push("Contains consent action buttons");
   if (signals.hasAddToCart) evidence.push("Contains add-to-cart button");
   if (signals.hasProductData) evidence.push("Contains product data attributes");
+  if (signals.hasSettingsElement) evidence.push("Contains settings controls (select/radio/toggle)");
+  if (signals.hasCartLink) evidence.push("Contains cart/commerce link or icon");
   if (signals.formAction) evidence.push(`Form action: ${signals.formAction}`);
   evidence.push(
     `Interactive elements: ${signals.inputCount} inputs, ${signals.linkCount} links`,

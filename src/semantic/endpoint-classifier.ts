@@ -71,6 +71,28 @@ const NON_SEARCH_PATTERNS: RegExp[] = [
   /\b(store[\s-]?locator|locations?)\b/,
 ];
 
+/** Patterns die auf Settings-/Preference-Endpoints hinweisen */
+const SETTINGS_PATTERNS: RegExp[] = [
+  /\bfont[\s-]?size\b/i,
+  /\bdark[\s-]?mode\b/i,
+  /\blight[\s-]?mode\b/i,
+  /\bcolor[\s-]?scheme\b/i,
+  /\btheme\b/i,
+  /\bappearance\b/i,
+  /\blanguage\b/i,
+  /\bsprache\b/i,
+  /\blocale\b/i,
+  /\baccessibility\b/i,
+];
+
+/** Patterns die explizit auf Search hinweisen (Guard fuer Settings-Regel) */
+const EXPLICIT_SEARCH_PATTERNS: RegExp[] = [
+  /\bsearch\b/i,
+  /\bsuche\b/i,
+  /\bfind\b/i,
+  /\bquery\b/i,
+];
+
 const HEURISTIC_RULES: HeuristicRule[] = [
   {
     name: "password-field-implies-auth",
@@ -83,6 +105,15 @@ const HEURISTIC_RULES: HeuristicRule[] = [
     correctedType: "checkout",
     check: (segment) =>
       hasPriceElements(segment.nodes) && hasBuyButton(segment.nodes),
+  },
+  {
+    name: "settings-controls-not-search",
+    correctedType: "settings",
+    check: (_segment, candidate) => {
+      const isSettings = candidateMatchesContext(candidate, SETTINGS_PATTERNS);
+      const isExplicitSearch = candidateMatchesContext(candidate, EXPLICIT_SEARCH_PATTERNS);
+      return isSettings && !isExplicitSearch;
+    },
   },
   {
     name: "search-input-implies-search",
@@ -118,6 +149,17 @@ const HEURISTIC_RULES: HeuristicRule[] = [
         /\b(account|konto|mein\s+konto)\b/,
       ]);
     },
+  },
+  {
+    name: "add-to-cart-implies-commerce",
+    correctedType: "commerce",
+    check: (_segment, candidate) =>
+      candidateMatchesContext(candidate, [
+        /\badd\s+to\s+(cart|bag)\b/i,
+        /\bin\s+den\s+warenkorb\b/i,
+        /\bbuy[\s-]?now\b/i,
+        /\bjetzt\s+kaufen\b/i,
+      ]),
   },
   {
     name: "cart-link-implies-checkout",

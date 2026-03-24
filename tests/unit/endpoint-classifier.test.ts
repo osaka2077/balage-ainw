@@ -790,6 +790,21 @@ describe("Mixed-Segment Heuristik (Target.com-Fix)", () => {
     expect(result.correctedType).toBe("search");
   });
 
+  it("candidate with 'add to cart' label is classified as commerce, not search", () => {
+    const segment = makeTargetHeaderSegment();
+    const addToCartCandidate = makeCandidateWithAnchors(
+      "form",
+      "Add to Cart",
+      "Add product to shopping cart",
+      [{ selector: "button", textContent: "Add to Cart" }],
+    );
+
+    const result = classifyEndpoint(addToCartCandidate, segment);
+    expect(result.correctedType).toBe("commerce");
+    expect(result.correctedType).not.toBe("search");
+    expect(result.correctedType).not.toBe("checkout");
+  });
+
   it("candidate with 'wishlist' label is not overridden to search", () => {
     const nodes = [
       makeDomNode("div", { role: "search" }, [
@@ -810,5 +825,247 @@ describe("Mixed-Segment Heuristik (Target.com-Fix)", () => {
 
     const result = classifyEndpoint(wishlistCandidate, segment);
     expect(result.correctedType).not.toBe("search");
+  });
+});
+
+// ============================================================================
+// Settings vs Search — Fehlklassifizierung verhindern
+// ============================================================================
+
+describe("Settings Controls (not Search)", () => {
+  function makeCandidateWithAnchors(
+    type: string,
+    label: string,
+    description: string,
+    anchors: Array<{
+      selector?: string;
+      ariaRole?: string;
+      ariaLabel?: string;
+      textContent?: string;
+    }> = [{ selector: "div" }],
+    confidence: number = 0.8,
+  ): EndpointCandidate {
+    return {
+      type,
+      label,
+      description,
+      confidence,
+      anchors,
+      affordances: [
+        { type: "click", expectedOutcome: "Action", reversible: true },
+      ],
+      reasoning: "test reasoning",
+    };
+  }
+
+  it("corrects 'search' to 'settings' when candidate mentions font-size", () => {
+    const nodes = [makeDomNode("select", { "aria-label": "Font Size" })];
+    const candidate = makeCandidateWithAnchors(
+      "search",
+      "Font Size Selector",
+      "Select font size for the page",
+      [{ selector: "select", ariaLabel: "Font Size" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("settings");
+  });
+
+  it("corrects 'search' to 'settings' when candidate mentions theme", () => {
+    const nodes = [makeDomNode("input", { type: "checkbox", "aria-label": "Dark Mode" })];
+    const candidate = makeCandidateWithAnchors(
+      "search",
+      "Theme Toggle",
+      "Toggle dark mode theme",
+      [{ selector: "input[type=checkbox]", ariaLabel: "Dark Mode" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("settings");
+  });
+
+  it("corrects 'form' to 'settings' when candidate mentions language", () => {
+    const nodes = [makeDomNode("select", { "aria-label": "Language" })];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Language Selector",
+      "Choose display language",
+      [{ selector: "select", ariaLabel: "Language" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("settings");
+  });
+
+  it("corrects to 'settings' for dark-mode toggle", () => {
+    const nodes = [makeDomNode("div")];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Dark Mode Switch",
+      "Toggle dark mode",
+      [{ selector: "button", textContent: "Dark Mode" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("settings");
+  });
+
+  it("corrects to 'settings' for appearance controls", () => {
+    const nodes = [makeDomNode("div")];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Appearance Options",
+      "Customize appearance",
+      [{ selector: "div", ariaLabel: "Appearance" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("settings");
+  });
+
+  it("does NOT reclassify when candidate also mentions search", () => {
+    const nodes = [makeDomNode("div")];
+    const candidate = makeCandidateWithAnchors(
+      "search",
+      "Search Theme Library",
+      "Find themes in the library",
+      [{ selector: "input", ariaLabel: "Search themes" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    // search-input-implies-search oder fallback, aber NICHT settings
+    expect(result.correctedType).not.toBe("settings");
+  });
+
+  it("does NOT reclassify a real search candidate", () => {
+    const nodes = [
+      makeDomNode("div", { role: "search" }, [
+        makeDomNode("input", { type: "search", placeholder: "Search..." }),
+      ]),
+    ];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Search Products",
+      "Search for products",
+      [{ selector: "input[type=search]" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("search");
+  });
+});
+
+// ============================================================================
+// Commerce: Add-to-Cart Erkennung
+// ============================================================================
+
+describe("Add-to-Cart implies Commerce", () => {
+  function makeCandidateWithAnchors(
+    type: string,
+    label: string,
+    description: string,
+    anchors: Array<{
+      selector?: string;
+      ariaRole?: string;
+      ariaLabel?: string;
+      textContent?: string;
+    }> = [{ selector: "div" }],
+    confidence: number = 0.8,
+  ): EndpointCandidate {
+    return {
+      type,
+      label,
+      description,
+      confidence,
+      anchors,
+      affordances: [
+        { type: "click", expectedOutcome: "Action", reversible: true },
+      ],
+      reasoning: "test reasoning",
+    };
+  }
+
+  it("corrects to 'commerce' when candidate says 'Add to Cart'", () => {
+    const nodes = [makeDomNode("button", {}, [], { textContent: "Add to Cart" })];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Add to Cart Button",
+      "Add product to cart",
+      [{ selector: "button", textContent: "Add to Cart" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("commerce");
+  });
+
+  it("corrects to 'commerce' when candidate says 'Add to Bag'", () => {
+    const nodes = [makeDomNode("button", {}, [], { textContent: "Add to Bag" })];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Add to Bag",
+      "Add item to shopping bag",
+      [{ selector: "button", textContent: "Add to Bag" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("commerce");
+  });
+
+  it("corrects to 'commerce' for German 'In den Warenkorb'", () => {
+    const nodes = [makeDomNode("button", {}, [], { textContent: "In den Warenkorb" })];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "In den Warenkorb",
+      "Produkt in den Warenkorb legen",
+      [{ selector: "button", textContent: "In den Warenkorb" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("commerce");
+  });
+
+  it("corrects to 'commerce' for 'Buy Now'", () => {
+    const nodes = [makeDomNode("button", {}, [], { textContent: "Buy Now" })];
+    const candidate = makeCandidateWithAnchors(
+      "content",
+      "Buy Now Button",
+      "Buy the product now",
+      [{ selector: "button", textContent: "Buy Now" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("commerce");
+  });
+
+  it("corrects to 'commerce' for 'Jetzt Kaufen'", () => {
+    const nodes = [makeDomNode("button", {}, [], { textContent: "Jetzt Kaufen" })];
+    const candidate = makeCandidateWithAnchors(
+      "content",
+      "Jetzt Kaufen",
+      "Produkt jetzt kaufen",
+      [{ selector: "button", textContent: "Jetzt Kaufen" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    expect(result.correctedType).toBe("commerce");
+  });
+
+  it("does NOT correct generic 'Cart' link to commerce (stays checkout)", () => {
+    const nodes = [makeDomNode("a", { href: "/cart" }, [], { textContent: "Cart" })];
+    const candidate = makeCandidateWithAnchors(
+      "navigation",
+      "Cart",
+      "View shopping cart",
+      [{ selector: "a", textContent: "Cart" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    // cart-link-implies-checkout sollte greifen, NICHT add-to-cart-implies-commerce
+    expect(result.correctedType).toBe("checkout");
+  });
+
+  it("commerce rule fires before checkout rule for 'Add to Cart'", () => {
+    // Simuliert einen Mixed-Segment mit Cart-Klasse UND Add-to-Cart Button
+    const nodes = [
+      makeDomNode("div", { class: "product-cart" }, [
+        makeDomNode("button", {}, [], { textContent: "Add to Cart" }),
+      ]),
+    ];
+    const candidate = makeCandidateWithAnchors(
+      "form",
+      "Add to Cart",
+      "Add to shopping cart",
+      [{ selector: "button", textContent: "Add to Cart" }],
+    );
+    const result = classifyEndpoint(candidate, makeSegment(nodes));
+    // Commerce sollte VOR checkout greifen
+    expect(result.correctedType).toBe("commerce");
   });
 });
