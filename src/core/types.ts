@@ -69,6 +69,14 @@ export interface AnalyzeOptions {
   url?: string;
   /** LLM config for higher accuracy. Default: false (heuristic-only, no API key needed). */
   llm?: false | LLMConfig;
+  /**
+   * Analysis mode:
+   * - "heuristic" (default when llm=false): Pure heuristic analysis, no API key needed.
+   * - "llm" (default when llm=LLMConfig): LLM generates endpoints, heuristic corrects.
+   * - "hybrid": Heuristic generates candidates first, LLM validates/corrects/augments.
+   *   Best quality: heuristic recall + LLM precision. Requires llm config.
+   */
+  mode?: "heuristic" | "llm" | "hybrid";
   /** Minimum confidence threshold. Default: 0.50 */
   minConfidence?: number;
   /** Maximum endpoints to return. Default: 10 */
@@ -106,5 +114,5 @@ export interface AnalysisResult {
   endpoints: DetectedEndpoint[];
   framework?: FrameworkDetection;
   timing: { totalMs: number; llmCalls: number };
-  meta: { url?: string; mode: "llm" | "heuristic"; version: string };
+  meta: { url?: string; mode: "llm" | "heuristic" | "hybrid"; version: string };
 }

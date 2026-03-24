@@ -99,9 +99,27 @@ export async function analyzeFromHTML(
 
   let endpoints: DetectedEndpoint[];
   let llmCalls = 0;
-  const mode = llm ? "llm" as const : "heuristic" as const;
 
-  if (llm) {
+  // Mode-Bestimmung: expliziter mode > implizit aus llm-Config
+  const resolvedMode: "heuristic" | "llm" | "hybrid" = options.mode
+    ?? (llm ? "llm" : "heuristic");
+
+  // Validierung: hybrid und llm brauchen eine LLM-Config
+  if ((resolvedMode === "hybrid" || resolvedMode === "llm") && !llm) {
+    logger.warn(
+      { mode: resolvedMode },
+      "Mode requires LLM config but none provided, falling back to heuristic",
+    );
+  }
+
+  const effectiveMode = (resolvedMode !== "heuristic" && !llm) ? "heuristic" as const : resolvedMode;
+
+  if (effectiveMode === "hybrid" && llm) {
+    endpoints = await runHybridAnalysis(
+      segments, dom, llm, url, minConfidence, maxEndpoints,
+    );
+    llmCalls = 1; // Hybrid sendet 1 zusammengefassten LLM-Call statt pro Segment
+  } else if (effectiveMode === "llm" && llm) {
     endpoints = await runLLMAnalysis(
       segments, llm, url, minConfidence, maxEndpoints,
     );
@@ -118,8 +136,289 @@ export async function analyzeFromHTML(
     endpoints,
     framework,
     timing: { totalMs, llmCalls },
-    meta: { url, mode, version: VERSION },
+    meta: { url, mode: effectiveMode, version: VERSION },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Hybrid Analysis — Heuristic-First, LLM-Validated
+// ---------------------------------------------------------------------------
+
+/**
+ * Hybrid-Modus: Heuristik generiert Kandidaten (hoher Recall),
+ * LLM validiert/korrigiert/ergaenzt (hohe Precision).
+ *
+ * Pipeline:
+ * 1. runHeuristicAnalysis generiert Kandidaten-Liste (wie bisher)
+ * 2. Kandidaten + DOM-Kontext werden dem LLM als Validierungs-Aufgabe gesendet
+ * 3. LLM bestaetigt, korrigiert oder verwirft jeden Kandidaten
+ * 4. LLM darf neue Endpoints ergaenzen die die Heuristik verpasst hat
+ * 5. Voting bei Widerspruch: Gewichteter Merge basierend auf Evidence-Staerke
+ */
+async function runHybridAnalysis(
+  segments: UISegment[],
+  fullDom: DomNode,
+  llmConfig: LLMConfig,
+  url: string,
+  minConfidence: number,
+  maxEndpoints: number,
+): Promise<DetectedEndpoint[]> {
+  // Phase 1: Heuristik-Kandidaten generieren (kein minConfidence-Filter, hoher Recall)
+  const heuristicCandidates = runHeuristicAnalysis(
+    segments, fullDom, 0.20, maxEndpoints * 2,
+  );
+
+  logger.debug(
+    { candidateCount: heuristicCandidates.length },
+    "Hybrid: Heuristic candidates generated",
+  );
+
+  // Phase 2: LLM-Validierung
+  const { createOpenAIClient, createAnthropicClient } = await loadLLMModules();
+
+  let llmClient;
+  try {
+    if (llmConfig.provider === "anthropic") {
+      llmClient = await createAnthropicClient({ apiKey: llmConfig.apiKey, model: llmConfig.model ?? "claude-haiku-4-5-20251001" });
+    } else if (llmConfig.provider === "openai") {
+      llmClient = await createOpenAIClient({ apiKey: llmConfig.apiKey, model: llmConfig.model ?? "gpt-4o-mini" });
+    } else {
+      throw new BalageLLMError(`Unknown provider "${llmConfig.provider}". Supported: "openai", "anthropic".`, llmConfig.provider);
+    }
+  } catch (err) {
+    if (err instanceof BalageLLMError) throw err;
+    // Fallback: bei LLM-Fehler nur Heuristik-Ergebnisse zurueckgeben
+    logger.warn({ err }, "Hybrid: LLM client creation failed, falling back to heuristic results");
+    return heuristicCandidates
+      .filter(e => e.confidence >= minConfidence)
+      .slice(0, maxEndpoints);
+  }
+
+  // Phase 3: Validierungs-Prompt bauen
+  const validationPrompt = buildHybridValidationPrompt(heuristicCandidates, url);
+
+  try {
+    const response = await llmClient.complete({
+      systemPrompt: HYBRID_VALIDATION_SYSTEM_PROMPT,
+      userPrompt: validationPrompt,
+      temperature: 0,
+      maxTokens: 2048,
+    });
+
+    const parsed = parseHybridLLMResponse(response.content ?? "");
+
+    // Phase 4: Voting — Merge Heuristik + LLM-Validierung
+    const merged = mergeHybridResults(heuristicCandidates, parsed);
+
+    return merged
+      .filter(e => e.confidence >= minConfidence)
+      .sort((a, b) => b.confidence - a.confidence)
+      .slice(0, maxEndpoints);
+  } catch (err) {
+    // Graceful degradation: bei LLM-Fehler Heuristik-Ergebnisse zurueckgeben
+    logger.warn(
+      { err: err instanceof Error ? err.message : String(err) },
+      "Hybrid: LLM validation failed, returning heuristic results",
+    );
+    return heuristicCandidates
+      .filter(e => e.confidence >= minConfidence)
+      .slice(0, maxEndpoints);
+  }
+}
+
+const HYBRID_VALIDATION_SYSTEM_PROMPT = `You are an expert UI analyst validating pre-classified endpoint candidates.
+
+You receive a list of endpoint candidates that were detected by a heuristic analysis of a web page DOM.
+Your task is to validate, correct, or reject each candidate, and optionally add missing endpoints.
+
+For each candidate, respond with:
+- "status": "confirmed" | "corrected" | "rejected"
+- "correctedType": (only if status="corrected") the correct endpoint type
+- "confidenceAdjustment": a number between -0.3 and +0.2 to adjust the heuristic confidence
+- "reason": brief explanation
+
+You may also add new endpoints that the heuristic missed (max 3).
+
+IMPORTANT:
+- Be conservative with rejections. Only reject if clearly wrong.
+- Trust the heuristic for standard patterns (login forms, search bars, navigation).
+- Add new endpoints only if there's strong evidence the heuristic missed something.
+
+Return valid JSON:
+{
+  "validations": [
+    { "index": 0, "status": "confirmed", "confidenceAdjustment": 0.05, "reason": "..." },
+    { "index": 1, "status": "corrected", "correctedType": "auth", "confidenceAdjustment": 0.10, "reason": "..." },
+    { "index": 2, "status": "rejected", "confidenceAdjustment": -0.30, "reason": "..." }
+  ],
+  "additions": [
+    { "type": "...", "label": "...", "description": "...", "confidence": 0.65, "reason": "..." }
+  ],
+  "reasoning": "Overall analysis summary"
+}
+
+ENDPOINT TYPES: auth, form, search, navigation, checkout, commerce, content, consent, support, media, social, settings`;
+
+/**
+ * Baut den Validierungs-Prompt fuer den Hybrid-Modus.
+ * Sendet die Heuristik-Kandidaten als strukturierte Liste an das LLM.
+ */
+function buildHybridValidationPrompt(
+  candidates: DetectedEndpoint[],
+  url: string,
+): string {
+  const parts: string[] = [];
+  parts.push(`## Page: ${url}`);
+  parts.push(`## Heuristic Candidates (${candidates.length} detected):`);
+  parts.push("");
+
+  for (let i = 0; i < candidates.length; i++) {
+    const c = candidates[i]!;
+    parts.push(`### Candidate ${i}:`);
+    parts.push(`- Type: ${c.type}`);
+    parts.push(`- Label: ${c.label}`);
+    parts.push(`- Description: ${c.description}`);
+    parts.push(`- Confidence: ${c.confidence.toFixed(2)}`);
+    parts.push(`- Selector: ${c.selector ?? "none"}`);
+    parts.push(`- Affordances: ${c.affordances.join(", ")}`);
+    parts.push(`- Evidence: ${c.evidence.join("; ")}`);
+    parts.push("");
+  }
+
+  parts.push("## Task");
+  parts.push("Validate each candidate. Confirm, correct, or reject. Add missing endpoints if any.");
+
+  return parts.join("\n");
+}
+
+interface HybridValidation {
+  index: number;
+  status: "confirmed" | "corrected" | "rejected";
+  correctedType?: string;
+  confidenceAdjustment: number;
+  reason: string;
+}
+
+interface HybridAddition {
+  type: string;
+  label: string;
+  description: string;
+  confidence: number;
+  reason: string;
+}
+
+interface HybridLLMResult {
+  validations: HybridValidation[];
+  additions: HybridAddition[];
+}
+
+/**
+ * Parst die LLM-Antwort fuer den Hybrid-Modus.
+ * Robustes Parsing: extrahiert JSON aus der Antwort auch wenn das LLM
+ * Markdown-Code-Bloecke drumrum packt.
+ */
+function parseHybridLLMResponse(rawContent: string): HybridLLMResult {
+  // JSON aus Markdown-Code-Block extrahieren falls vorhanden
+  const jsonMatch = rawContent.match(/```(?:json)?\s*([\s\S]*?)```/) ?? rawContent.match(/(\{[\s\S]*\})/);
+  const jsonStr = jsonMatch?.[1]?.trim() ?? rawContent.trim();
+
+  try {
+    const parsed = JSON.parse(jsonStr);
+    return {
+      validations: Array.isArray(parsed.validations) ? parsed.validations : [],
+      additions: Array.isArray(parsed.additions) ? parsed.additions : [],
+    };
+  } catch {
+    logger.warn("Hybrid: Failed to parse LLM validation response, returning empty");
+    return { validations: [], additions: [] };
+  }
+}
+
+/**
+ * Merge-Logik: Kombiniert Heuristik-Kandidaten mit LLM-Validierung.
+ *
+ * Voting-Regeln:
+ * - confirmed: Confidence um Adjustment erhoehen (max +0.2)
+ * - corrected: Typ uebernehmen, Confidence leicht senken (Unsicherheit durch Korrektur)
+ * - rejected: Confidence stark senken aber nicht komplett entfernen
+ *   (Heuristik hat DOM-Evidence, LLM koennte sich irren)
+ * - Nicht-validierte Kandidaten: Confidence unveraendert lassen
+ * - Additions: Als neue Endpoints mit LLM-Confidence hinzufuegen
+ */
+function mergeHybridResults(
+  heuristicCandidates: DetectedEndpoint[],
+  llmResult: HybridLLMResult,
+): DetectedEndpoint[] {
+  const results: DetectedEndpoint[] = [];
+  const validationMap = new Map<number, HybridValidation>();
+
+  for (const v of llmResult.validations) {
+    if (typeof v.index === "number" && v.index >= 0 && v.index < heuristicCandidates.length) {
+      validationMap.set(v.index, v);
+    }
+  }
+
+  for (let i = 0; i < heuristicCandidates.length; i++) {
+    const candidate = { ...heuristicCandidates[i]! };
+    const validation = validationMap.get(i);
+
+    if (validation === undefined) {
+      // Kein LLM-Feedback: Heuristik-Ergebnis unveraendert uebernehmen
+      results.push(candidate);
+      continue;
+    }
+
+    switch (validation.status) {
+      case "confirmed": {
+        // Confidence-Boost begrenzen auf +0.2
+        const adjustment = Math.min(0.2, Math.max(-0.1, validation.confidenceAdjustment));
+        candidate.confidence = Math.round(Math.min(0.95, candidate.confidence + adjustment) * 100) / 100;
+        candidate.evidence.push(`LLM confirmed: ${validation.reason}`);
+        results.push(candidate);
+        break;
+      }
+      case "corrected": {
+        // Typ korrigieren wenn der korrigierte Typ valid ist
+        if (validation.correctedType && VALID_ENDPOINT_TYPES.has(validation.correctedType as EndpointType)) {
+          candidate.evidence.push(`LLM corrected from ${candidate.type} to ${validation.correctedType}: ${validation.reason}`);
+          candidate.type = validation.correctedType as EndpointType;
+          // Leichte Confidence-Reduktion bei Korrektur (0.85x) — LLM und Heuristik widersprechen sich
+          candidate.confidence = Math.round(Math.min(0.90, candidate.confidence * 0.85 + Math.max(0, validation.confidenceAdjustment)) * 100) / 100;
+        }
+        results.push(candidate);
+        break;
+      }
+      case "rejected": {
+        // Nicht komplett verwerfen — Confidence stark senken, der minConfidence-Filter entscheidet
+        candidate.confidence = Math.round(Math.max(0.10, candidate.confidence * 0.5) * 100) / 100;
+        candidate.evidence.push(`LLM rejected: ${validation.reason}`);
+        results.push(candidate);
+        break;
+      }
+    }
+  }
+
+  // LLM-Additions hinzufuegen (max 3, mit moderater Confidence)
+  for (const addition of llmResult.additions.slice(0, 3)) {
+    if (!addition.type || !addition.label) continue;
+    const addType = VALID_ENDPOINT_TYPES.has(addition.type as EndpointType) ? addition.type as EndpointType : "content" as EndpointType;
+
+    // Pruefen ob nicht bereits ein Endpoint mit gleichem Typ+Label existiert
+    const isDuplicate = results.some(r => r.type === addType && r.label.toLowerCase() === addition.label.toLowerCase());
+    if (isDuplicate) continue;
+
+    results.push({
+      type: addType,
+      label: addition.label,
+      description: addition.description ?? addition.label,
+      // LLM-only Additions bekommen niedrigere Confidence als heuristic-bestaetigt
+      confidence: Math.round(Math.min(0.75, addition.confidence ?? 0.50) * 100) / 100,
+      affordances: inferAffordances(addType, { hasPasswordInput: false, hasEmailInput: false, hasSearchInput: false, hasSearchRole: false, hasFileInput: false, hasCookieConsent: false, hasConsentButtons: false, hasAddToCart: false, hasProductData: false, hasSettingsElement: false, hasCartLink: false, inputCount: 0, linkCount: 0, buttonLabels: [], headingTexts: [], formAction: undefined, ariaLabel: undefined, placeholders: [] }),
+      evidence: [`LLM addition: ${addition.reason ?? "detected by LLM"}`],
+    });
+  }
+
+  return results;
 }
 
 // ---------------------------------------------------------------------------

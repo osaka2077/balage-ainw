@@ -115,6 +115,18 @@ const INTERACTIVE_TAGS = new Set([
 const DEFAULT_MIN_CONFIDENCE = 0.4;
 
 /**
+ * Schwellwert fuer Sub-Segmentierung: Segmente mit mehr als dieser Anzahl
+ * interaktiver Elemente werden in Sub-Segmente aufgeteilt.
+ */
+const SUB_SEGMENT_INTERACTIVE_THRESHOLD = 5;
+
+/**
+ * Minimale Anzahl interaktiver Elemente die ein Sub-Segment haben muss
+ * um als eigenstaendiges Segment zu gelten (verhindert 1-Element-Splitter).
+ */
+const SUB_SEGMENT_MIN_INTERACTIVE = 1;
+
+/**
  * Prueft ob ein einzelner Node als interaktiv gilt.
  * Beruecksichtigt: native HTML-Tags, ARIA-Rollen, tabindex, contenteditable, Custom Elements.
  */
@@ -173,6 +185,175 @@ function countInteractiveElements(node: DomNode): number {
   }
 
   return count;
+}
+
+/**
+ * Sammelt die interaktiven Kinder-Nodes eines Elternknotens.
+ * Gibt fuer jedes direkte Kind die Anzahl interaktiver Elemente zurueck.
+ * Wird fuer Sub-Segmentierung verwendet.
+ */
+function collectInteractiveChildGroups(
+  parentNode: DomNode
+): Array<{ node: DomNode; interactiveCount: number }> {
+  const groups: Array<{ node: DomNode; interactiveCount: number }> = [];
+  for (const child of parentNode.children) {
+    const count = countInteractiveElements(child);
+    if (count > 0) {
+      groups.push({ node: child, interactiveCount: count });
+    }
+  }
+  return groups;
+}
+
+/**
+ * Mergt benachbarte Kind-Gruppen die einzeln zu klein sind (nur 1 interaktives Element)
+ * zu groesseren funktionalen Bloecken. Verhindert ueber-fragmentierte Sub-Segmente.
+ *
+ * Strategie: Greedy-Merge benachbarter Gruppen bis jede Gruppe >= minInteractive hat
+ * oder bis ein semantischer Boundary erkannt wird (form, nav, section, article, aside).
+ */
+function mergeSmallGroups(
+  groups: Array<{ node: DomNode; interactiveCount: number }>,
+  minInteractive: number,
+): Array<{ nodes: DomNode[]; interactiveCount: number }> {
+  const BOUNDARY_TAGS = new Set(["form", "nav", "section", "article", "aside", "header", "footer", "dialog", "main"]);
+  const merged: Array<{ nodes: DomNode[]; interactiveCount: number }> = [];
+  let current: { nodes: DomNode[]; interactiveCount: number } | undefined;
+
+  for (const group of groups) {
+    const isBoundary = BOUNDARY_TAGS.has(group.node.tagName.toLowerCase());
+
+    if (isBoundary) {
+      // Semantischer Boundary: vorherige Gruppe abschliessen, neue Gruppe starten
+      if (current !== undefined && current.interactiveCount > 0) {
+        merged.push(current);
+      }
+      merged.push({ nodes: [group.node], interactiveCount: group.interactiveCount });
+      current = undefined;
+      continue;
+    }
+
+    if (current === undefined) {
+      current = { nodes: [group.node], interactiveCount: group.interactiveCount };
+    } else {
+      current.nodes.push(group.node);
+      current.interactiveCount += group.interactiveCount;
+    }
+
+    // Wenn die aktuelle Gruppe genug interaktive Elemente hat, abschliessen
+    if (current.interactiveCount >= minInteractive) {
+      merged.push(current);
+      current = undefined;
+    }
+  }
+
+  // Restliche Gruppe anfuegen
+  if (current !== undefined && current.interactiveCount > 0) {
+    merged.push(current);
+  }
+
+  return merged;
+}
+
+/**
+ * Sub-Segmentierung: Zerlegt zu grosse Segmente in kleinere funktionale Bloecke.
+ *
+ * Ein Segment wird aufgeteilt wenn es mehr als SUB_SEGMENT_INTERACTIVE_THRESHOLD
+ * interaktive Elemente hat. Die Aufteilung basiert auf DOM-Proximity:
+ * direkte Kinder des Segment-Root-Nodes werden als natuerliche Gruppen verwendet
+ * und dann per mergeSmallGroups zu sinnvollen Sub-Segmenten zusammengefasst.
+ */
+function subSegmentLargeSegments(
+  segments: UISegment[],
+  ariaAnalysis: AriaAnalysis,
+  threshold: number = SUB_SEGMENT_INTERACTIVE_THRESHOLD,
+): UISegment[] {
+  const result: UISegment[] = [];
+
+  for (const segment of segments) {
+    // Nur Segmente mit zu vielen interaktiven Elementen aufteilen
+    if (segment.interactiveElementCount <= threshold) {
+      result.push(segment);
+      continue;
+    }
+
+    // Segment-Root-Node bestimmen
+    const rootNode = segment.nodes[0];
+    if (rootNode === undefined || rootNode.children.length <= 1) {
+      // Kein Root oder nur ein Kind — nicht teilbar
+      result.push(segment);
+      continue;
+    }
+
+    // Direkte Kinder mit interaktiven Elementen sammeln
+    const childGroups = collectInteractiveChildGroups(rootNode);
+
+    // Wenn nur 0-1 Gruppen, kann nicht sinnvoll aufgeteilt werden
+    if (childGroups.length <= 1) {
+      result.push(segment);
+      continue;
+    }
+
+    // Kleine Gruppen zusammenfassen (min 2 interaktive pro Sub-Segment)
+    const mergedGroups = mergeSmallGroups(childGroups, Math.max(SUB_SEGMENT_MIN_INTERACTIVE, 2));
+
+    // Wenn nach dem Merge nur 1 Gruppe uebrig ist, lohnt sich die Aufteilung nicht
+    if (mergedGroups.length <= 1) {
+      result.push(segment);
+      continue;
+    }
+
+    logger.info(
+      {
+        parentSegmentId: segment.id,
+        parentType: segment.type,
+        parentInteractive: segment.interactiveElementCount,
+        subSegmentCount: mergedGroups.length,
+      },
+      "Sub-segmenting large segment",
+    );
+
+    // Sub-Segmente erstellen
+    for (const group of mergedGroups) {
+      // Jeden Sub-Segment-Node einzeln klassifizieren fuer bessere Typ-Erkennung
+      // Verwende den ersten Node der Gruppe als primaeren Klassifikationsknoten
+      const primaryNode = group.nodes[0]!;
+      const classification = classifyNode(primaryNode, ariaAnalysis);
+
+      // Wenn der Sub-Knoten keine eigene Semantik hat, erbt er den Eltern-Typ
+      const subType = classification.type !== "unknown" ? classification.type : segment.type;
+      const subConfidence = classification.type !== "unknown"
+        ? classification.confidence
+        : segment.confidence * 0.8; // Leichter Penalty fuer geerbten Typ
+
+      const box = getEffectiveBoundingBox(primaryNode);
+      const effectiveRole = primaryNode.attributes["role"] ?? undefined;
+
+      const subSegment: UISegment = {
+        id: randomUUID(),
+        type: subType,
+        label: classification.label?.slice(0, 256),
+        confidence: Math.round(subConfidence * 100) / 100,
+        boundingBox: box,
+        nodes: group.nodes,
+        interactiveElementCount: group.interactiveCount,
+        semanticRole: effectiveRole,
+        parentSegmentId: segment.id,
+      };
+
+      const validated = UISegmentSchema.safeParse(subSegment);
+      if (validated.success) {
+        result.push(validated.data);
+      } else {
+        logger.warn(
+          { errors: validated.error.issues, type: subType, parentId: segment.id },
+          "Sub-Segment Validierung fehlgeschlagen, uebersprungen",
+        );
+      }
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -591,15 +772,19 @@ export function segmentUI(
 
     collectSegmentableNodes(dom, aria, minConfidence, segments);
 
+    // Sub-Segmentierung: zu grosse Segmente aufteilen
+    const refined = subSegmentLargeSegments(segments, aria);
+
     logger.info(
       {
-        segmentCount: segments.length,
-        types: segments.map((s) => s.type),
+        segmentCount: refined.length,
+        beforeSubSegment: segments.length,
+        types: refined.map((s) => s.type),
       },
-      "UI-Segmentierung abgeschlossen"
+      "UI-Segmentierung abgeschlossen (inkl. Sub-Segmentierung)"
     );
 
-    return segments;
+    return refined;
   } catch (error) {
     if (error instanceof SegmentationError) {
       throw error;
