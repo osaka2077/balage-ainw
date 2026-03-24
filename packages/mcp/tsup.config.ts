@@ -7,6 +7,6 @@ export default defineConfig({
   sourcemap: false,
   clean: true,
   outDir: "dist",
-  banner: { js: "#!/usr/bin/env node" },
-  external: ["@modelcontextprotocol/sdk", "zod", "pino", "openai", "@anthropic-ai/sdk", "playwright", "node:crypto", "crypto"],
+  // Shebang is already in source (index.ts line 1), no banner needed
+  external: ["balage-core", "@modelcontextprotocol/sdk", "zod", "pino", "openai", "@anthropic-ai/sdk", "playwright", "node:crypto", "crypto"],
 });
