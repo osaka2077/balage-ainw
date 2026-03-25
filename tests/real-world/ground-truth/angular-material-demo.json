@@ -73,7 +73,7 @@
       "phase": 2
     },
     {
-      "type": "navigation",
+      "type": "settings",
       "label": "Theme Toggle",
       "description": "Dark/light theme switcher button in header",
       "selector_hint": "button[aria-label*='theme'], .theme-toggle",

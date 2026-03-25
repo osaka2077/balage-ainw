@@ -84,6 +84,7 @@ export interface EndpointCandidate {
   label: string;
   description: string;
   confidence: number;
+  segmentId?: string;
   anchors: Array<{
     selector?: string;
     ariaRole?: string;

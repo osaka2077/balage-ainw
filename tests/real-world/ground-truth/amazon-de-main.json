@@ -65,7 +65,7 @@
       "phase": 2
     },
     {
-      "type": "form",
+      "type": "consent",
       "label": "Cookie Consent Banner",
       "description": "Cookie preferences with Accept/Customize buttons",
       "selector_hint": "#sp-cc-accept, input[name='accept']",

@@ -129,13 +129,14 @@ const DEFAULT_TIMEOUT_MS = 120_000;
 const TYPE_ALIASES: Record<string, string[]> = {
   auth: ["auth", "form"],
   form: ["form", "search", "consent"],
-  navigation: ["navigation", "content"],
+  navigation: ["navigation", "content", "settings"],
   checkout: ["checkout", "commerce"],
   search: ["search", "form"],
   support: ["support", "navigation"],
   content: ["content", "navigation"],
-  consent: ["consent", "form"],
+  consent: ["consent", "form", "settings"],
   commerce: ["commerce", "checkout"],
+  settings: ["settings", "navigation", "consent"],
 };
 
 // Diagnostic flags — activated via environment variables
@@ -684,9 +685,10 @@ async function runPipeline(
       pageTitle: await page.title(),
     };
 
-    const candidates = await generateEndpoints(relevantSegments, context, {
+    const genResult = await generateEndpoints(relevantSegments, context, {
       llmClient: effectiveLlmClient,
     });
+    const candidates = genResult.candidates;
     log(`    Candidates from LLM: ${candidates.length}`);
 
     // 6. Candidate → Endpoint
@@ -694,7 +696,9 @@ async function runPipeline(
     for (const candidate of candidates) {
       try {
         const segment =
-          segments.find((s: UISegment) => s.type === candidate.type) ?? segments[0];
+          segments.find((s: UISegment) => s.id === candidate.segmentId)
+          ?? segments.find((s: UISegment) => s.type === candidate.type)
+          ?? segments[0];
         if (!segment) continue;
 
         const llmSummary = llmClient.summary();

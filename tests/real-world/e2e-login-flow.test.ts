@@ -167,7 +167,8 @@ describe.skipIf(!hasApiKey)("E2E Login Flow — the-internet.herokuapp.com", () 
         pageTitle: await page.title(),
       };
 
-      const candidates = await generateEndpoints(relevant, context, { llmClient });
+      const genResult = await generateEndpoints(relevant, context, { llmClient });
+      const candidates = genResult.candidates;
       console.log(`    Candidates: ${candidates.length}`);
 
       // Wandle Candidates → Endpoints

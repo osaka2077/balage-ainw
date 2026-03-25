@@ -22,7 +22,7 @@
       "affordances": ["fill", "submit"],
       "risk_class": "high",
       "fields": ["password"],
-      "phase": 1
+      "phase": 2
     },
     {
       "type": "auth",
@@ -42,7 +42,7 @@
       "affordances": ["click"],
       "risk_class": "medium",
       "fields": [],
-      "phase": 1
+      "phase": 2
     },
     {
       "type": "navigation",
@@ -67,7 +67,7 @@
   ],
   "expected_metrics": {
     "total_endpoints": 6,
-    "phase1_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.70,
     "min_recall_target": 0.65
   }

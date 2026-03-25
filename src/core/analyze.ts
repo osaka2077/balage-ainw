@@ -143,10 +143,11 @@ export async function analyzeFromHTML(
   const mode = llm ? "llm" as const : "heuristic" as const;
 
   if (llm) {
-    endpoints = await runLLMAnalysis(
+    const llmResult = await runLLMAnalysis(
       segments, llm, url, minConfidence, maxEndpoints,
     );
-    llmCalls = segments.filter(s => s.interactiveElementCount >= 1).length;
+    endpoints = llmResult.endpoints;
+    llmCalls = llmResult.llmCalls;
   } else {
     endpoints = runHeuristicAnalysis(
       segments, dom, minConfidence, maxEndpoints,
@@ -186,7 +187,7 @@ async function runLLMAnalysis(
   url: string,
   minConfidence: number,
   maxEndpoints: number,
-): Promise<DetectedEndpoint[]> {
+): Promise<{ endpoints: DetectedEndpoint[]; llmCalls: number }> {
   // Lazy-load LLM modules (prevents "Cannot find module 'openai'" for heuristic-only users)
   const { generateEndpoints, classifyEndpoint, createOpenAIClient, createAnthropicClient } = await loadLLMModules();
 
@@ -209,12 +210,15 @@ async function runLLMAnalysis(
   }
 
   let candidates: EndpointCandidate[];
+  let generatorLlmCalls = 0;
   try {
-    candidates = await generateEndpoints(
+    const result = await generateEndpoints(
       segments,
       { url, siteId: url, sessionId: randomUUID() },
       { llmClient, maxConcurrency: 6 },
     );
+    candidates = result.candidates;
+    generatorLlmCalls = result.llmCalls;
   } catch (err) {
     throw new BalageLLMError(
       `LLM endpoint generation failed: ${err instanceof Error ? err.message : String(err)}`,
@@ -234,7 +238,9 @@ async function runLLMAnalysis(
 
   const mapped: DetectedEndpoint[] = [];
   for (const c of candidates) {
-    const matchedSegment = segments.find(s => s.type === c.type) ?? segments[0];
+    const matchedSegment = segments.find(s => s.id === c.segmentId)
+      ?? segments.find(s => s.type === c.type)
+      ?? segments[0];
     if (!matchedSegment) continue;
     const classified = classifyEndpoint(c, matchedSegment);
     mapped.push({
@@ -250,10 +256,11 @@ async function runLLMAnalysis(
       ],
     });
   }
-  return mapped
+  const filtered = mapped
     .filter(e => e.confidence >= minConfidence)
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, maxEndpoints);
+  return { endpoints: filtered, llmCalls: generatorLlmCalls };
 }
 
 // ---------------------------------------------------------------------------

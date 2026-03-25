@@ -165,13 +165,13 @@ describe("LLM Timeout Handling", () => {
   it("returns empty array when LLM times out — no crash", async () => {
     const { client, calls } = createTimeoutClient();
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client, maxRetries: 1 },
     );
 
-    expect(result).toEqual([]);
+    expect(genResult.candidates).toEqual([]);
     // 2 attempts total (initial + 1 retry)
     expect(calls).toHaveLength(2);
   });
@@ -196,7 +196,7 @@ describe("LLM Timeout Handling", () => {
       },
     };
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment(), makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client, maxRetries: 1, maxConcurrency: 1 },
@@ -204,8 +204,8 @@ describe("LLM Timeout Handling", () => {
 
     // First segment fails (2 calls), second succeeds (1 call)
     expect(calls).toHaveLength(3);
-    expect(result.length).toBeGreaterThanOrEqual(1);
-    expect(result[0]!.type).toBe("auth");
+    expect(genResult.candidates.length).toBeGreaterThanOrEqual(1);
+    expect(genResult.candidates[0]!.type).toBe("auth");
   });
 });
 
@@ -220,21 +220,21 @@ describe("LLM Retry on Parse Error", () => {
     ]);
     const { client, calls } = createRetrySuccessClient(validResponse);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client, maxRetries: 2 },
     );
 
     expect(calls).toHaveLength(2); // 1st fails, 2nd succeeds
-    expect(result.length).toBe(1);
-    expect(result[0]!.type).toBe("auth");
+    expect(genResult.candidates.length).toBe(1);
+    expect(genResult.candidates[0]!.type).toBe("auth");
   });
 
   it("exhausts all retries on persistent LLMParseError — returns empty", async () => {
     const { client, calls } = createAlwaysParseErrorClient();
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client, maxRetries: 2 },
@@ -242,7 +242,7 @@ describe("LLM Retry on Parse Error", () => {
 
     // 3 attempts total (0, 1, 2) — all fail
     expect(calls).toHaveLength(3);
-    expect(result).toEqual([]);
+    expect(genResult.candidates).toEqual([]);
   });
 
   it("throws LLMCallError internally after exhausting retries", async () => {
@@ -250,13 +250,13 @@ describe("LLM Retry on Parse Error", () => {
 
     // Direkt auf LLMCallError testen — generateEndpoints faengt es per-Segment ab
     // Wir koennen nur indirekt testen: leeres Ergebnis
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client, maxRetries: 1 },
     );
 
-    expect(result).toEqual([]);
+    expect(genResult.candidates).toEqual([]);
   });
 });
 
@@ -274,14 +274,14 @@ describe("Confidence Filter", () => {
     ];
     const client = createConfidenceTestClient(candidates);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(2);
-    const types = result.map((c) => c.type);
+    expect(genResult.candidates).toHaveLength(2);
+    const types = genResult.candidates.map((c) => c.type);
     expect(types).toContain("auth");
     expect(types).toContain("commerce");
     expect(types).not.toContain("form");
@@ -296,13 +296,13 @@ describe("Confidence Filter", () => {
     ];
     const client = createConfidenceTestClient(candidates);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client },
     );
 
-    expect(result).toEqual([]);
+    expect(genResult.candidates).toEqual([]);
   });
 
   it("keeps all candidates when all above threshold", async () => {
@@ -313,13 +313,13 @@ describe("Confidence Filter", () => {
     ];
     const client = createConfidenceTestClient(candidates);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(3);
+    expect(genResult.candidates).toHaveLength(3);
   });
 });
 
@@ -339,13 +339,13 @@ describe("Global Endpoint Cap", () => {
     );
     const client = createConfidenceTestClient(candidates);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(10);
+    expect(genResult.candidates).toHaveLength(10);
   });
 
   it("preserves highest-confidence candidates after cap", async () => {
@@ -359,18 +359,18 @@ describe("Global Endpoint Cap", () => {
     );
     const client = createConfidenceTestClient(candidates);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client },
     );
 
     // Top 10 by confidence — exact ranking depends on heuristic adjustments
-    const resultTypes = result.map((c) => c.type);
+    const resultTypes = genResult.candidates.map((c) => c.type);
     expect(resultTypes).toContain("auth"); // highest base confidence
     expect(resultTypes).toContain("form"); // second highest
     // At least the top-confidence types should survive the cap
-    expect(result.length).toBeLessThanOrEqual(10);
+    expect(genResult.candidates.length).toBeLessThanOrEqual(10);
   });
 
   it("returns all candidates when count <= 10", async () => {
@@ -381,13 +381,13 @@ describe("Global Endpoint Cap", () => {
     ];
     const client = createConfidenceTestClient(candidates);
 
-    const result = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [makeTestSegment()],
       TEST_CONTEXT,
       { llmClient: client },
     );
 
-    expect(result).toHaveLength(3);
+    expect(genResult.candidates).toHaveLength(3);
   });
 });
 
@@ -399,10 +399,10 @@ describe("Empty Input Handling", () => {
   it("returns empty array for empty segments array", async () => {
     const { client } = createTimeoutClient();
 
-    const result = await generateEndpoints([], TEST_CONTEXT, {
+    const genResult = await generateEndpoints([], TEST_CONTEXT, {
       llmClient: client,
     });
 
-    expect(result).toEqual([]);
+    expect(genResult.candidates).toEqual([]);
   });
 });

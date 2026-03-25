@@ -85,10 +85,10 @@ export async function generateEndpoints(
   segments: UISegment[],
   context: GenerationContext,
   options: EndpointGeneratorOptions,
-): Promise<EndpointCandidate[]> {
+): Promise<{ candidates: EndpointCandidate[]; llmCalls: number }> {
   if (segments.length === 0) {
     logger.debug("No segments provided, returning empty array");
-    return [];
+    return { candidates: [], llmCalls: 0 };
   }
 
   const envConcurrency = parseInt(process.env["BALAGE_MAX_CONCURRENCY"] ?? "6", 10);
@@ -164,7 +164,7 @@ export async function generateEndpoints(
     "Global endpoint cap applied",
   );
 
-  return capped;
+  return { candidates: capped, llmCalls: filteredSegments.length };
 }
 
 /**
@@ -411,10 +411,11 @@ async function processSegment(
 
     // 5. Response parsen
     const parsedResponse = response.parsedContent as z.infer<typeof LLMEndpointResponseSchema>;
+    const candidates: EndpointCandidate[] = parsedResponse.endpoints;
 
     // 6. Hallucination Prevention — Post-LLM Validation
     const segText = cleanText.toLowerCase();
-    for (const candidate of parsedResponse.endpoints) {
+    for (const candidate of candidates) {
       // Search: Penalize if no search-related attributes found in segment HTML
       const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search/.test(segText)
         || /input.*search|search.*input|searchbar|search-bar|search_bar/.test(segText);
@@ -434,12 +435,17 @@ async function processSegment(
       }
     }
 
+    // Setze segmentId auf jeden Candidate fuer spaeteres Segment-Matching
+    for (const candidate of candidates) {
+      candidate.segmentId = segment.id;
+    }
+
     logger.debug(
-      { segmentId: segment.id, candidateCount: parsedResponse.endpoints.length },
+      { segmentId: segment.id, candidateCount: candidates.length },
       "Endpoints extracted from segment",
     );
 
-    return parsedResponse.endpoints;
+    return candidates;
   } catch (err) {
     logger.error(
       { segmentId: segment.id, error: err instanceof Error ? err.message : String(err) },

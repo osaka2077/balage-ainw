@@ -131,7 +131,8 @@ async function runPipeline(
     pageTitle: await page.title(),
   };
 
-  const candidates = await generateEndpoints(relevant, context, { llmClient });
+  const genResult = await generateEndpoints(relevant, context, { llmClient });
+  const candidates = genResult.candidates;
 
   // Candidates → Endpoints
   const endpoints: Endpoint[] = [];

@@ -304,29 +304,29 @@ describe("Endpoint-Generator", () => {
     const mockResponse = makeMockLLMResponse([AUTH_CANDIDATE]);
     const mockClient = createMockClient(new Map([["endpoint", mockResponse]]));
 
-    const candidates = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [LOGIN_FORM_SEGMENT],
       CONTEXT,
       { llmClient: mockClient },
     );
 
-    expect(candidates.length).toBe(1);
-    expect(candidates[0]!.type).toBe("auth");
-    expect(candidates[0]!.label).toBe("Sign In Form");
+    expect(genResult.candidates.length).toBe(1);
+    expect(genResult.candidates[0]!.type).toBe("auth");
+    expect(genResult.candidates[0]!.label).toBe("Sign In Form");
   });
 
   it("should generate navigation endpoint from nav segment", async () => {
     const mockResponse = makeMockLLMResponse([NAV_CANDIDATE]);
     const mockClient = createMockClient(new Map([["endpoint", mockResponse]]));
 
-    const candidates = await generateEndpoints(
+    const genResult = await generateEndpoints(
       [NAVIGATION_SEGMENT],
       CONTEXT,
       { llmClient: mockClient },
     );
 
-    expect(candidates.length).toBe(1);
-    expect(candidates[0]!.type).toBe("navigation");
+    expect(genResult.candidates.length).toBe(1);
+    expect(genResult.candidates[0]!.type).toBe("navigation");
   });
 
   it("should produce endpoints that pass EndpointSchema validation", async () => {
@@ -518,11 +518,11 @@ describe("Error Cases", () => {
   it("should return empty array for empty segment input", async () => {
     const mockClient = createMockClient(new Map());
 
-    const candidates = await generateEndpoints([], CONTEXT, {
+    const genResult = await generateEndpoints([], CONTEXT, {
       llmClient: mockClient,
     });
 
-    expect(candidates).toEqual([]);
+    expect(genResult.candidates).toEqual([]);
     expect(mockClient.calls.length).toBe(0);
   });
 });

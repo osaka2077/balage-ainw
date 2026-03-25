@@ -146,9 +146,10 @@ describe.skipIf(!hasApiKey)("Real-World: github.com/login", () => {
       };
       console.log(`  siteId (UUID): ${siteId}`);
 
-      const candidates = await generateEndpoints(relevantSegments, context, {
+      const genResult = await generateEndpoints(relevantSegments, context, {
         llmClient,
       });
+      const candidates = genResult.candidates;
       console.log(`  Candidates from LLM: ${candidates.length}`);
 
       // 6. Candidate → Endpoint Conversion
