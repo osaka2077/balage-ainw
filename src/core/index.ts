@@ -59,3 +59,7 @@ export type {
   AuditEntry,
   CustomCheckDefinition,
 } from "./verify-types.js";
+
+// Cache
+export { clearCache, cacheStats } from "./fingerprint-cache.js";
+export type { FingerprintCacheOptions } from "./types.js";

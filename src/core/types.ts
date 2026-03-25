@@ -73,6 +73,19 @@ export interface AnalyzeOptions {
   minConfidence?: number;
   /** Maximum endpoints to return. Default: 10 */
   maxEndpoints?: number;
+  /** Fingerprint cache. Default: true. Pass false to disable or options to configure. */
+  cache?: boolean | FingerprintCacheOptions;
+}
+
+export interface FingerprintCacheOptions {
+  /** Minimum similarity for cache hit. Default: 0.95 */
+  similarityThreshold?: number;
+  /** Time-to-live in milliseconds. Default: 3600000 (1h) */
+  ttlMs?: number;
+  /** Maximum cached results. Default: 1000 */
+  maxSize?: number;
+  /** Site identifier. Default: URL hostname */
+  siteId?: string;
 }
 
 export interface LLMConfig {
@@ -106,5 +119,12 @@ export interface AnalysisResult {
   endpoints: DetectedEndpoint[];
   framework?: FrameworkDetection;
   timing: { totalMs: number; llmCalls: number };
-  meta: { url?: string; mode: "llm" | "heuristic"; version: string };
+  meta: {
+    url?: string;
+    mode: "llm" | "heuristic";
+    version: string;
+    cached?: boolean;
+    cacheSimilarity?: number;
+    fingerprintHash?: string;
+  };
 }

@@ -9,7 +9,7 @@ import pino from "pino";
 import { htmlToDomNode } from "./html-to-dom.js";
 import { detectFramework } from "./detect-framework.js";
 import { pruneDom, parseAria, segmentUI } from "../parser/index.js";
-import type { DomNode, UISegment } from "../../shared_interfaces.js";
+import type { DomNode, UISegment, SemanticFingerprint } from "../../shared_interfaces.js";
 
 // Lazy imports for LLM — only loaded when LLM mode is used.
 // This prevents "Cannot find module 'openai'" for heuristic-only users.
@@ -18,6 +18,12 @@ async function loadLLMModules() {
   const { classifyEndpoint } = await import("../semantic/endpoint-classifier.js");
   const { createOpenAIClient, createAnthropicClient } = await import("../semantic/llm-client.js");
   return { generateEndpoints, classifyEndpoint, createOpenAIClient, createAnthropicClient };
+}
+
+// Lazy import for cache module
+async function loadCacheModule() {
+  const { lookupCache, storeInCache } = await import("./fingerprint-cache.js");
+  return { lookupCache, storeInCache };
 }
 import type { AnalyzeOptions, AnalysisResult, DetectedEndpoint, LLMConfig, EndpointType, AffordanceType } from "./types.js";
 import type { EndpointCandidate } from "../semantic/types.js";
@@ -60,7 +66,11 @@ export async function analyzeFromHTML(
     llm = false as false | LLMConfig,
     minConfidence = 0.50,
     maxEndpoints = 10,
+    cache: cacheOption = true,
   } = options;
+
+  const cacheEnabled = cacheOption !== false;
+  const cacheOptions = typeof cacheOption === "object" ? cacheOption : {};
 
   // 1. HTML → DomNode (mit Fehlerbehandlung fuer kaputtes HTML)
   let dom: DomNode;
@@ -97,6 +107,37 @@ export async function analyzeFromHTML(
     "Segments created",
   );
 
+  // --- Cache Lookup ---
+  let _cacheFingerprints: SemanticFingerprint[] | undefined;
+  let _cachePageHash: string | undefined;
+
+  if (cacheEnabled) {
+    try {
+      const { lookupCache } = await loadCacheModule();
+      const cacheResult = await lookupCache(segments, url, cacheOptions);
+
+      if (cacheResult.hit && cacheResult.result) {
+        const totalMs = Math.round(performance.now() - start);
+        return {
+          ...cacheResult.result,
+          timing: { totalMs, llmCalls: 0 },
+          meta: {
+            ...cacheResult.result.meta,
+            url, version: VERSION,
+            cached: true,
+            cacheSimilarity: cacheResult.similarity,
+            fingerprintHash: cacheResult.fingerprintHash,
+          },
+        };
+      }
+
+      _cacheFingerprints = cacheResult.fingerprints;
+      _cachePageHash = cacheResult.fingerprintHash;
+    } catch (err) {
+      logger.warn({ err }, "Cache lookup failed, continuing without cache");
+    }
+  }
+
   let endpoints: DetectedEndpoint[];
   let llmCalls = 0;
   const mode = llm ? "llm" as const : "heuristic" as const;
@@ -114,12 +155,25 @@ export async function analyzeFromHTML(
 
   const totalMs = Math.round(performance.now() - start);
 
-  return {
+  const result: AnalysisResult = {
     endpoints,
     framework,
     timing: { totalMs, llmCalls },
-    meta: { url, mode, version: VERSION },
+    meta: cacheEnabled
+      ? { url, mode, version: VERSION, cached: false, fingerprintHash: _cachePageHash }
+      : { url, mode, version: VERSION },
   };
+
+  if (cacheEnabled && _cacheFingerprints?.length && _cachePageHash) {
+    try {
+      const { storeInCache } = await loadCacheModule();
+      await storeInCache(result, _cacheFingerprints, _cachePageHash, url, cacheOptions);
+    } catch (err) {
+      logger.warn({ err }, "Cache store failed");
+    }
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
