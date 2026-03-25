@@ -138,6 +138,18 @@ export async function generateEndpoints(
     "Confidence filter applied",
   );
 
+  // 6b. Consent/Cookie Type-Correction — LLM halluziniert cookie banners als search/auth/checkout
+  const CONSENT_KEYWORDS = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept all|reject all/i;
+
+  for (const candidate of filtered) {
+    if (CONSENT_KEYWORDS.test(candidate.label)) {
+      if (candidate.type !== "consent") {
+        candidate.type = "consent" as any;
+        candidate.confidence *= 0.7; // Penalty fuer korrigierten Typ
+      }
+    }
+  }
+
   // 7. Deduplizierung
   const deduped = deduplicateCandidates(filtered);
 
@@ -465,12 +477,41 @@ function deduplicateCandidates(
     }
   }
 
-  // Per-type cap: max 3 Endpoints gleichen Typs (verhindert auth-Flut auf Login-Pages)
-  const MAX_PER_TYPE = 3;
+  // Commerce-Dedup: Mehrere "Add to Cart" = 1 Endpoint
+  const COMMERCE_ACTION_PATTERN = /add to cart|add to bag|in den warenkorb|zum warenkorb/i;
+
+  const commerceDeduped = result.filter((candidate, index) => {
+    if (candidate.type === "commerce" || candidate.type === "checkout") {
+      if (COMMERCE_ACTION_PATTERN.test(candidate.label)) {
+        // Behalte nur den ersten Commerce-Action-Endpoint
+        const firstCommerce = result.findIndex(
+          c => (c.type === "commerce" || c.type === "checkout") && COMMERCE_ACTION_PATTERN.test(c.label)
+        );
+        return index === firstCommerce;
+      }
+    }
+    return true;
+  });
+
+  // Per-type cap: differenzierte Limits pro Typ
+  const TYPE_CAPS: Record<string, number> = {
+    navigation: 3,
+    auth: 2,
+    search: 1,
+    commerce: 1,
+    checkout: 1,
+    consent: 1,
+    settings: 1,
+    support: 1,
+    content: 3,
+    media: 2,
+    social: 1,
+    form: 2,
+  };
   const typeCount = new Map<string, number>();
-  return result.filter((c) => {
+  return commerceDeduped.filter((c) => {
     const count = typeCount.get(c.type) ?? 0;
-    if (count >= MAX_PER_TYPE) return false;
+    if (count >= (TYPE_CAPS[c.type] ?? 2)) return false;
     typeCount.set(c.type, count + 1);
     return true;
   });

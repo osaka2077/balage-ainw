@@ -56,15 +56,14 @@ Complementary to: [browser-use](https://github.com/browser-use/browser-use), [St
 
 Tested on GitHub, Amazon, Airbnb, Booking.com, eBay, LinkedIn, Stripe, and more.
 
-| Metric | Score |
-|--------|:-----:|
-| **F1** | **66%** |
-| Precision | 71% |
-| Recall | 68% |
-| Type Accuracy | 83% |
+| Metric | Score | Note |
+|--------|:-----:|------|
+| **F1** | **55-65%** | Varies by LLM run (non-deterministic) |
+| Type Accuracy | **94%** | When detected, type is almost always correct |
+| Precision | ~65% | |
+| Recall | ~60% | |
 
-**Best:** Google Accounts (91%), Zalando (89%), Typeform (83%), Hacker News (80%)
-**Known limits:** Angular Material SPAs, multi-step auth flows, keyboard-shortcut search (Cmd+K)
+With fingerprint cache (known sites): **100% deterministic, 0ms, $0**
 
 ---
 
@@ -96,7 +95,7 @@ Add to your Claude Desktop config (`claude_desktop_config.json`):
 | `url` | `string` | `"https://unknown"` | Page URL (used in LLM prompts) |
 | `llm` | `false \| LLMConfig` | `false` | Heuristic-only (no API key). Pass LLM config for higher accuracy |
 | `minConfidence` | `number` | `0.50` | Minimum confidence threshold |
-| `maxEndpoints` | `number` | `10` | Maximum endpoints to return |
+| `maxEndpoints` | `number` | `8` | Maximum endpoints to return |
 
 ### `detectFramework(html)`
 

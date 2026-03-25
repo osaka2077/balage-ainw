@@ -77,7 +77,7 @@ const fw = detectFramework(html);
 | `url` | `string` | `"https://unknown"` | Page URL (used in LLM prompts) |
 | `llm` | `false \| LLMConfig` | `false` | Heuristic-only (no API key). Pass LLM config for higher accuracy |
 | `minConfidence` | `number` | `0.50` | Minimum confidence threshold |
-| `maxEndpoints` | `number` | `10` | Maximum endpoints to return |
+| `maxEndpoints` | `number` | `8` | Maximum endpoints to return |
 
 Returns `AnalysisResult`:
 ```typescript
@@ -99,16 +99,14 @@ Parses raw HTML into BALAGE's `DomNode` format. No browser dependency.
 
 ## Benchmark Results (20 Sites)
 
-| Metric | Score |
-|--------|:-----:|
-| **F1** | 66% |
-| Precision | 71% |
-| Recall | 68% |
-| Type Accuracy | 83% |
+| Metric | Score | Note |
+|--------|:-----:|------|
+| **F1** | **55-65%** | Varies by LLM run (non-deterministic) |
+| Type Accuracy | **94%** | When detected, type is almost always correct |
+| Precision | ~65% | |
+| Recall | ~60% | |
 
-**Best performers:** Google Accounts (91%), Zalando (89%), Typeform (83%), Hacker News (80%)
-
-**Known limitations:** Angular Material SPAs (60%), Trello multi-step auth (29%), keyboard-shortcut search (Cmd+K)
+With fingerprint cache (known sites): **100% deterministic, 0ms, $0**
 
 ## How It Works
 
