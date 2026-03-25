@@ -329,12 +329,21 @@ function collectDomSignals(root: DomNode): DomSignals {
     // Inputs
     if (tag === "input" || tag === "textarea" || tag === "select") {
       signals.inputCount++;
+      const autocomplete = attrs["autocomplete"] ?? "";
       if (type === "password") signals.hasPasswordInput = true;
+      // Password via autocomplete (zusaetzlich zum type="password" Check)
+      if (autocomplete.includes("current-password") || autocomplete.includes("new-password")) {
+        signals.hasPasswordInput = true;
+      }
       if (
         type === "email"
         || (attrs["name"] ?? "").includes("email")
-        || (attrs["autocomplete"] ?? "").includes("email")
+        || autocomplete.includes("email")
       ) {
+        signals.hasEmailInput = true;
+      }
+      // Username via autocomplete → behandeln wie Email fuer Auth-Erkennung
+      if (autocomplete.includes("username")) {
         signals.hasEmailInput = true;
       }
       if (type === "search" || role === "searchbox") {
@@ -377,11 +386,16 @@ function collectDomSignals(root: DomNode): DomSignals {
     if (role === "search") signals.hasSearchRole = true;
 
     // Cookie-Consent / GDPR-Banner Erkennung
+    const consentPattern = /cookie|consent|gdpr|privacy|datenschutz/i;
+    const hasConsentRole = role === "dialog" || role === "alertdialog";
+    const hasConsentId = consentPattern.test(attrs["id"] ?? "");
+    const hasConsentClass = consentPattern.test(attrs["class"] ?? "");
+
     if (
-      (role === "dialog" || role === "alertdialog")
-      && (/cookie|consent|gdpr|privacy/i.test(
-        [attrs["id"] ?? "", attrs["class"] ?? "", attrs["aria-label"] ?? "", node.textContent ?? ""].join(" "),
-      ))
+      (hasConsentRole || hasConsentId || hasConsentClass)
+      && consentPattern.test(
+        [attrs["aria-label"] ?? "", node.textContent ?? ""].join(" "),
+      )
     ) {
       signals.hasCookieConsent = true;
     }

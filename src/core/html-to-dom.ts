@@ -195,7 +195,6 @@ function parseTag(state: ParseState): DomNode | null {
 
   // Determine visibility (heuristic)
   const isHidden = attributes["hidden"] !== undefined
-    || attributes["aria-hidden"] === "true"
     || (attributes["style"] ?? "").includes("display:none")
     || (attributes["style"] ?? "").includes("display: none")
     || attributes["type"] === "hidden";
