@@ -6,12 +6,22 @@
   "endpoints": [
     {
       "type": "auth",
-      "label": "Login Form",
-      "description": "Username or email + password login form with Sign in submit button and Forgot Password link",
+      "label": "Sign In Form",
+      "description": "Username or email + password login form with Sign in submit button",
       "selector_hint": "form#new_user, input#user_login, input#user_password, button[type='submit']",
       "affordances": ["fill", "submit"],
       "risk_class": "high",
       "fields": ["username", "password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Forgot your password? link leading to password reset page",
+      "selector_hint": "a[href*='password/new']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
       "phase": 1
     },
     {
@@ -26,9 +36,19 @@
     },
     {
       "type": "navigation",
-      "label": "Account Links",
-      "description": "Register for new account and Explore public projects links",
-      "selector_hint": "a[href*='sign_up'], a[href='/explore']",
+      "label": "Register Tab",
+      "description": "Register tab or link to create a new GitLab account",
+      "selector_hint": "a[href*='sign_up'], a[data-qa-selector='register_link']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Explore GitLab",
+      "description": "Explore link to browse public projects without authentication",
+      "selector_hint": "a[href='/explore']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -36,8 +56,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
-    "phase1_endpoints": 1,
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
   }

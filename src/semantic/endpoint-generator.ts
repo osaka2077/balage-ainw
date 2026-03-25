@@ -451,7 +451,7 @@ function deduplicateCandidates(
     const duplicate = result.find(
       (existing) =>
         existing.type === candidate.type &&
-        labelSimilarity(existing.label, candidate.label) > 0.60,
+        labelSimilarity(existing.label, candidate.label) > 0.40,
     );
 
     if (duplicate) {
@@ -466,7 +466,7 @@ function deduplicateCandidates(
   }
 
   // Per-type cap: max 3 Endpoints gleichen Typs (verhindert auth-Flut auf Login-Pages)
-  const MAX_PER_TYPE = 5;
+  const MAX_PER_TYPE = 3;
   const typeCount = new Map<string, number>();
   return result.filter((c) => {
     const count = typeCount.get(c.type) ?? 0;

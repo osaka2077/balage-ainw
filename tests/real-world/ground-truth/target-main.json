@@ -36,9 +36,39 @@
     },
     {
       "type": "navigation",
-      "label": "Site Navigation",
-      "description": "Category mega-menu, store locator, deals/promotions, and product carousels",
-      "selector_hint": "nav[aria-label='Main'], button[data-test='categoryNavButton'], button[data-test='storeId-button']",
+      "label": "Category Navigation",
+      "description": "Main category mega-menu with links to departments like Grocery, Clothing, Electronics, Home, Beauty, Toys",
+      "selector_hint": "nav[aria-label='Main'], button[data-test='categoryNavButton']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Store Locator",
+      "description": "Store finder showing current zip code with option to select a different store location",
+      "selector_hint": "button[data-test='storeId-button'], a[href*='store-locator']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Deals and Promotions",
+      "description": "Featured deals, clearance, and Target Circle promotions section with links to sale categories",
+      "selector_hint": "a[href*='/c/deals'], a[href*='clearance'], section[data-test='deals']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Product Carousel",
+      "description": "Scrollable product recommendation carousels with product cards and Add to Cart buttons",
+      "selector_hint": "div[data-test='product-carousel'], button[data-test='addToCartButton']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -46,7 +76,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 7,
     "phase1_endpoints": 3,
     "min_precision_target": 0.70,
     "min_recall_target": 0.65

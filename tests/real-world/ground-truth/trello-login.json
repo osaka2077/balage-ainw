@@ -6,29 +6,59 @@
   "endpoints": [
     {
       "type": "auth",
-      "label": "Login Form",
-      "description": "Email/password login form with Continue button on Atlassian login page",
-      "selector_hint": "input#username, input#password, button#login-submit",
+      "label": "Email Input",
+      "description": "Email address input with Continue button on Atlassian login page",
+      "selector_hint": "input#username, input[name='username']",
       "affordances": ["fill", "submit"],
       "risk_class": "high",
-      "fields": ["email", "password"],
+      "fields": ["email"],
       "phase": 1
     },
     {
       "type": "auth",
-      "label": "SSO Options",
-      "description": "Google and Microsoft OAuth sign-in buttons",
-      "selector_hint": "button#google-auth-button, button#microsoft-auth-button",
+      "label": "Password Input",
+      "description": "Password field with Log In button on second step (only visible after email submit)",
+      "selector_hint": "input#password, input[name='password']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["password"],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Continue with Google",
+      "description": "Google OAuth sign-in button",
+      "selector_hint": "button#google-auth-button, a[href*='accounts.google.com']",
       "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
       "phase": 1
     },
     {
+      "type": "auth",
+      "label": "Continue with Microsoft",
+      "description": "Microsoft OAuth sign-in button",
+      "selector_hint": "button#microsoft-auth-button, a[href*='login.microsoftonline.com']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Can't Log In",
+      "description": "Link to account recovery / forgot password flow",
+      "selector_hint": "a[href*='iforgot'], a[href*='reset']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
       "type": "navigation",
-      "label": "Account Links",
-      "description": "Can't Log In (password recovery) and Create Account links",
-      "selector_hint": "a[href*='iforgot'], a[href*='signup']",
+      "label": "Create Account",
+      "description": "Link to create a new Atlassian/Trello account",
+      "selector_hint": "a[href*='signup']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -36,8 +66,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
-    "phase1_endpoints": 2,
+    "total_endpoints": 6,
+    "phase1_endpoints": 4,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
   }

@@ -6,7 +6,7 @@
   "endpoints": [
     {
       "type": "auth",
-      "label": "Sign-In Form",
+      "label": "Identifier Step — Email/Phone",
       "description": "Email or phone input field with Next button on the first step of sign-in",
       "selector_hint": "input[type='email'], #identifierId, button[jsname='LgbsSe']",
       "affordances": ["fill", "submit"],
@@ -16,9 +16,29 @@
     },
     {
       "type": "auth",
-      "label": "Account Recovery",
-      "description": "Forgot Email and Forgot Password links for account recovery",
-      "selector_hint": "button[jsname='Cuz2Ue'], a[href*='signin/v2/usernamerecovery'], a[href*='signin/v2/challenge/pwd']",
+      "label": "Password Step",
+      "description": "Password input field with Next button on the second step of sign-in",
+      "selector_hint": "input[type='password'], input[name='Passwd']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "high",
+      "fields": ["password"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Email",
+      "description": "Link to find/recover Google account email address",
+      "selector_hint": "button[jsname='Cuz2Ue'], a[href*='signin/v2/usernamerecovery']",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Forgot Password",
+      "description": "Link to account recovery for forgotten password (shown on password step)",
+      "selector_hint": "a[href*='signin/v2/challenge/pwd'], button[jsname='LwH6nd']",
       "affordances": ["click"],
       "risk_class": "medium",
       "fields": [],
@@ -46,8 +66,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
-    "phase1_endpoints": 2,
+    "total_endpoints": 6,
+    "phase1_endpoints": 4,
     "min_precision_target": 0.70,
     "min_recall_target": 0.65
   }

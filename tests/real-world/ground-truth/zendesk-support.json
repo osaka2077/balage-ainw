@@ -2,16 +2,21 @@
   "url": "https://support.zendesk.com",
   "captured_at": "2026-03-18",
   "difficulty": "medium",
-  "notes": "Zendesk's own support/help center. Search-centric with category cards. Contact form accessible via Submit a Request. Sign In link for existing customers. Clean Zendesk Guide theme. Moderate DOM complexity — standard help center layout.",
+  "notes": "Zendesk's own support/help center. Search-centric with category cards. Contact form accessible via Submit a Request. Sign In link for existing customers. Clean Zendesk Guide theme. Moderate DOM complexity \u00e2\u20ac\u201d standard help center layout.",
   "endpoints": [
     {
       "type": "search",
       "label": "Help Center Search",
       "description": "Search bar for finding help articles and documentation",
       "selector_hint": "input#query, input[type='search'], form[role='search']",
-      "affordances": ["fill", "submit"],
+      "affordances": [
+        "fill",
+        "submit"
+      ],
       "risk_class": "low",
-      "fields": ["search_query"],
+      "fields": [
+        "search_query"
+      ],
       "phase": 1
     },
     {
@@ -19,7 +24,9 @@
       "label": "Sign In",
       "description": "Header Sign In link for authenticated support access",
       "selector_hint": "a[href*='signin'], a.sign-in-link",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "high",
       "fields": [],
       "phase": 1
@@ -29,7 +36,9 @@
       "label": "Submit a Request",
       "description": "Link to open a support ticket/request form",
       "selector_hint": "a[href*='requests/new'], a.submit-a-request",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "medium",
       "fields": [],
       "phase": 1
@@ -39,7 +48,9 @@
       "label": "Help Center Categories",
       "description": "Category cards/links: Getting Started, Account Settings, Billing, Agent Guide, etc.",
       "selector_hint": "ul.blocks-list a, section.category-list a",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -49,7 +60,9 @@
       "label": "Community Forum",
       "description": "Link to Zendesk community/forum for peer discussions",
       "selector_hint": "a[href*='community'], a[href*='forum']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -59,7 +72,9 @@
       "label": "Contact Support",
       "description": "Direct link or button to reach Zendesk support team (chat, phone, or form)",
       "selector_hint": "a[href*='contact'], button:has-text('Contact')",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "medium",
       "fields": [],
       "phase": 1
@@ -69,6 +84,6 @@
     "total_endpoints": 6,
     "phase1_endpoints": 4,
     "min_precision_target": 0.75,
-    "min_recall_target": 0.70
+    "min_recall_target": 0.7
   }
 }
