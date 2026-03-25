@@ -28,6 +28,25 @@ const INTERACTIVE_TAGS = new Set([
   "details", "summary", "dialog", "label",
 ]);
 
+/** Semantische Keywords in class/id die behalten werden */
+const SEMANTIC_CLASS_KEYWORDS = new Set([
+  "login", "signin", "signup", "sign-in", "sign-up", "register", "auth", "password",
+  "search", "cart", "basket", "checkout", "nav", "menu", "header", "footer",
+  "cookie", "consent", "gdpr", "privacy", "banner", "modal", "dialog",
+  "product", "price", "form", "submit", "contact", "support",
+  "settings", "profile", "account", "dashboard", "sidebar",
+]);
+
+/** Tailwind/Bootstrap Utility-Prefixes die IMMER ignoriert werden */
+const UTILITY_CLASS_PREFIXES = [
+  "bg-", "text-", "p-", "m-", "px-", "py-", "mx-", "my-",
+  "w-", "h-", "min-", "max-", "flex-", "grid-", "col-", "row-",
+  "sm:", "md:", "lg:", "xl:", "2xl:", "hover:", "focus:", "dark:",
+  "rounded", "border-", "shadow", "opacity-", "transition",
+  "absolute", "relative", "fixed", "sticky",
+  "z-", "gap-", "space-", "overflow-", "cursor-",
+];
+
 /**
  * Pruned DOM-Segment fuer LLM-Input optimieren.
  *
@@ -230,6 +249,34 @@ function hasSemanticAttributes(
   return false;
 }
 
+/** Filtert semantische Klassen aus einem class-String. Max 3 Keywords. */
+function filterSemanticClasses(classValue: string): string {
+  const classes = classValue.split(/\s+/).filter(Boolean);
+  const semantic: string[] = [];
+  for (const cls of classes) {
+    if (cls.length > 30) continue;
+    const lower = cls.toLowerCase();
+    if (UTILITY_CLASS_PREFIXES.some(p => lower.startsWith(p))) continue;
+    for (const kw of SEMANTIC_CLASS_KEYWORDS) {
+      if (lower.includes(kw)) {
+        semantic.push(cls);
+        break;
+      }
+    }
+  }
+  return semantic.slice(0, 3).join(" ");
+}
+
+/** Prueft ob ein id-Wert semantisch relevant ist */
+function isSemanticId(idValue: string): boolean {
+  if (/^[0-9a-f\-_]{8,}$/i.test(idValue)) return false;
+  const lower = idValue.toLowerCase();
+  for (const kw of SEMANTIC_CLASS_KEYWORDS) {
+    if (lower.includes(kw)) return true;
+  }
+  return false;
+}
+
 /** Baut einen kompakten Attribute-String */
 function buildAttributeString(
   node: DomNode,
@@ -239,7 +286,32 @@ function buildAttributeString(
 
   for (const [key, value] of Object.entries(node.attributes)) {
     // Style-Attribute entfernen
-    if (key === "style" || key === "class") continue;
+    if (key === "style") continue;
+
+    // class: nur semantische Keywords behalten
+    if (key === "class") {
+      if (value) {
+        const semantic = filterSemanticClasses(value);
+        if (semantic) parts.push(`class="${semantic}"`);
+      }
+      continue;
+    }
+
+    // id: behalten wenn semantisch relevant
+    if (key === "id") {
+      if (value && isSemanticId(value)) {
+        parts.push(`id="${value}"`);
+      }
+      continue;
+    }
+
+    // name: nur fuer interaktive Elemente (input, select, textarea)
+    if (key === "name") {
+      if (value && INTERACTIVE_TAGS.has(node.tagName.toLowerCase())) {
+        parts.push(`name="${value}"`);
+      }
+      continue;
+    }
 
     // data-* Attribute nur behalten wenn semantisch
     if (key.startsWith("data-") && !preserveDataAttrs.has(key)) continue;
