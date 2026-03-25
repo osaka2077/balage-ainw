@@ -139,6 +139,9 @@ const TYPE_ALIASES: Record<string, string[]> = {
   settings: ["settings", "navigation", "consent"],
 };
 
+// Multi-run mode — activated via BALAGE_RUNS=N (N >= 2)
+const BENCHMARK_RUNS = parseInt(process.env.BALAGE_RUNS ?? "1", 10);
+
 // Diagnostic flags — activated via environment variables
 const DIAG_ENABLED = process.env.BALAGE_DIAG === "1";
 const SAVE_SNAPSHOTS = process.env.BALAGE_SAVE_SNAPSHOTS === "1";
@@ -941,12 +944,12 @@ function padRight(s: string, len: number): string {
 // Main
 // ============================================================================
 
-export async function main(): Promise<BenchmarkReport> {
-  // API-Key pruefen
-  if (!envConfig.hasAnyApiKey) {
-    throw new Error("No API key found. Set BALAGE_OPENAI_API_KEY or BALAGE_ANTHROPIC_API_KEY in .env.local");
-  }
-
+/**
+ * Einzelner Benchmark-Durchlauf — extrahiert aus main() fuer Multi-Run-Support.
+ * Startet Browser + LLM-Client, iteriert ueber alle Ground-Truth-Sites,
+ * gibt einen BenchmarkReport zurueck.
+ */
+async function runSingleBenchmark(): Promise<BenchmarkReport> {
   const runStart = Date.now();
   const runDate = new Date().toISOString().slice(0, 10);
 
@@ -970,14 +973,18 @@ export async function main(): Promise<BenchmarkReport> {
   log(`Provider: ${envConfig.llmProvider} | Model: ${envConfig.llmModel} | Fallback: ${envConfig.llmFallbackModel}`);
 
   // Optional: LLM-Response-Cache wrappen (spart Kosten bei wiederholten Runs)
+  // WICHTIG: Bei Multi-Run-Modus wird der Cache NICHT aktiviert,
+  // da sonst alle Runs dasselbe Ergebnis liefern wuerden.
   let effectiveLlmClient: LLMClient = llmClient;
-  if (LLM_CACHE_ENABLED) {
+  if (LLM_CACHE_ENABLED && BENCHMARK_RUNS <= 1) {
     effectiveLlmClient = new CachedLLMClient(llmClient, {
       cacheDir: LLM_CACHE_DIR,
       enabled: true,
     });
     log("[LLM CACHE] Enabled — responses will be cached/served from disk");
     log(`[LLM CACHE] Cache dir: ${LLM_CACHE_DIR}`);
+  } else if (LLM_CACHE_ENABLED && BENCHMARK_RUNS > 1) {
+    log("[LLM CACHE] Disabled — multi-run mode requires fresh LLM responses per run");
   }
 
   // Fixture-Modus-Status loggen
@@ -1108,6 +1115,141 @@ export async function main(): Promise<BenchmarkReport> {
   log(`Results saved to ${outPath}`);
 
   return report;
+}
+
+// ============================================================================
+// Multi-Run Statistics
+// ============================================================================
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+}
+
+function stddev(values: number[]): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance);
+}
+
+function formatStat(label: string, values: number[]): string {
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const med = median(values);
+  const sd = stddev(values);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  return (
+    `  ${padRight(label, 13)}` +
+    `Mean=${(mean * 100).toFixed(1)}%  ` +
+    `Median=${(med * 100).toFixed(1)}%  ` +
+    `Stddev=${(sd * 100).toFixed(1)}pp  ` +
+    `Min=${(min * 100).toFixed(1)}%  ` +
+    `Max=${(max * 100).toFixed(1)}%`
+  );
+}
+
+function printMultiRunSummary(allReports: BenchmarkReport[]): void {
+  const n = allReports.length;
+  console.log("");
+  console.log("=".repeat(72));
+  console.log(`  MULTI-RUN SUMMARY (${n} runs)`);
+  console.log("=".repeat(72));
+
+  // Sammle aggregierte Metriken aller Runs
+  const overallF1 = allReports.map((r) => r.aggregate.allEndpoints.f1);
+  const overallP = allReports.map((r) => r.aggregate.allEndpoints.precision);
+  const overallR = allReports.map((r) => r.aggregate.allEndpoints.recall);
+  const phase1F1 = allReports.map((r) => r.aggregate.phase1Endpoints.f1);
+  const phase1P = allReports.map((r) => r.aggregate.phase1Endpoints.precision);
+  const phase1R = allReports.map((r) => r.aggregate.phase1Endpoints.recall);
+
+  console.log(formatStat("Overall F1:", overallF1));
+  console.log(formatStat("Precision:", overallP));
+  console.log(formatStat("Recall:", overallR));
+  console.log(formatStat("Phase-1 F1:", phase1F1));
+  console.log(formatStat("Phase-1 P:", phase1P));
+  console.log(formatStat("Phase-1 R:", phase1R));
+
+  // Kosten-Zusammenfassung
+  const totalCost = allReports.reduce((s, r) => s + r.aggregate.totalLlmCostUsd, 0);
+  const totalCalls = allReports.reduce((s, r) => s + r.aggregate.totalLlmCalls, 0);
+  const totalTimeMs = allReports.reduce((s, r) => s + r.aggregate.totalTimeMs, 0);
+  console.log("");
+  console.log(`  Total LLM Calls: ${totalCalls} (${(totalCalls / n).toFixed(0)} avg/run)`);
+  console.log(`  Total LLM Cost:  $${totalCost.toFixed(4)} ($${(totalCost / n).toFixed(4)} avg/run)`);
+  console.log(`  Total Time:      ${(totalTimeMs / 1000).toFixed(1)}s (${(totalTimeMs / n / 1000).toFixed(1)}s avg/run)`);
+
+  // Per-Site Stability: F1-Range pro URL ueber alle Runs
+  console.log("");
+  console.log("  Per-Site Stability:");
+
+  // Sammle alle URLs (aus dem ersten Report als Referenz)
+  const siteUrls = allReports[0]!.results.map((r) => r.url);
+  for (const url of siteUrls) {
+    const siteF1s: number[] = [];
+    for (const report of allReports) {
+      const siteResult = report.results.find((r) => r.url === url);
+      if (siteResult && siteResult.status === "success") {
+        siteF1s.push(siteResult.metrics.all.f1);
+      }
+    }
+
+    const shortUrl = url.replace("https://", "").replace("http://", "").slice(0, 36);
+
+    if (siteF1s.length === 0) {
+      console.log(`    ${padRight(shortUrl, 38)} F1: n/a (no successful runs)`);
+      continue;
+    }
+
+    const min = Math.min(...siteF1s);
+    const max = Math.max(...siteF1s);
+    const range = max - min;
+    // Stabilitaetsbewertung: <5pp Schwankung = stabil, sonst instabil
+    const stability = range < 0.05 ? "stable" : "unstable";
+    const meanF1 = siteF1s.reduce((a, b) => a + b, 0) / siteF1s.length;
+    console.log(
+      `    ${padRight(shortUrl, 38)} ` +
+      `F1: ${(min * 100).toFixed(0)}%-${(max * 100).toFixed(0)}%  ` +
+      `mean=${(meanF1 * 100).toFixed(1)}%  ` +
+      `(${stability})`,
+    );
+  }
+
+  console.log("=".repeat(72));
+}
+
+// ============================================================================
+// Main — Entry Point (Multi-Run oder Single-Run)
+// ============================================================================
+
+export async function main(): Promise<BenchmarkReport> {
+  // API-Key pruefen
+  if (!envConfig.hasAnyApiKey) {
+    throw new Error("No API key found. Set BALAGE_OPENAI_API_KEY or BALAGE_ANTHROPIC_API_KEY in .env.local");
+  }
+
+  if (BENCHMARK_RUNS > 1) {
+    log(`\n  MULTI-RUN MODE: ${BENCHMARK_RUNS} runs`);
+    if (LLM_CACHE_ENABLED) {
+      log("  WARNING: LLM cache will be disabled for multi-run mode");
+    }
+
+    const allReports: BenchmarkReport[] = [];
+    for (let run = 1; run <= BENCHMARK_RUNS; run++) {
+      console.log(`\n${"=".repeat(72)}`);
+      console.log(`  RUN ${run}/${BENCHMARK_RUNS}`);
+      console.log(`${"=".repeat(72)}\n`);
+      const report = await runSingleBenchmark();
+      allReports.push(report);
+    }
+
+    printMultiRunSummary(allReports);
+    return allReports[allReports.length - 1]!;
+  }
+
+  return runSingleBenchmark();
 }
 
 function buildReport(
