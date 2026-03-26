@@ -731,18 +731,20 @@ function runHeuristicAnalysis(
     .filter((e: DetectedEndpoint) => e.confidence >= minConfidence)
     .sort((a: DetectedEndpoint, b: DetectedEndpoint) => b.confidence - a.confidence)
     .reduce((deduped: DetectedEndpoint[], ep) => {
-      // Navigation: bis zu 5 Endpoints erlauben (Header, Sidebar, Footer, Breadcrumbs, Secondary)
+      // Navigation: bis zu 5 DISTINCT Endpoints erlauben
       if (ep.type === "navigation") {
         const navCount = deduped.filter(d => d.type === "navigation").length;
-        if (navCount < 5) {
+        const labelExists = deduped.some(d => d.type === "navigation" && d.label === ep.label);
+        if (navCount < 5 && !labelExists) {
           deduped.push(ep);
         }
         return deduped;
       }
-      // Auth: bis zu 4 Endpoints (Login Form, SSO, OAuth, Passkey)
+      // Auth: bis zu 4 DISTINCT Endpoints (Login Form, SSO, OAuth, Passkey)
       if (ep.type === "auth") {
         const authCount = deduped.filter(d => d.type === "auth").length;
-        if (authCount < 4) {
+        const labelExists = deduped.some(d => d.type === "auth" && d.label === ep.label);
+        if (authCount < 4 && !labelExists) {
           deduped.push(ep);
         }
         return deduped;
