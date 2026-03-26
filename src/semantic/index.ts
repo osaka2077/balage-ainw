@@ -40,6 +40,7 @@ export type {
   ClassifiedEndpoint,
   LLMEndpointResponse,
   EvidenceSummary,
+  PageSegmentSummary,
   OpenAIConfig,
   AnthropicConfig,
 } from "./types.js";

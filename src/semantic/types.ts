@@ -120,6 +120,13 @@ export interface EvidenceSummary {
   }>;
 }
 
+/** Kompakte Segment-Zusammenfassung fuer Page-Context im Prompt */
+export interface PageSegmentSummary {
+  type: string;
+  interactiveElements: number;
+  label?: string;
+}
+
 /** Konfiguration fuer OpenAI-Client */
 export interface OpenAIConfig {
   apiKey: string;

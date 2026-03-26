@@ -30,6 +30,7 @@ import type {
   GenerationContext,
   EndpointCandidate,
   LLMEndpointResponse,
+  PageSegmentSummary,
   PruneForLLMOptions,
 } from "./types.js";
 
@@ -110,6 +111,13 @@ export async function generateEndpoints(
   });
   logger.debug({ before: segments.length, after: filteredSegments.length }, "Segment pre-filter applied");
 
+  // Page-Context: Kompakte Zusammenfassung aller Segmente fuer LLM-Prompt
+  const pageSegmentSummaries: PageSegmentSummary[] = filteredSegments.map((seg) => ({
+    type: seg.type,
+    interactiveElements: seg.interactiveElementCount,
+    label: seg.label,
+  }));
+
   const executing = new Set<Promise<void>>();
 
   for (const segment of filteredSegments) {
@@ -117,6 +125,7 @@ export async function generateEndpoints(
       const candidates = await processSegment(
         segment, llmClient, maxRetries, pruneOptions,
         context, sanitizer, injectionDetector, credentialGuard,
+        pageSegmentSummaries,
       );
       allCandidates.push(...candidates);
     })();
@@ -345,6 +354,7 @@ async function processSegment(
   sanitizer: InputSanitizer,
   injectionDetector: InjectionDetector,
   credentialGuard: CredentialGuard,
+  allSegments?: PageSegmentSummary[],
 ): Promise<EndpointCandidate[]> {
   try {
     // 1. DOM Pruning
@@ -372,7 +382,7 @@ async function processSegment(
     const securePruned = { ...pruned, textRepresentation: cleanText };
 
     // 3. Prompt aufbauen
-    const userPrompt = buildExtractionPrompt(securePruned, context);
+    const userPrompt = buildExtractionPrompt(securePruned, context, allSegments);
 
     // 4. LLM-Call mit Retry
     const request: LLMRequest = {
@@ -420,7 +430,13 @@ async function processSegment(
       const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i.test(segText)
         || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText)
         || /button[^>]*>.*?search|aria-label="[^"]*search|data-testid="[^"]*search|>search<|>suche</i.test(segText)
-        || /action="[^"]*search|action='[^']*search/i.test(segText);
+        || /action="[^"]*search|action='[^']*search/i.test(segText)
+        // Travel/Booking Search: Date-Picker + Destination = Search, nicht Checkout
+        || /check.?in|check.?out|departure|arrival|destination|where.*going|reiseziel|anreise|abreise/i.test(segText)
+        // Guest/Room/Traveler Selection (Booking-Style)
+        || /guests?|rooms?|travelers?|passengers?|adults?|children|reisende/i.test(segText)
+        // Form mit GET-Method = typischerweise Search
+        || /method="?get/i.test(segText);
       if (candidate.type === "search" && !hasSearchEvidence) {
         candidate.confidence *= 0.55;
       }
@@ -493,6 +509,17 @@ async function processSegment(
         if (isLanguageOnly && !hasRealSettingsUI) {
           candidate.type = "navigation";
           candidate.confidence *= 0.9;
+        }
+      }
+
+      // Post-LLM Type-Correction: checkout → search wenn Label search-relevante Begriffe hat aber kein Cart-Evidence
+      if (candidate.type === "checkout") {
+        const hasSearchLabel = /search|property|destination|reise|suche|find|lookup|filter|explore/i.test(
+          `${candidate.label} ${candidate.description}`,
+        );
+        if (hasSearchLabel && !hasCartEvidence) {
+          candidate.type = "search";
+          candidate.confidence *= 0.95;
         }
       }
 

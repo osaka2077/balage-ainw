@@ -2,7 +2,7 @@
  * System-Prompts und Few-Shot-Templates fuer LLM-basierte Endpoint-Extraktion
  */
 
-import type { PrunedSegment, GenerationContext } from "./types.js";
+import type { PrunedSegment, GenerationContext, PageSegmentSummary } from "./types.js";
 
 // ============================================================================
 // System Prompt
@@ -331,6 +331,7 @@ export const ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES =
 export function buildExtractionPrompt(
   prunedSegment: PrunedSegment,
   context: GenerationContext,
+  allSegments?: PageSegmentSummary[],
 ): string {
   const parts: string[] = [];
 
@@ -340,6 +341,17 @@ export function buildExtractionPrompt(
     parts.push(`Title: ${context.pageTitle}`);
   }
   parts.push("");
+
+  // Page Overview: alle Segmente als Kontext, damit das LLM die Seite versteht
+  if (allSegments && allSegments.length > 1) {
+    parts.push("## Page Overview (context — do NOT analyze these, just use as context)");
+    parts.push(`This page has ${allSegments.length} UI segments:`);
+    for (const seg of allSegments) {
+      const labelPart = seg.label ? ` (${seg.label})` : "";
+      parts.push(`- [${seg.type}] interactiveElements: ${seg.interactiveElements}${labelPart}`);
+    }
+    parts.push("");
+  }
 
   parts.push("## UI Segment to Analyze");
   parts.push(`Segment ID: ${prunedSegment.segmentId}`);
