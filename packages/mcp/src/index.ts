@@ -17,7 +17,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { analyzeFromHTML, detectFramework, inferSelector, htmlToDomNode, VERSION } from "balage-core";
+import { analyzeFromHTML, detectFramework, inferSelector, htmlToDomNode, verifyFromHTML, VERSION } from "balage-core";
 
 const server = new McpServer({
   name: "balage",
@@ -127,6 +127,59 @@ server.tool(
         text: selector
           ? `CSS Selector: \`${selector}\``
           : "Could not infer a stable CSS selector from the provided HTML.",
+      }],
+    };
+  },
+);
+
+// ============================================================================
+// Tool: verify_action
+// ============================================================================
+
+server.tool(
+  "verify_action",
+  "Verify whether a browser action (login, form submit, navigation, modal) was successful by comparing before/after HTML snapshots. Returns verdict (verified/failed/inconclusive), confidence score, and evidence.",
+  {
+    before_html: z.string().describe("HTML of the page BEFORE the action"),
+    after_html: z.string().describe("HTML of the page AFTER the action"),
+    before_url: z.string().describe("URL BEFORE the action"),
+    after_url: z.string().describe("URL AFTER the action"),
+    scenario: z.enum(["login", "form_submit", "navigation", "modal_open", "modal_close", "error"]).describe("What type of action to verify"),
+    action_type: z.string().optional().describe("Action performed (e.g., 'click', 'submit')"),
+    action_selector: z.string().optional().describe("CSS selector of the element that was acted upon"),
+  },
+  async ({ before_html, after_html, before_url, after_url, scenario, action_type, action_selector }) => {
+    const now = Date.now();
+    const result = await verifyFromHTML(
+      {
+        before: { html: before_html, url: before_url, timestamp: now - 1000 },
+        after: { html: after_html, url: after_url, timestamp: now },
+        action: { type: action_type ?? "click", selector: action_selector },
+      },
+      { type: scenario },
+    );
+
+    const checkDetails = result.checks
+      .map(c => `  ${c.passed ? "✓" : "✗"} ${c.name}: ${c.evidence} (${(c.confidence * 100).toFixed(0)}%)`)
+      .join("\n");
+
+    const verdictEmoji = result.verdict === "verified" ? "✅" : result.verdict === "failed" ? "❌" : "⚠️";
+
+    return {
+      content: [{
+        type: "text" as const,
+        text: [
+          `${verdictEmoji} **Verdict: ${result.verdict.toUpperCase()}** (${(result.confidence * 100).toFixed(0)}% confidence)`,
+          "",
+          `**Scenario:** ${scenario}`,
+          `**URL:** ${before_url} → ${after_url}`,
+          `**DOM Changes:** ${result.domDiff.significantChanges} significant`,
+          "",
+          "**Checks:**",
+          checkDetails,
+          "",
+          `_Verified in ${result.timing.totalMs}ms by BALAGE v${VERSION}_`,
+        ].join("\n"),
       }],
     };
   },

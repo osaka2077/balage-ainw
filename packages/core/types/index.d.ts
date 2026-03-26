@@ -320,3 +320,193 @@ export declare function htmlToDomNode(html: string): DomNode;
  * @returns CSS selector string or undefined if no stable selector found
  */
 export declare function inferSelector(root: DomNode): string | undefined;
+
+// ============================================================================
+// Verification Types
+// ============================================================================
+
+/** Page state snapshot (before or after an action) */
+export interface PageState {
+  html: string;
+  url: string;
+  timestamp: number;
+  cookies?: CookieInfo[];
+}
+
+/** Cookie info — values are NEVER stored, only name + existence */
+export interface CookieInfo {
+  name: string;
+  exists: boolean;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: string;
+}
+
+/** Network request — bodies are NEVER stored */
+export interface NetworkRequest {
+  url: string;
+  method: string;
+  status: number;
+}
+
+/** Action that was performed */
+export interface ActionInfo {
+  type: string;
+  selector?: string;
+  endpointType?: EndpointType;
+}
+
+/** Before/after snapshot of a browser action */
+export interface ActionSnapshot {
+  before: PageState;
+  after: PageState;
+  networkRequests?: NetworkRequest[];
+  action: ActionInfo;
+}
+
+/** Verification scenario types */
+export type VerificationScenario =
+  | "login"
+  | "form_submit"
+  | "navigation"
+  | "modal_open"
+  | "modal_close"
+  | "error";
+
+/** What we expect the action to have done */
+export interface VerificationExpectation {
+  type: VerificationScenario;
+  customChecks?: CustomCheckDefinition[];
+}
+
+/** Custom DOM-based verification check */
+export interface CustomCheckDefinition {
+  name: string;
+  selector: string;
+  expectation: "present" | "absent" | "visible" | "hidden" | "text_contains" | "text_changed";
+  value?: string;
+}
+
+/** Options for verify() / verifyFromHTML() */
+export interface VerifyOptions {
+  minConfidence?: number;
+  audit?: boolean;
+}
+
+/** Verification verdict */
+export type VerificationVerdict = "verified" | "failed" | "inconclusive";
+
+/** Source of a verification check */
+export type CheckSource = "dom-diff" | "url-change" | "network" | "cookie" | "custom" | "strategy";
+
+/** Individual check result */
+export interface CheckResult {
+  name: string;
+  passed: boolean;
+  confidence: number;
+  evidence: string;
+  source: CheckSource;
+  weight?: number;
+}
+
+/** DOM change detail */
+export interface ElementChange {
+  tagName: string;
+  id?: string;
+  classes?: string[];
+  textContent?: string;
+}
+
+/** Text content change */
+export interface TextChange {
+  tagName: string;
+  before: string;
+  after: string;
+}
+
+/** Attribute change */
+export interface AttributeChange {
+  tagName: string;
+  id?: string;
+  attribute: string;
+  before: string | null;
+  after: string | null;
+}
+
+/** DOM diff between before and after states */
+export interface DomDiffResult {
+  addedElements: ElementChange[];
+  removedElements: ElementChange[];
+  textChanges: TextChange[];
+  attributeChanges: AttributeChange[];
+  significantChanges: number;
+}
+
+/** Audit trail entry */
+export interface AuditEntry {
+  timestamp: number;
+  phase: string;
+  detail: string;
+}
+
+/** Complete verification result */
+export interface VerificationResult {
+  verdict: VerificationVerdict;
+  confidence: number;
+  checks: CheckResult[];
+  domDiff: DomDiffResult;
+  timing: { totalMs: number };
+  audit?: AuditEntry[];
+}
+
+/** Synchronous verify input (DomNode-based) */
+export interface VerifyInput {
+  endpointType: EndpointType | string;
+  beforeUrl: string;
+  afterUrl: string;
+  beforeDom: DomNode;
+  afterDom: DomNode;
+  cookies?: { before?: CookieInfo[]; after?: CookieInfo[] };
+  networkRequests?: NetworkRequest[];
+  customChecks?: CustomCheckDefinition[];
+}
+
+/** Synchronous verify output */
+export interface VerifyOutput {
+  status: VerificationVerdict;
+  confidence: number;
+  checks: CheckResult[];
+  domDiff: DomDiffResult;
+}
+
+// ============================================================================
+// Verification Functions
+// ============================================================================
+
+/**
+ * Verify whether a browser action was successful.
+ *
+ * Synchronous, DomNode-based API. Uses heuristic checks
+ * (DOM diff, URL change, cookies, network) to determine
+ * if the action achieved its intended effect.
+ *
+ * @param input - Before/after state with action context
+ * @returns Verification result with verdict, confidence, and evidence
+ */
+export declare function verify(input: VerifyInput): VerifyOutput;
+
+/**
+ * Verify an action from raw HTML snapshots.
+ *
+ * Async, HTML-based API. Parses HTML internally.
+ *
+ * @param snapshot - Before/after HTML + URL + optional cookies/network
+ * @param expectation - What scenario to verify (login, form_submit, etc.)
+ * @param options - Optional thresholds and audit settings
+ * @returns Verification result
+ */
+export declare function verifyFromHTML(
+  snapshot: ActionSnapshot,
+  expectation: VerificationExpectation,
+  options?: VerifyOptions,
+): Promise<VerificationResult>;
