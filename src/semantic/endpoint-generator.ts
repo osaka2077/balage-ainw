@@ -162,11 +162,25 @@ export async function generateEndpoints(
   // 7. Deduplizierung
   const deduped = deduplicateCandidates(filtered);
 
-  // 8. Global Cap: Top-N nach Confidence
-  const MAX_TOTAL_ENDPOINTS = 10;
-  const capped = deduped
-    .sort((a, b) => b.confidence - a.confidence)
-    .slice(0, MAX_TOTAL_ENDPOINTS);
+  // 8. Global Cap: Confidence-Gap-basiert statt fester Cap
+  const sorted = deduped.sort((a, b) => b.confidence - a.confidence);
+  const SAFETY_CAP = 12;
+  const MIN_ENDPOINTS = 3;
+  const GAP_THRESHOLD = 0.10;
+
+  // Finde den groessten Confidence-Gap (natuerliche Trennlinie zwischen echten und noise Endpoints)
+  let cutoffIndex = sorted.length;
+  if (sorted.length > MIN_ENDPOINTS) {
+    let maxGap = 0;
+    for (let i = MIN_ENDPOINTS; i < sorted.length; i++) {
+      const gap = sorted[i - 1]!.confidence - sorted[i]!.confidence;
+      if (gap > maxGap && gap >= GAP_THRESHOLD) {
+        maxGap = gap;
+        cutoffIndex = i;
+      }
+    }
+  }
+  const capped = sorted.slice(0, Math.min(cutoffIndex, SAFETY_CAP));
 
   logger.debug(
     { deduped: deduped.length, capped: capped.length },
