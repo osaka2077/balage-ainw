@@ -164,9 +164,9 @@ export async function generateEndpoints(
 
   // 8. Global Cap: Confidence-Gap-basiert statt fester Cap
   const sorted = deduped.sort((a, b) => b.confidence - a.confidence);
-  const SAFETY_CAP = 12;
-  const MIN_ENDPOINTS = 3;
-  const GAP_THRESHOLD = 0.10;
+  const SAFETY_CAP = 10;
+  const MIN_ENDPOINTS = 5;
+  const GAP_THRESHOLD = 0.12;
 
   // Finde den groessten Confidence-Gap (natuerliche Trennlinie zwischen echten und noise Endpoints)
   let cutoffIndex = sorted.length;
