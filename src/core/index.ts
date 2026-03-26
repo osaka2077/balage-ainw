@@ -13,7 +13,7 @@
  * ```
  */
 
-export const VERSION = "0.1.0-alpha.2";
+export const VERSION = "0.4.0-alpha.1";
 
 // High-Level API
 export { analyzeFromHTML } from "./analyze.js";
