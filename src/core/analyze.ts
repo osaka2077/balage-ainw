@@ -65,7 +65,7 @@ export async function analyzeFromHTML(
     url = "https://unknown",
     llm = false as false | LLMConfig,
     minConfidence = 0.53,
-    maxEndpoints = 8,
+    maxEndpoints: maxEndpointsOption,
     cache: cacheOption = true,
   } = options;
 
@@ -101,6 +101,9 @@ export async function analyzeFromHTML(
   };
   const aria = parseAria(pruneResult.prunedDom, emptyAxTree);
   const segments = segmentUI(pruneResult.prunedDom, aria);
+
+  // Dynamic maxEndpoints: scale with page complexity, default 8
+  const maxEndpoints = maxEndpointsOption ?? Math.min(8, Math.max(5, Math.ceil(segments.length * 0.8)));
 
   logger.debug(
     { segmentCount: segments.length, framework: framework?.framework },

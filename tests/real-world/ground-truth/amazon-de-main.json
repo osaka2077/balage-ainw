@@ -77,12 +77,12 @@
     {
       "type": "navigation",
       "label": "Orders & Returns",
-      "description": "Header link to order history and returns management",
+      "description": "Header link to order history and returns management (requires auth)",
       "selector_hint": "#nav-orders, a[href*='order-history']",
       "affordances": ["click"],
       "risk_class": "medium",
       "fields": [],
-      "phase": 2
+      "phase": 3
     }
   ],
   "expected_metrics": {

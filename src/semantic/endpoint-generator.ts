@@ -449,8 +449,10 @@ async function processSegment(
       // Checkout: Hard penalty wenn kein Cart/Basket/Checkout-Evidence im DOM
       // Aber: Search-Forms mit Date-Picker (Booking-Style) sind kein Checkout
       const hasCartEvidence = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i.test(segText);
+      // Booking-Style Force: check-in + destination/guests = definitiv search
+      const isBookingStyleSearch = /check.?in|departure|arrival/i.test(segText) && /destination|where.*going|guests?|rooms?|reiseziel/i.test(segText);
       if (candidate.type === "checkout" && !hasCartEvidence) {
-        if (hasSearchEvidence) {
+        if (hasSearchEvidence || isBookingStyleSearch) {
           candidate.type = "search";
         } else {
           candidate.confidence *= 0.55;
