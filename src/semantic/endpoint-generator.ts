@@ -433,6 +433,31 @@ async function processSegment(
       if (candidate.type === "checkout" && !hasCartEvidence) {
         candidate.confidence *= 0.55;
       }
+
+      // Commerce: Kein Preis/Produkt → sanfte Penalty
+      const hasCommerceEvidence = /price|product|add.to.cart|buy|purchase|kaufen|warenkorb|bestellen|\$|€|£/i.test(segText);
+      if (candidate.type === "commerce" && !hasCommerceEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+
+      // Consent: Kein Cookie/GDPR → sanfte Penalty
+      const hasConsentEvidence = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept.*all|reject.*all/i.test(segText);
+      if (candidate.type === "consent" && !hasConsentEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+
+      // Settings: Kein Toggle/Switch/Preference → sanfte Penalty
+      const hasSettingsEvidence = /toggle|switch|preference|setting|einstellung|theme|language|sprache|dark.?mode/i.test(segText)
+        || /type="?checkbox|type="?radio|role="?switch/i.test(segText);
+      if (candidate.type === "settings" && !hasSettingsEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+
+      // Navigation aus nicht-nav Segment ohne Links → sanfte Penalty
+      const hasNavEvidence = /<nav|role="?navigation|role="?menubar|role="?menu[^i]/i.test(segText);
+      if (candidate.type === "navigation" && segment.type !== "navigation" && !hasNavEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
     }
 
     // Setze segmentId auf jeden Candidate fuer spaeteres Segment-Matching
