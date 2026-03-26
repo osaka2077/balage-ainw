@@ -323,6 +323,33 @@ function countAriaAttributes(node: DomNode): number {
 }
 
 /**
+ * SSO-Button-Erkennung: Findet SSO/Social-Login-Buttons in einem DOM-Subtree.
+ * Erkennt Buttons, Links und div[role="button"] deren Text auf SSO-Provider hinweist.
+ * Wird genutzt um Auth-Segmente in Sub-Segmente aufzuspalten, damit der Auth-Cap
+ * und die Dedup-Logik einzelne SSO-Endpoints nicht verlieren.
+ */
+const SSO_PATTERN =
+  /continue\s+with|sign\s+in\s+with|log\s+in\s+with|anmelden\s+mit|google|apple|microsoft|github|facebook|twitter|saml|sso|passkey|single\s+sign/i;
+
+function findSSOButtons(node: DomNode): DomNode[] {
+  const results: DomNode[] = [];
+  function scan(n: DomNode): void {
+    const tag = n.tagName.toLowerCase();
+    if (tag === "button" || tag === "a" || (tag === "div" && n.attributes["role"] === "button")) {
+      const text = (n.textContent ?? n.attributes["aria-label"] ?? "").trim();
+      if (text.length > 0 && SSO_PATTERN.test(text)) {
+        results.push(n);
+      }
+    }
+    for (const child of n.children) {
+      scan(child);
+    }
+  }
+  scan(node);
+  return results;
+}
+
+/**
  * Bestimmt den Segment-Typ und Confidence fuer einen Node.
  * Kombiniert mehrere Heuristiken mit gewichteter Bewertung.
  */
@@ -528,6 +555,30 @@ function collectSegmentableNodes(
       const formValidated = UISegmentSchema.safeParse(formSegment);
       if (formValidated.success) {
         segments.push(formValidated.data);
+      }
+    }
+
+    // SSO-Button Splitting: Auth-Segmente mit SSO-Buttons bekommen zusaetzliche Sub-Segmente.
+    // Einzelne SSO-Buttons (z.B. "Continue with Google") werden als eigene form-Segmente emittiert,
+    // damit sie nicht durch Auth-Cap oder Dedup-Logik verloren gehen.
+    if (classification.type === "form" || classification.type === "navigation") {
+      const ssoButtons = findSSOButtons(node);
+      for (const ssoNode of ssoButtons) {
+        const ssoText = (ssoNode.textContent ?? ssoNode.attributes["aria-label"] ?? "SSO").trim().slice(0, 128);
+        const ssoSegment: UISegment = {
+          id: randomUUID(),
+          type: "form",
+          label: ssoText,
+          confidence: 0.7,
+          boundingBox: getEffectiveBoundingBox(ssoNode),
+          nodes: [ssoNode],
+          interactiveElementCount: 1,
+          semanticRole: "button",
+        };
+        const ssoValidated = UISegmentSchema.safeParse(ssoSegment);
+        if (ssoValidated.success) {
+          segments.push(ssoValidated.data);
+        }
       }
     }
 

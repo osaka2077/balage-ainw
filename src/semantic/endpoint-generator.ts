@@ -419,7 +419,8 @@ async function processSegment(
       // Search: Penalize if no search-related attributes found in segment HTML
       const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i.test(segText)
         || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText)
-        || /button[^>]*>.*?search|aria-label="[^"]*search|data-testid="[^"]*search|>search<|>suche</i.test(segText);
+        || /button[^>]*>.*?search|aria-label="[^"]*search|data-testid="[^"]*search|>search<|>suche</i.test(segText)
+        || /action="[^"]*search|action='[^']*search/i.test(segText);
       if (candidate.type === "search" && !hasSearchEvidence) {
         candidate.confidence *= 0.55;
       }
@@ -480,6 +481,19 @@ async function processSegment(
           candidate.confidence *= 0.95;
         }
       }
+
+      // Post-LLM Type-Correction: settings → navigation wenn NUR language/locale (keine echten Settings-UI-Elemente)
+      if (candidate.type === "settings") {
+        const isLanguageOnly = /language|locale|sprache|idioma|langue/i.test(
+          `${candidate.label} ${candidate.description}`,
+        );
+        const hasRealSettingsUI = /toggle|switch|checkbox|radio|slider|preference|einstellung/i.test(segText);
+        if (isLanguageOnly && !hasRealSettingsUI) {
+          candidate.type = "navigation";
+          candidate.confidence *= 0.9;
+        }
+      }
+
     }
 
     // Setze segmentId auf jeden Candidate fuer spaeteres Segment-Matching
