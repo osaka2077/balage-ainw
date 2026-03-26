@@ -30,7 +30,7 @@ import type { EndpointCandidate } from "../semantic/types.js";
 import { BalageInputError, BalageLLMError } from "./types.js";
 import { VERSION } from "./index.js";
 import { randomUUID } from "node:crypto";
-import { runHeuristicAnalysis } from "./heuristic-analyzer.js";
+import { runHeuristicAnalysis, classifySegmentHeuristically } from "./heuristic-analyzer.js";
 
 const logger = pino({ name: "balage:core", level: process.env["LOG_LEVEL"] ?? "silent" });
 
@@ -144,10 +144,46 @@ export async function analyzeFromHTML(
   const mode = llm ? "llm" as const : "heuristic" as const;
 
   if (llm) {
+    const heuristicGateEnabled = process.env["BALAGE_HEURISTIC_GATE"] !== "0";
+
+    let heuristicEndpoints: DetectedEndpoint[] = [];
+    let segmentsForLLM = segments;
+
+    if (heuristicGateEnabled) {
+      const gated: DetectedEndpoint[] = [];
+      const remaining: UISegment[] = [];
+
+      for (const seg of segments) {
+        const result = classifySegmentHeuristically(seg, dom);
+        if (result) {
+          gated.push(result);
+        } else {
+          remaining.push(seg);
+        }
+      }
+
+      heuristicEndpoints = gated;
+      segmentsForLLM = remaining;
+      logger.debug(
+        { gated: gated.length, remaining: remaining.length },
+        "Heuristic gate applied",
+      );
+    }
+
     const llmResult = await runLLMAnalysis(
-      segments, llm, url, minConfidence, maxEndpoints,
+      segmentsForLLM, llm, url, minConfidence, maxEndpoints,
     );
-    endpoints = llmResult.endpoints;
+
+    // Merge: Heuristic + LLM, dedup by type+label
+    const allEndpoints = [...heuristicEndpoints, ...llmResult.endpoints];
+    const seen = new Set<string>();
+    endpoints = allEndpoints.filter(ep => {
+      const key = `${ep.type}:${ep.label}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => b.confidence - a.confidence).slice(0, maxEndpoints);
+
     llmCalls = llmResult.llmCalls;
   } else {
     endpoints = runHeuristicAnalysis(

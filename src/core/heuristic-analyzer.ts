@@ -495,6 +495,87 @@ export function buildEvidence(
 }
 
 // ---------------------------------------------------------------------------
+// Heuristic Gate — Klassifiziert Segmente mit klaren DOM-Signalen ohne LLM
+// ---------------------------------------------------------------------------
+
+/**
+ * Versucht ein Segment rein heuristisch zu klassifizieren.
+ * Gibt einen DetectedEndpoint zurueck wenn das Signal stark genug ist,
+ * oder null wenn das Segment ans LLM weitergereicht werden soll.
+ *
+ * Nur fuer Segmente mit hoher Signalstaerke:
+ * - auth: Password + Email Felder
+ * - search: role=search oder type=search
+ * - consent: Cookie-Banner mit Accept/Reject Buttons
+ * - navigation: <nav> mit 3+ Links, keine Inputs
+ */
+export function classifySegmentHeuristically(
+  segment: UISegment,
+  fullDom: DomNode,
+): DetectedEndpoint | null {
+  const root: DomNode = segment.nodes && segment.nodes.length > 0
+    ? {
+        tagName: "div",
+        attributes: {},
+        isVisible: true,
+        isInteractive: false,
+        children: segment.nodes,
+        textContent: "",
+      }
+    : fullDom;
+
+  const signals = collectDomSignals(root);
+
+  // Gate 1: Password + Email → auth (hoechste Sicherheit)
+  if (signals.hasPasswordInput) {
+    return buildHeuristicEndpoint(segment, signals, "auth", 0.90);
+  }
+
+  // Gate 2: role=search oder type=search → search
+  if ((signals.hasSearchRole || signals.hasSearchInput) && !signals.hasPasswordInput) {
+    return buildHeuristicEndpoint(segment, signals, "search", 0.85);
+  }
+
+  // Gate 3: Cookie consent mit Buttons → consent
+  if (signals.hasCookieConsent && signals.hasConsentButtons) {
+    return buildHeuristicEndpoint(segment, signals, "consent", 0.85);
+  }
+
+  // Gate 4: Pure navigation (<nav> mit Links, keine Inputs)
+  if (
+    segment.type === "navigation"
+    && signals.linkCount >= 3
+    && !signals.hasPasswordInput
+    && !signals.hasSearchInput
+    && !signals.hasSearchRole
+    && signals.inputCount === 0
+  ) {
+    return buildHeuristicEndpoint(segment, signals, "navigation", 0.80);
+  }
+
+  // Keine sichere Heuristik → LLM benoetigt
+  return null;
+}
+
+function buildHeuristicEndpoint(
+  segment: UISegment,
+  signals: DomSignals,
+  type: EndpointType,
+  confidence: number,
+): DetectedEndpoint {
+  const label = inferLabel(segment.type, signals);
+  return {
+    type,
+    label,
+    description: inferDescription(label, signals, type),
+    confidence,
+    selector: undefined,
+    affordances: inferAffordances(type, signals),
+    evidence: buildEvidence(segment.type, type, signals),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Main Heuristic Analysis
 // ---------------------------------------------------------------------------
 
