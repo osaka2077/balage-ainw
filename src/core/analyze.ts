@@ -65,7 +65,7 @@ export async function analyzeFromHTML(
     url = "https://unknown",
     llm = false as false | LLMConfig,
     minConfidence = 0.50,
-    maxEndpoints = 8,
+    maxEndpoints = 10,
     cache: cacheOption = true,
   } = options;
 
@@ -120,6 +120,7 @@ export async function analyzeFromHTML(
         const totalMs = Math.round(performance.now() - start);
         return {
           ...cacheResult.result,
+          endpoints: cacheResult.result.endpoints.slice(0, maxEndpoints),
           timing: { totalMs, llmCalls: 0 },
           meta: {
             ...cacheResult.result.meta,
@@ -719,10 +720,18 @@ function runHeuristicAnalysis(
     .filter((e: DetectedEndpoint) => e.confidence >= minConfidence)
     .sort((a: DetectedEndpoint, b: DetectedEndpoint) => b.confidence - a.confidence)
     .reduce((deduped: DetectedEndpoint[], ep) => {
-      // Navigation: bis zu 4 Endpoints erlauben (Header, Sidebar, Footer, Breadcrumbs)
+      // Navigation: bis zu 5 Endpoints erlauben (Header, Sidebar, Footer, Breadcrumbs, Secondary)
       if (ep.type === "navigation") {
         const navCount = deduped.filter(d => d.type === "navigation").length;
-        if (navCount < 4) {
+        if (navCount < 5) {
+          deduped.push(ep);
+        }
+        return deduped;
+      }
+      // Auth: bis zu 4 Endpoints (Login Form, SSO, OAuth, Passkey)
+      if (ep.type === "auth") {
+        const authCount = deduped.filter(d => d.type === "auth").length;
+        if (authCount < 4) {
           deduped.push(ep);
         }
         return deduped;

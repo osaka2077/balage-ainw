@@ -882,7 +882,7 @@ describe("Settings Controls (not Search)", () => {
     expect(result.correctedType).toBe("settings");
   });
 
-  it("corrects 'form' to 'settings' when candidate mentions language", () => {
+  it("does NOT correct to 'settings' for standalone language selector (language selectors are navigation)", () => {
     const nodes = [makeDomNode("select", { "aria-label": "Language" })];
     const candidate = makeCandidateWithAnchors(
       "form",
@@ -891,7 +891,8 @@ describe("Settings Controls (not Search)", () => {
       [{ selector: "select", ariaLabel: "Language" }],
     );
     const result = classifyEndpoint(candidate, makeSegment(nodes));
-    expect(result.correctedType).toBe("settings");
+    // Language/locale selectors are typically navigation, not settings
+    expect(result.correctedType).not.toBe("settings");
   });
 
   it("corrects to 'settings' for dark-mode toggle", () => {

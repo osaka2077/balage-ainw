@@ -71,7 +71,7 @@ const NON_SEARCH_PATTERNS: RegExp[] = [
   /\b(store[\s-]?locator|locations?)\b/,
 ];
 
-/** Patterns die auf Settings-/Preference-Endpoints hinweisen */
+/** Patterns die auf Settings-/Preference-Endpoints hinweisen (ohne language/locale — die sind meist navigation) */
 const SETTINGS_PATTERNS: RegExp[] = [
   /\bfont[\s-]?size\b/i,
   /\bdark[\s-]?mode\b/i,
@@ -79,10 +79,8 @@ const SETTINGS_PATTERNS: RegExp[] = [
   /\bcolor[\s-]?scheme\b/i,
   /\btheme\b/i,
   /\bappearance\b/i,
-  /\blanguage\b/i,
-  /\bsprache\b/i,
-  /\blocale\b/i,
   /\baccessibility\b/i,
+  /\bpreferences?\b/i,
 ];
 
 /** Patterns die explizit auf Search hinweisen (Guard fuer Settings-Regel) */

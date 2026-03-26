@@ -154,7 +154,7 @@ export async function generateEndpoints(
   const deduped = deduplicateCandidates(filtered);
 
   // 8. Global Cap: Top-N nach Confidence
-  const MAX_TOTAL_ENDPOINTS = 10;
+  const MAX_TOTAL_ENDPOINTS = 12;
   const capped = deduped
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, MAX_TOTAL_ENDPOINTS);
@@ -418,7 +418,8 @@ async function processSegment(
     for (const candidate of candidates) {
       // Search: Penalize if no search-related attributes found in segment HTML
       const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i.test(segText)
-        || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText);
+        || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText)
+        || /button[^>]*>.*?search|aria-label="[^"]*search|data-testid="[^"]*search|>search<|>suche</i.test(segText);
       if (candidate.type === "search" && !hasSearchEvidence) {
         candidate.confidence *= 0.55;
       }
@@ -429,9 +430,14 @@ async function processSegment(
         candidate.confidence *= 0.85;
       }
       // Checkout: Hard penalty wenn kein Cart/Basket/Checkout-Evidence im DOM
+      // Aber: Search-Forms mit Date-Picker (Booking-Style) sind kein Checkout
       const hasCartEvidence = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i.test(segText);
       if (candidate.type === "checkout" && !hasCartEvidence) {
-        candidate.confidence *= 0.55;
+        if (hasSearchEvidence) {
+          candidate.type = "search";
+        } else {
+          candidate.confidence *= 0.55;
+        }
       }
 
       // Commerce: Kein Preis/Produkt → sanfte Penalty
@@ -494,7 +500,7 @@ function deduplicateCandidates(
     const duplicate = result.find(
       (existing) =>
         existing.type === candidate.type &&
-        labelSimilarity(existing.label, candidate.label) > 0.40,
+        labelSimilarity(existing.label, candidate.label) > 0.65,
     );
 
     if (duplicate) {
@@ -526,13 +532,13 @@ function deduplicateCandidates(
 
   // Per-type cap: differenzierte Limits pro Typ
   const TYPE_CAPS: Record<string, number> = {
-    navigation: 3,
-    auth: 2,
+    navigation: 5,
+    auth: 4,
     search: 1,
-    commerce: 1,
+    commerce: 2,
     checkout: 1,
     consent: 1,
-    settings: 1,
+    settings: 2,
     support: 1,
     content: 3,
     media: 2,
