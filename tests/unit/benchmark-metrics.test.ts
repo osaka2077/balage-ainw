@@ -163,7 +163,7 @@ describe("computeMatches", () => {
     expect(result.details[0]!.matched!.type).toBe("auth");
   });
 
-  it("greedy matching: each detected used at most once", () => {
+  it("1:1 constraint: each detected used at most once", () => {
     const gt = [
       makeGT({ type: "auth", label: "Login" }),
       makeGT({ type: "auth", label: "SSO Login" }),
@@ -178,6 +178,54 @@ describe("computeMatches", () => {
     const result = computeMatches([], []);
     expect(result.matched).toBe(0);
     expect(result.details).toHaveLength(0);
+  });
+
+  it("global-optimal: GT order does not affect matching result", () => {
+    // Regressionstest: Beim alten greedy-Algorithmus bekam der erste GT
+    // den besten Match. Hier pruefen wir, dass die Reihenfolge egal ist.
+    const gt_order_a = [
+      makeGT({ type: "form", label: "Contact Form" }),
+      makeGT({ type: "auth", label: "Login" }),
+    ];
+    const gt_order_b = [
+      makeGT({ type: "auth", label: "Login" }),
+      makeGT({ type: "form", label: "Contact Form" }),
+    ];
+    // Ein "form"-Detected das sowohl GT-auth (alias) als auch GT-form (exact) matchen koennte,
+    // plus ein "auth"-Detected. Global-optimal: auth<->auth (exact), form<->form (exact).
+    const det = [
+      makeDet("form", "Contact Us", 0.9),
+      makeDet("auth", "Sign In", 0.7),
+    ];
+    const result_a = computeMatches(gt_order_a, det);
+    const result_b = computeMatches(gt_order_b, det);
+    expect(result_a.matched).toBe(2);
+    expect(result_b.matched).toBe(2);
+    // Beide Reihenfolgen muessen exakte Type-Matches produzieren
+    const exactTypes_a = result_a.details.filter(d => d.typeMatch).length;
+    const exactTypes_b = result_b.details.filter(d => d.typeMatch).length;
+    expect(exactTypes_a).toBe(2);
+    expect(exactTypes_b).toBe(2);
+  });
+
+  it("global-optimal: higher-score pair wins over lower-score pair", () => {
+    // GT: auth + search. Detected: ein "form" mit Login-Label (semantic match fuer auth)
+    // und ein "auth" (exact match). Global-optimal muss auth<->auth waehlen (score 2000+),
+    // nicht auth<->form (score 0+).
+    const gt = [
+      makeGT({ type: "search", label: "Search" }),
+      makeGT({ type: "auth", label: "Login" }),
+    ];
+    const det = [
+      makeDet("form", "Login Form", 0.9),   // semantic match fuer auth, alias fuer search
+      makeDet("auth", "Auth Panel", 0.5),    // exact match fuer auth
+    ];
+    const result = computeMatches(gt, det);
+    expect(result.matched).toBe(2);
+    // auth GT muss den exakten auth-Detected bekommen (hoechster Score)
+    const authDetail = result.details.find(d => d.groundTruth.type === "auth");
+    expect(authDetail!.matched!.type).toBe("auth");
+    expect(authDetail!.typeMatch).toBe(true);
   });
 
   it("multiple GT, multiple detected — best assignment", () => {

@@ -246,17 +246,23 @@ export function computeMatches(
   groundTruth: GroundTruthEndpoint[],
   detected: Endpoint[],
 ): { matched: number; details: MatchDetail[] } {
-  const usedDetected = new Set<number>();
-  const details: MatchDetail[] = [];
-  let matched = 0;
+  // Global-optimales bipartites Matching:
+  // Statt greedy per GT-Reihenfolge berechnen wir ALLE moeglichen Paare,
+  // sortieren nach Score und weisen global-optimal zu (hoechste Similarity zuerst).
 
-  for (const gt of groundTruth) {
-    let bestIdx = -1;
-    let bestScore = -1;
+  // 1. Alle moeglichen (gt, detected) Paare mit Score > 0 berechnen
+  interface MatchPair {
+    gtIdx: number;
+    detIdx: number;
+    score: number;
+    typeMatch: boolean;
+  }
 
-    for (let i = 0; i < detected.length; i++) {
-      if (usedDetected.has(i)) continue;
-      const det = detected[i]!;
+  const pairs: MatchPair[] = [];
+  for (let gi = 0; gi < groundTruth.length; gi++) {
+    const gt = groundTruth[gi]!;
+    for (let di = 0; di < detected.length; di++) {
+      const det = detected[di]!;
 
       const isExact = gt.type === det.type;
       const isAlias = !isExact && typesMatch(gt.type, det.type);
@@ -268,24 +274,45 @@ export function computeMatches(
       const priority = isExact ? 2 : isAlias ? 1 : 0;
       const labelSim = matchLabelSimilarity(gt.label, det.label.primary);
       const score = priority * 1000 + labelSim * 10 + det.confidence;
-      if (score > bestScore) {
-        bestIdx = i;
-        bestScore = score;
-      }
-    }
 
-    if (bestIdx >= 0) {
-      usedDetected.add(bestIdx);
-      const det = detected[bestIdx]!;
+      pairs.push({ gtIdx: gi, detIdx: di, score, typeMatch: isExact });
+    }
+  }
+
+  // 2. Nach Score sortieren (hoechste zuerst)
+  pairs.sort((a, b) => b.score - a.score);
+
+  // 3. Global zuweisen — jeder GT und jeder Detected hoechstens einmal
+  const usedGT = new Set<number>();
+  const usedDet = new Set<number>();
+  const matchMap = new Map<number, { detIdx: number; typeMatch: boolean }>();
+
+  for (const pair of pairs) {
+    if (usedGT.has(pair.gtIdx) || usedDet.has(pair.detIdx)) continue;
+    usedGT.add(pair.gtIdx);
+    usedDet.add(pair.detIdx);
+    matchMap.set(pair.gtIdx, { detIdx: pair.detIdx, typeMatch: pair.typeMatch });
+  }
+
+  // 4. Details in GT-Reihenfolge aufbauen (stabile Ausgabe)
+  const details: MatchDetail[] = [];
+  let matched = 0;
+
+  for (let gi = 0; gi < groundTruth.length; gi++) {
+    const gt = groundTruth[gi]!;
+    const assignment = matchMap.get(gi);
+
+    if (assignment) {
+      const det = detected[assignment.detIdx]!;
       matched++;
       details.push({
         groundTruth: { type: gt.type, label: gt.label, phase: gt.phase },
         matched: { type: det.type, label: det.label.primary, confidence: det.confidence },
-        typeMatch: gt.type === det.type,
+        typeMatch: assignment.typeMatch,
       });
     } else {
-      // FIX 5: Near-miss Analyse fuer verpasste Endpoints
-      const nearMisses = findNearMisses(gt, detected, usedDetected);
+      // Near-miss Analyse fuer verpasste Endpoints
+      const nearMisses = findNearMisses(gt, detected, usedDet);
       details.push({
         groundTruth: { type: gt.type, label: gt.label, phase: gt.phase },
         matched: null,
