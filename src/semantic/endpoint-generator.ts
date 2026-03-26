@@ -466,10 +466,12 @@ async function processSegment(
         candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
       }
 
-      // Post-LLM Type-Correction: settings → consent wenn label/description consent-Keywords enthaelt
+      // Post-LLM Type-Correction: settings → consent wenn label/description ODER segment consent-Keywords enthaelt
       if (candidate.type === "settings") {
         const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
-        if (/cookie|consent|gdpr|privacy|datenschutz|tracking/.test(candidateText)) {
+        const hasConsentInLabel = /cookie|consent|gdpr|privacy|datenschutz|tracking/.test(candidateText);
+        const hasConsentInSegment = /cookie|consent|gdpr|datenschutz|accept\s*all|reject\s*all|alle\s*akzeptieren/i.test(segText);
+        if (hasConsentInLabel || hasConsentInSegment) {
           candidate.type = "consent";
         }
       }
