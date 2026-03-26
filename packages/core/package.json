@@ -1,6 +1,6 @@
 {
   "name": "balage-core",
-  "version": "0.4.0-alpha.1",
+  "version": "0.5.0-alpha.1",
   "description": "Detect login forms, search bars, and checkout flows in HTML. Confidence scores for browser agents. No browser needed.",
   "license": "MIT",
   "type": "module",
