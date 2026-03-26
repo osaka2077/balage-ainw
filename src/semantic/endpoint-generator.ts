@@ -417,8 +417,8 @@ async function processSegment(
     const segText = cleanText.toLowerCase();
     for (const candidate of candidates) {
       // Search: Penalize if no search-related attributes found in segment HTML
-      const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search/.test(segText)
-        || /input.*search|search.*input|searchbar|search-bar|search_bar/.test(segText);
+      const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i.test(segText)
+        || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText);
       if (candidate.type === "search" && !hasSearchEvidence) {
         candidate.confidence *= 0.55;
       }
@@ -435,7 +435,7 @@ async function processSegment(
       }
 
       // Commerce: Kein Preis/Produkt → sanfte Penalty
-      const hasCommerceEvidence = /price|product|add.to.cart|buy|purchase|kaufen|warenkorb|bestellen|\$|€|£/i.test(segText);
+      const hasCommerceEvidence = /price|product|add.to.cart|buy|purchase|kaufen|in\s*den\s*warenkorb|warenkorb|bestellen|jetzt\s*bestellen|zur\s*kasse|\$|€|£/i.test(segText);
       if (candidate.type === "commerce" && !hasCommerceEvidence) {
         candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
       }

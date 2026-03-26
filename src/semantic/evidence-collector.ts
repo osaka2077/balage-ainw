@@ -220,10 +220,11 @@ function ariaRolesMatchType(roles: string[], type: string): boolean {
   const roleTypeMap: Record<string, string[]> = {
     navigation: ["navigation", "menubar", "menu"],
     auth: ["form"],
-    form: ["form"],
-    search: ["search", "searchbox"],
+    form: ["form", "button"],
+    search: ["search", "searchbox", "combobox"],
     content: ["main", "article", "region"],
     consent: ["alertdialog", "dialog", "alert"],
+    settings: ["switch"],
   };
 
   const expectedRoles = roleTypeMap[type] ?? [];

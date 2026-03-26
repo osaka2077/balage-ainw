@@ -346,7 +346,12 @@ function collectDomSignals(root: DomNode): DomSignals {
       if (autocomplete.includes("username")) {
         signals.hasEmailInput = true;
       }
-      if (type === "search" || role === "searchbox") {
+      if (type === "search" || role === "searchbox" || role === "combobox") {
+        signals.hasSearchInput = true;
+      }
+      // Name-Attribut als Search-Signal (q, query, s sind typische Suchfeld-Namen)
+      const inputName = (attrs["name"] ?? "").toLowerCase();
+      if (inputName === "q" || inputName === "query" || inputName === "s" || inputName === "search") {
         signals.hasSearchInput = true;
       }
       if (type === "file") signals.hasFileInput = true;
@@ -417,7 +422,7 @@ function collectDomSignals(root: DomNode): DomSignals {
       || (tag === "input" && (type === "submit" || type === "button"))
     ) {
       const btnLabel = (node.textContent ?? attrs["value"] ?? attrs["aria-label"] ?? "").toLowerCase();
-      if (/add\s*to\s*cart|in\s*den\s*warenkorb|buy\s*now|jetzt\s*kaufen|kaufen/i.test(btnLabel)) {
+      if (/add\s*to\s*cart|in\s*den\s*warenkorb|buy\s*now|jetzt\s*kaufen|kaufen|jetzt\s*bestellen|zur\s*kasse/i.test(btnLabel)) {
         signals.hasAddToCart = true;
       }
     }
@@ -487,7 +492,7 @@ function inferLabel(segmentType: string, signals: DomSignals): string {
   if (signals.hasSearchRole || signals.hasSearchInput) {
     return "Search Form";
   }
-  if (signals.placeholders.some(p => /search|suche|find|query/i.test(p))) {
+  if (signals.placeholders.some(p => /search|such|find|query/i.test(p))) {
     return "Search Form";
   }
 
@@ -517,7 +522,7 @@ function inferLabel(segmentType: string, signals: DomSignals): string {
   }
 
   // Checkout
-  if (/checkout|payment|bezahl|kasse|cart|warenkorb/i.test(allText)) {
+  if (/checkout|payment|bezahl|kasse|cart|warenkorb|jetzt\s*bestellen|zur\s*kasse/i.test(allText)) {
     return "Checkout Form";
   }
 
@@ -545,10 +550,12 @@ function inferLabel(segmentType: string, signals: DomSignals): string {
   // Form Action URL als Hinweis
   if (signals.formAction) {
     const action = signals.formAction.toLowerCase();
-    if (/login|signin|auth/i.test(action)) return "Login / Sign-In Form";
+    if (/login|signin|sign-in|auth/i.test(action)) return "Login / Sign-In Form";
     if (/search/i.test(action)) return "Search Form";
-    if (/register|signup/i.test(action)) return "Registration / Sign-Up Form";
+    if (/register|signup|sign-up/i.test(action)) return "Registration / Sign-Up Form";
     if (/contact/i.test(action)) return "Contact Form";
+    if (/checkout|payment/i.test(action)) return "Checkout Form";
+    if (/subscribe/i.test(action)) return "Newsletter / Subscribe Form";
   }
 
   // Aria-Label
@@ -602,7 +609,7 @@ function inferEndpointType(
   // Settings VOR search: verhindert Fehlklassifizierung von Dropdowns als search
   if (signals.hasSettingsElement && !signals.hasSearchInput && !signals.hasSearchRole) return "settings";
   if (signals.hasSearchRole || signals.hasSearchInput) return "search";
-  if (signals.placeholders.some(p => /search|suche|find/i.test(p))) {
+  if (signals.placeholders.some(p => /search|such|find|query/i.test(p))) {
     return "search";
   }
 
@@ -610,15 +617,19 @@ function inferEndpointType(
     ...signals.buttonLabels,
     ...signals.headingTexts,
   ].join(" ");
-  if (/checkout|payment|bezahl|kasse/i.test(allText)) return "checkout";
+  if (/checkout|payment|bezahl|kasse|warenkorb|jetzt\s*bestellen/i.test(allText)) return "checkout";
 
   // Commerce: Add-to-Cart, Product-Daten oder Cart-Links/Icons
   if (signals.hasAddToCart || signals.hasProductData || signals.hasCartLink) return "commerce";
 
   if (signals.formAction) {
     const action = signals.formAction.toLowerCase();
-    if (/login|signin|auth/i.test(action)) return "auth";
+    if (/login|signin|sign-in|auth/i.test(action)) return "auth";
+    if (/register|signup|sign-up/i.test(action)) return "auth";
     if (/search/i.test(action)) return "search";
+    if (/checkout|payment/i.test(action)) return "checkout";
+    if (/contact/i.test(action)) return "form";
+    if (/subscribe/i.test(action)) return "form";
   }
 
   return VALID_ENDPOINT_TYPES.has(segmentType as EndpointType) ? segmentType as EndpointType : "content";
@@ -673,8 +684,8 @@ function runHeuristicAnalysis(
 
       // Confidence: Signal-staerke-basiert mit korroborierenden Bonus-Signalen
       const typeConfidence: Record<string, number> = {
-        auth: 0.70,
-        search: 0.65,
+        auth: 0.80,
+        search: 0.75,
         consent: 0.60,
         checkout: 0.55,
         commerce: 0.55,
