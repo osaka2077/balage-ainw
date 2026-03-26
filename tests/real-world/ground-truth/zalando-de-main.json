@@ -83,10 +83,20 @@
       "risk_class": "low",
       "fields": ["email"],
       "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Contact",
+      "description": "Hilfe & Kontakt section with FAQ links, delivery info, returns policy, and contact options",
+      "selector_hint": "a[href*='/faq'], [data-testid*='help']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 8,
+    "total_endpoints": 9,
     "phase1_endpoints": 3,
     "min_precision_target": 0.60,
     "min_recall_target": 0.55

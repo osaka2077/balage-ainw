@@ -53,10 +53,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "OneTrust cookie consent banner with Accept/Customize buttons",
+      "selector_hint": "#onetrust-banner-sdk, #onetrust-accept-btn-handler, #onetrust-pc-btn-handler",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 6,
     "phase1_endpoints": 2,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80

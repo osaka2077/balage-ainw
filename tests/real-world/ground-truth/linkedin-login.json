@@ -53,10 +53,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "Cookie consent banner with Accept/Deny buttons (artdeco-global-alert COOKIE_CONSENT)",
+      "selector_hint": ".artdeco-global-alert--COOKIE_CONSENT, button[data-control-name*='cookie.consent']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 6,
     "phase1_endpoints": 2,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
