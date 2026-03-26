@@ -297,6 +297,31 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
 ];
 
 // ============================================================================
+// System-Prompt mit Few-Shot (fuer OpenAI Prompt-Caching, ~32% Input-Kosten-Reduktion)
+// ============================================================================
+
+function buildFewShotSection(): string {
+  const parts: string[] = [];
+  parts.push("\n\n## FEW-SHOT EXAMPLES\n");
+  for (const example of ENDPOINT_EXTRACTION_FEW_SHOT) {
+    parts.push("### Example Input:");
+    parts.push("```");
+    parts.push(example.input);
+    parts.push("```");
+    parts.push("### Example Output:");
+    parts.push("```json");
+    parts.push(JSON.stringify(example.output, null, 2));
+    parts.push("```");
+    parts.push("");
+  }
+  return parts.join("\n");
+}
+
+/** System-Prompt inklusive Few-Shot-Examples — cached von OpenAI bei wiederholten Calls */
+export const ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES =
+  ENDPOINT_EXTRACTION_SYSTEM_PROMPT + buildFewShotSection();
+
+// ============================================================================
 // Prompt Builder
 // ============================================================================
 
@@ -326,19 +351,6 @@ export function buildExtractionPrompt(
   parts.push(prunedSegment.textRepresentation);
   parts.push("```");
   parts.push("");
-
-  parts.push("## Few-Shot Examples");
-  for (const example of ENDPOINT_EXTRACTION_FEW_SHOT) {
-    parts.push("### Example Input:");
-    parts.push("```");
-    parts.push(example.input);
-    parts.push("```");
-    parts.push("### Example Output:");
-    parts.push("```json");
-    parts.push(JSON.stringify(example.output, null, 2));
-    parts.push("```");
-    parts.push("");
-  }
 
   parts.push("## Your Task");
   parts.push(

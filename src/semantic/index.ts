@@ -26,6 +26,7 @@ export type { CacheOptions } from "./cached-llm-client.js";
 // Prompts
 export {
   ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
+  ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES,
   ENDPOINT_EXTRACTION_FEW_SHOT,
   buildExtractionPrompt,
 } from "./prompts.js";

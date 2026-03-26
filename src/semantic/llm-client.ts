@@ -91,6 +91,7 @@ export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClien
             temperature: request.temperature ?? 0,
             max_tokens: request.maxTokens ?? 4096,
             response_format: { type: "json_object" },
+            seed: 42,
           });
 
           const latency = Date.now() - start;

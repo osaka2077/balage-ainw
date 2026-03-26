@@ -11,7 +11,7 @@ import { pruneForLLM } from "./dom-pruner.js";
 import { classifyEndpoint, inferAffordances } from "./endpoint-classifier.js";
 import { collectEvidence, summarizeEvidence } from "./evidence-collector.js";
 import {
-  ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
+  ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES,
   buildExtractionPrompt,
 } from "./prompts.js";
 import {
@@ -376,7 +376,7 @@ async function processSegment(
 
     // 4. LLM-Call mit Retry
     const request: LLMRequest = {
-      systemPrompt: ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
+      systemPrompt: ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES,
       userPrompt,
       responseSchema: LLMEndpointResponseSchema,
       temperature: 0,

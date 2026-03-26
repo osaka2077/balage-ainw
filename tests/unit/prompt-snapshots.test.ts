@@ -9,6 +9,7 @@ import { describe, it, expect } from "vitest";
 import { z } from "zod";
 import {
   ENDPOINT_EXTRACTION_SYSTEM_PROMPT,
+  ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES,
   ENDPOINT_EXTRACTION_FEW_SHOT,
   buildExtractionPrompt,
 } from "../../src/semantic/prompts.js";
@@ -237,19 +238,18 @@ describe("buildExtractionPrompt", () => {
     expect(prompt).toContain(MOCK_SEGMENT.textRepresentation);
   });
 
-  it("includes all few-shot example inputs", () => {
+  it("does NOT include few-shot examples (moved to system prompt for caching)", () => {
     const prompt = buildExtractionPrompt(MOCK_SEGMENT, MOCK_CONTEXT);
-    for (const example of ENDPOINT_EXTRACTION_FEW_SHOT) {
-      expect(prompt).toContain(example.input);
-    }
+    expect(prompt).not.toContain("## Few-Shot Examples");
+    expect(prompt).not.toContain("### Example Input:");
+    expect(prompt).not.toContain("### Example Output:");
   });
 
-  it("includes few-shot example outputs as JSON", () => {
-    const prompt = buildExtractionPrompt(MOCK_SEGMENT, MOCK_CONTEXT);
+  it("few-shot examples are in SYSTEM_PROMPT_WITH_EXAMPLES instead", () => {
     for (const example of ENDPOINT_EXTRACTION_FEW_SHOT) {
-      // buildExtractionPrompt uses JSON.stringify(example.output, null, 2)
+      expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES).toContain(example.input);
       const jsonSnippet = JSON.stringify(example.output, null, 2);
-      expect(prompt).toContain(jsonSnippet);
+      expect(ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES).toContain(jsonSnippet);
     }
   });
 
