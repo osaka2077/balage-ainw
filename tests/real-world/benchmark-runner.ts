@@ -585,6 +585,12 @@ async function runPipeline(
     const fixtureHtml = loadFixture(file);
     if (fixtureHtml) {
       log(`  [1/7] [FIXTURE] Loading ${file}.html (${fixtureHtml.length} bytes)`);
+      // Blockiere externe Scripts und Stylesheets: Verhindert dass SPAs
+      // (React/Angular/Vue) den SSR-HTML-Content per Hydration ueberschreiben.
+      // Ohne Blockierung wird z.B. Trello's <div id="root"> durch einen
+      // Loading-Spinner ersetzt weil die JS-Bundles nicht vollstaendig laden.
+      await page.route("**/*.js", route => route.abort());
+      await page.route("**/*.css", route => route.abort());
       await page.setContent(fixtureHtml, { waitUntil: "domcontentloaded" });
     } else if (FIXTURE_MODE) {
       log(`  [1/7] [FIXTURE] No fixture found for ${file} — SKIPPING (fixture-only mode)`);

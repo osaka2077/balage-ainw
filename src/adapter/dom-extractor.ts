@@ -65,7 +65,14 @@ export async function extractStructuredDOM(page: Page): Promise<DomNode> {
   try {
     const rawDom = await page.evaluate(
       (params: { maxDepth: number; interactiveTags: string[]; interactiveRoles: string[] }) => {
-        function buildDomPath(el: Element): string {
+        // Polyfill: esbuild/tsx fuegt __name() Aufrufe ein (keepNames),
+        // die im Browser page.evaluate Kontext nicht definiert sind.
+        // Dieser Polyfill verhindert den ReferenceError.
+        if (typeof (globalThis as unknown as Record<string, unknown>).__name === "undefined") {
+          (globalThis as unknown as Record<string, unknown>).__name = (target: unknown) => target;
+        }
+
+        const buildDomPath = (el: Element): string => {
           const parts: string[] = [];
           let current: Element | null = el;
           while (current && current !== document.documentElement) {
@@ -89,29 +96,42 @@ export async function extractStructuredDOM(page: Page): Promise<DomNode> {
             current = parent;
           }
           return parts.join(" > ");
-        }
+        };
 
-        function checkVisible(el: Element): {
+        const checkVisible = (el: Element): {
           visible: boolean;
           styles: { display: string; visibility: string; opacity: number };
-        } {
+        } => {
           const style = getComputedStyle(el);
           const display = style.display;
           const visibility = style.visibility;
           const opacity = parseFloat(style.opacity);
           const rect = el.getBoundingClientRect();
 
-          const visible =
-            display !== "none" &&
-            visibility !== "hidden" &&
-            opacity > 0 &&
-            rect.width > 0 &&
-            rect.height > 0;
+          // Explizit versteckt via CSS
+          const cssHidden = display === "none" || visibility === "hidden" || opacity <= 0;
+
+          // BoundingBox-Check: width/height > 0
+          const hasSize = rect.width > 0 && rect.height > 0;
+
+          // Interaktive Elemente (input, button, a, select, textarea)
+          // werden als sichtbar betrachtet auch wenn sie keine Groesse haben,
+          // solange sie nicht explizit per CSS versteckt sind.
+          // Grund: Bei page.setContent() ohne externe Stylesheets haben viele
+          // Elemente BoundingBox 0x0, obwohl sie semantisch relevant sind.
+          const tag = el.tagName.toLowerCase();
+          const isInteractiveTag = params.interactiveTags.includes(tag);
+          const hasInteractiveRole = el.getAttribute("role") !== null
+            && params.interactiveRoles.includes(el.getAttribute("role")!);
+          const isSemanticLandmark = ["section", "main", "nav", "header",
+            "footer", "form", "aside", "dialog", "article"].includes(tag);
+
+          const visible = !cssHidden && (hasSize || isInteractiveTag || hasInteractiveRole || isSemanticLandmark);
 
           return { visible, styles: { display, visibility, opacity } };
-        }
+        };
 
-        function checkInteractive(el: Element): boolean {
+        const checkInteractive = (el: Element): boolean => {
           const tag = el.tagName.toLowerCase();
           if (params.interactiveTags.includes(tag)) return true;
           if (el.hasAttribute("onclick") || el.hasAttribute("tabindex"))
@@ -121,12 +141,9 @@ export async function extractStructuredDOM(page: Page): Promise<DomNode> {
           const style = getComputedStyle(el);
           if (style.cursor === "pointer") return true;
           return false;
-        }
+        };
 
-        function extractNode(
-          el: Element,
-          depth: number
-        ): {
+        type ExtractedNode = {
           tagName: string;
           attributes: Record<string, string>;
           textContent?: string;
@@ -139,8 +156,13 @@ export async function extractStructuredDOM(page: Page): Promise<DomNode> {
             opacity: number;
           };
           domPath?: string;
-          children: ReturnType<typeof extractNode>[];
-        } {
+          children: ExtractedNode[];
+        };
+
+        const extractNode = (
+          el: Element,
+          depth: number
+        ): ExtractedNode => {
           // Max-Tiefe: Marker-Node
           if (depth >= params.maxDepth) {
             return {
@@ -224,7 +246,7 @@ export async function extractStructuredDOM(page: Page): Promise<DomNode> {
             domPath: buildDomPath(el),
             children,
           };
-        }
+        };
 
         const root = document.documentElement;
         return extractNode(root, 0);
@@ -421,6 +443,11 @@ async function extractViaCdp(cdp: CDPSession): Promise<AccessibilityNode> {
  */
 async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
   const rawTree = await page.evaluate(() => {
+    // Polyfill: esbuild __name() im Browser-Kontext
+    if (typeof (globalThis as unknown as Record<string, unknown>).__name === "undefined") {
+      (globalThis as unknown as Record<string, unknown>).__name = (target: unknown) => target;
+    }
+
     // Mapping von HTML-Tags zu impliziten ARIA-Rollen
     const TAG_ROLE_MAP: Record<string, string> = {
       a: "link",
@@ -446,7 +473,9 @@ async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
       li: "listitem",
     };
 
-    function getRole(el: Element): string {
+    // Arrow-Functions statt benannter Funktionen: verhindert esbuild __name()
+    // Injection die im Browser-Kontext einen ReferenceError verursacht.
+    const getRole = (el: Element): string => {
       const explicit = el.getAttribute("role");
       if (explicit) return explicit;
       const tag = el.tagName.toLowerCase();
@@ -458,9 +487,9 @@ async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
         return "textbox";
       }
       return TAG_ROLE_MAP[tag] ?? "generic";
-    }
+    };
 
-    function getName(el: Element): string {
+    const getName = (el: Element): string => {
       // aria-label hat hoechste Prio
       const ariaLabel = el.getAttribute("aria-label");
       if (ariaLabel) return ariaLabel;
@@ -488,16 +517,16 @@ async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
         return el.textContent?.trim().slice(0, 512) ?? "";
       }
       return "";
-    }
+    };
 
-    function getLevel(el: Element): number | undefined {
+    const getLevel = (el: Element): number | undefined => {
       const tag = el.tagName.toLowerCase();
       const match = tag.match(/^h(\d)$/);
       if (match) return parseInt(match[1]!, 10);
       const ariaLevel = el.getAttribute("aria-level");
       if (ariaLevel) return parseInt(ariaLevel, 10) || undefined;
       return undefined;
-    }
+    };
 
     interface RawNode {
       role: string;
@@ -513,7 +542,7 @@ async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
       children: RawNode[];
     }
 
-    function extractNode(el: Element, depth: number): RawNode | null {
+    const extractNode = (el: Element, depth: number): RawNode | null => {
       if (depth > 30) return null;
       const role = getRole(el);
 
@@ -573,7 +602,7 @@ async function extractViaEvaluate(page: Page): Promise<AccessibilityNode> {
       }
 
       return node;
-    }
+    };
 
     const root = extractNode(document.documentElement, 0);
     return root ?? {
