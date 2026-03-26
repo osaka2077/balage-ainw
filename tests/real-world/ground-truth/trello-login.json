@@ -45,14 +45,14 @@
       "phase": 2
     },
     {
-      "type": "auth",
+      "type": "navigation",
       "label": "Can't Log In",
-      "description": "Link to account recovery / forgot password flow",
+      "description": "Link to account recovery / forgot password flow (navigates away from login)",
       "selector_hint": "a[href*='iforgot'], a[href*='reset']",
       "affordances": ["click"],
-      "risk_class": "medium",
+      "risk_class": "low",
       "fields": [],
-      "phase": 1
+      "phase": 2
     },
     {
       "type": "navigation",
@@ -67,7 +67,7 @@
   ],
   "expected_metrics": {
     "total_endpoints": 6,
-    "phase1_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
   }

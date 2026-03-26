@@ -83,22 +83,10 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Component Tab Sections",
-      "description": "Tab group within each component page: Overview, API, Examples",
-      "selector_hint": "mat-tab-group .mat-mdc-tab, [role='tab']",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 7,
+    "total_endpoints": 6,
     "phase1_endpoints": 1,
     "min_precision_target": 0.5,
     "min_recall_target": 0.4

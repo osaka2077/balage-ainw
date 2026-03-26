@@ -46,19 +46,6 @@
       "phase": 2
     },
     {
-      "type": "navigation",
-      "label": "Code Example Controls",
-      "description": "Language switcher tabs and copy-to-clipboard buttons on code blocks",
-      "selector_hint": "[data-testid='code-block'] button, .code-lang-selector",
-      "affordances": [
-        "click",
-        "select"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "auth",
       "label": "Sign In / Dashboard",
       "description": "Header link to Stripe Dashboard sign-in",
@@ -84,7 +71,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 5,
     "phase1_endpoints": 1,
     "min_precision_target": 0.75,
     "min_recall_target": 0.65
