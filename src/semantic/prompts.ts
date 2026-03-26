@@ -85,7 +85,14 @@ CONFIDENCE CALIBRATION:
 - 0.9-1.0: Certain — primary interactive element (login form, main search bar)
 - 0.7-0.9: Likely real but secondary (newsletter signup, secondary nav)
 - 0.5-0.7: Might be an endpoint — borderline cases
-- Below 0.5: Probably not a meaningful endpoint — omit or assign very low confidence`;
+- Below 0.5: Probably not a meaningful endpoint — omit or assign very low confidence
+
+COMMON MISCLASSIFICATIONS — AVOID THESE:
+- A form with date-pickers (check-in/check-out) and a "Search"/"Find" button on travel/booking sites is SEARCH, not CHECKOUT. Checkout requires cart, payment, or pricing elements.
+- Cookie/consent dialogs with "Accept All"/"Reject All" are CONSENT, even if they have "Settings" or "Manage Preferences" links. The primary purpose is consent collection, not settings.
+- "Submit a Request", "Contact Support", "Help Center", "Get Help" are SUPPORT endpoints, even when they appear as plain links in navigation. They trigger help/ticket flows.
+- "Settings" is only for user preference UIs with toggles/switches/sliders. Language selectors alone are NAVIGATION. Cookie settings within consent banners are CONSENT.
+- Category navigation on e-commerce sites (Mega-Menu, Department links) is NAVIGATION, not CHECKOUT or COMMERCE — even if it leads to product pages.`;
 
 // ============================================================================
 // Few-Shot Examples
@@ -292,6 +299,93 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
       ],
       reasoning:
         "Header nav with section links → navigation. 'Get Started' BUTTON is a prominent CTA → separate auth endpoint. (A plain Login link alone would stay as part of navigation.)",
+    },
+  },
+  // Example 6: Travel/Booking Search (NOT checkout)
+  {
+    input: `SEGMENT [form] confidence=0.9
+  FORM
+    LABEL: "Destination"
+      INPUT[type=text, placeholder="Where are you going?"]
+    LABEL: "Check-in"
+      INPUT[type=date, aria-label="Check-in date"]
+    LABEL: "Check-out"
+      INPUT[type=date, aria-label="Check-out date"]
+    LABEL: "Guests"
+      SELECT: "1 Adult"
+    BUTTON[type=submit]: "Search"`,
+    output: {
+      endpoints: [{
+        type: "search",
+        label: "Accommodation Search",
+        description: "Travel search form with destination, date pickers, and guest selection.",
+        confidence: 0.9,
+        anchors: [{ selector: "form", textContent: "Search" }],
+        affordances: [
+          { type: "fill", expectedOutcome: "Enter destination", reversible: true },
+          { type: "select", expectedOutcome: "Select dates and guests", reversible: true },
+          { type: "submit", expectedOutcome: "Search for accommodations", reversible: true },
+        ],
+        reasoning: "Form with destination input, date pickers, and 'Search' button. This is SEARCH, NOT checkout — no cart, payment, or pricing. Date pickers for travel are search parameters.",
+      }],
+      reasoning: "Travel search form. Key: 'Search' button + date pickers = search. Checkout requires cart/payment.",
+    },
+  },
+  // Example 7: Cookie Consent Banner (NOT settings)
+  {
+    input: `SEGMENT [footer] confidence=0.8
+  DIV[role=dialog, aria-label="Cookie consent"]
+    TEXT: "We use cookies to improve your experience."
+    BUTTON: "Accept All"
+    BUTTON: "Reject All"
+    LINK: "Cookie Settings"`,
+    output: {
+      endpoints: [{
+        type: "consent",
+        label: "Cookie Consent Banner",
+        description: "GDPR cookie consent dialog with accept/reject options.",
+        confidence: 0.9,
+        anchors: [{ selector: "div[role=dialog]", ariaLabel: "Cookie consent" }],
+        affordances: [
+          { type: "click", expectedOutcome: "Accept or reject cookies", reversible: false },
+        ],
+        reasoning: "Dialog about cookies with Accept/Reject buttons. Even though 'Cookie Settings' link exists, this is CONSENT (permission), not SETTINGS (preferences).",
+      }],
+      reasoning: "Cookie consent dialog. 'Settings' links within consent do NOT make it a settings endpoint.",
+    },
+  },
+  // Example 8: Support Endpoint (NOT navigation)
+  {
+    input: `SEGMENT [navigation] confidence=0.85
+  NAV
+    UL
+      LI > LINK: "Products"
+      LI > LINK: "Documentation"
+    DIV
+      LINK: "Submit a Request"
+      LINK: "Contact Support"`,
+    output: {
+      endpoints: [
+        {
+          type: "navigation",
+          label: "Main Navigation",
+          description: "Site navigation with section links.",
+          confidence: 0.85,
+          anchors: [{ selector: "nav", ariaRole: "navigation" }],
+          affordances: [{ type: "navigate", expectedOutcome: "Navigate to section", reversible: true }],
+          reasoning: "NAV with section links — standard navigation.",
+        },
+        {
+          type: "support",
+          label: "Support Links",
+          description: "Links to submit support requests and contact support team.",
+          confidence: 0.7,
+          anchors: [{ textContent: "Submit a Request" }, { textContent: "Contact Support" }],
+          affordances: [{ type: "click", expectedOutcome: "Open support flow", reversible: true }],
+          reasoning: "'Submit a Request' and 'Contact Support' are SUPPORT, not navigation. They trigger help/ticket flows.",
+        },
+      ],
+      reasoning: "Header with navigation + support links. Support actions are distinct from navigation.",
     },
   },
 ];

@@ -423,68 +423,37 @@ async function processSegment(
     const parsedResponse = response.parsedContent as z.infer<typeof LLMEndpointResponseSchema>;
     const candidates: EndpointCandidate[] = parsedResponse.endpoints;
 
-    // 6. Hallucination Prevention — Post-LLM Validation
+    // 6. Post-LLM Processing — Type-Corrections FIRST, then Confidence-Penalties
     const segText = cleanText.toLowerCase();
+    const hasCartEvidence = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i.test(segText);
+    const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i.test(segText)
+      || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText)
+      || /button[^>]*>.*?search|aria-label="[^"]*search|data-testid="[^"]*search|>search<|>suche</i.test(segText)
+      || /action="[^"]*search|action='[^']*search/i.test(segText)
+      || /check.?in|check.?out|departure|arrival|destination|where.*going|reiseziel|anreise|abreise/i.test(segText)
+      || /guests?|rooms?|travelers?|passengers?|adults?|children|reisende/i.test(segText)
+      || /method="?get/i.test(segText);
+    const isBookingStyleSearch = /check.?in|departure|arrival/i.test(segText) && /destination|where.*going|guests?|rooms?|reiseziel/i.test(segText);
+
+    // === PHASE 1: Type-Corrections (fix misclassifications BEFORE applying penalties) ===
     for (const candidate of candidates) {
-      // Search: Penalize if no search-related attributes found in segment HTML
-      const hasSearchEvidence = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i.test(segText)
-        || /input.*search|search.*input|searchbar|search-bar|search_bar/i.test(segText)
-        || /button[^>]*>.*?search|aria-label="[^"]*search|data-testid="[^"]*search|>search<|>suche</i.test(segText)
-        || /action="[^"]*search|action='[^']*search/i.test(segText)
-        // Travel/Booking Search: Date-Picker + Destination = Search, nicht Checkout
-        || /check.?in|check.?out|departure|arrival|destination|where.*going|reiseziel|anreise|abreise/i.test(segText)
-        // Guest/Room/Traveler Selection (Booking-Style)
-        || /guests?|rooms?|travelers?|passengers?|adults?|children|reisende/i.test(segText)
-        // Form mit GET-Method = typischerweise Search
-        || /method="?get/i.test(segText);
-      if (candidate.type === "search" && !hasSearchEvidence) {
-        candidate.confidence *= 0.55;
-      }
-      // Auth: Accept if credential fields OR auth-related links exist
-      const hasCredentialFields = /type="?password|type="?email|autocomplete="?(username|email|current-password)/.test(segText);
-      const hasAuthLinks = /sign[\s_-]?in|log[\s_-]?in|sign[\s_-]?up|register|anmelden|einloggen|konto|account/i.test(segText);
-      if (candidate.type === "auth" && segment.type === "navigation" && !hasCredentialFields && !hasAuthLinks) {
-        candidate.confidence *= 0.85;
-      }
-      // Checkout: Hard penalty wenn kein Cart/Basket/Checkout-Evidence im DOM
-      // Aber: Search-Forms mit Date-Picker (Booking-Style) sind kein Checkout
-      const hasCartEvidence = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i.test(segText);
-      // Booking-Style Force: check-in + destination/guests = definitiv search
-      const isBookingStyleSearch = /check.?in|departure|arrival/i.test(segText) && /destination|where.*going|guests?|rooms?|reiseziel/i.test(segText);
+      // checkout → search (Booking/Travel)
       if (candidate.type === "checkout" && !hasCartEvidence) {
         if (hasSearchEvidence || isBookingStyleSearch) {
           candidate.type = "search";
-        } else {
-          candidate.confidence *= 0.55;
         }
       }
-
-      // Commerce: Kein Preis/Produkt → sanfte Penalty
-      const hasCommerceEvidence = /price|product|add.to.cart|buy|purchase|kaufen|in\s*den\s*warenkorb|warenkorb|bestellen|jetzt\s*bestellen|zur\s*kasse|\$|€|£/i.test(segText);
-      if (candidate.type === "commerce" && !hasCommerceEvidence) {
-        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      // checkout → search (label-based)
+      if (candidate.type === "checkout") {
+        const hasSearchLabel = /search|property|destination|reise|suche|find|lookup|filter|explore/i.test(
+          `${candidate.label} ${candidate.description}`,
+        );
+        if (hasSearchLabel && !hasCartEvidence) {
+          candidate.type = "search";
+          candidate.confidence *= 0.95;
+        }
       }
-
-      // Consent: Kein Cookie/GDPR → sanfte Penalty
-      const hasConsentEvidence = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept.*all|reject.*all/i.test(segText);
-      if (candidate.type === "consent" && !hasConsentEvidence) {
-        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
-      }
-
-      // Settings: Kein Toggle/Switch/Preference → sanfte Penalty
-      const hasSettingsEvidence = /toggle|switch|preference|setting|einstellung|theme|language|sprache|dark.?mode/i.test(segText)
-        || /type="?checkbox|type="?radio|role="?switch/i.test(segText);
-      if (candidate.type === "settings" && !hasSettingsEvidence) {
-        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
-      }
-
-      // Navigation aus nicht-nav Segment ohne Links → sanfte Penalty
-      const hasNavEvidence = /<nav|role="?navigation|role="?menubar|role="?menu[^i]/i.test(segText);
-      if (candidate.type === "navigation" && segment.type !== "navigation" && !hasNavEvidence) {
-        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
-      }
-
-      // Post-LLM Type-Correction: settings → consent wenn label/description ODER segment consent-Keywords enthaelt
+      // settings → consent
       if (candidate.type === "settings") {
         const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
         const hasConsentInLabel = /cookie|consent|gdpr|privacy|datenschutz|tracking/.test(candidateText);
@@ -493,16 +462,7 @@ async function processSegment(
           candidate.type = "consent";
         }
       }
-
-      // Post-LLM Type-Correction: content → navigation fuer footer/header/navigation Segmente mit Links
-      if (candidate.type === "content" && ["footer", "header", "navigation"].includes(segment.type)) {
-        if (/<a[\s>]|href=/i.test(segText)) {
-          candidate.type = "navigation";
-          candidate.confidence *= 0.95;
-        }
-      }
-
-      // Post-LLM Type-Correction: settings → navigation wenn NUR language/locale (keine echten Settings-UI-Elemente)
+      // settings → navigation (language-only)
       if (candidate.type === "settings") {
         const isLanguageOnly = /language|locale|sprache|idioma|langue/i.test(
           `${candidate.label} ${candidate.description}`,
@@ -513,16 +473,60 @@ async function processSegment(
           candidate.confidence *= 0.9;
         }
       }
-
-      // Post-LLM Type-Correction: checkout → search wenn Label search-relevante Begriffe hat aber kein Cart-Evidence
-      if (candidate.type === "checkout") {
-        const hasSearchLabel = /search|property|destination|reise|suche|find|lookup|filter|explore/i.test(
-          `${candidate.label} ${candidate.description}`,
-        );
-        if (hasSearchLabel && !hasCartEvidence) {
-          candidate.type = "search";
+      // content → navigation (footer/header with links)
+      if (candidate.type === "content" && ["footer", "header", "navigation"].includes(segment.type)) {
+        if (/<a[\s>]|href=/i.test(segText)) {
+          candidate.type = "navigation";
           candidate.confidence *= 0.95;
         }
+      }
+      // navigation → support (support keywords in label)
+      if (candidate.type === "navigation") {
+        const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
+        const isSupportLabeled = /submit.?a?.?request|contact.?support|help.?center|get.?help|kundenservice|hilfe|support.*ticket/i.test(candidateText);
+        if (isSupportLabeled) {
+          candidate.type = "support";
+          candidate.confidence *= 0.95;
+        }
+      }
+    }
+
+    // === PHASE 2: Confidence-Penalties (on CORRECTED types) ===
+    for (const candidate of candidates) {
+      // Search without evidence
+      if (candidate.type === "search" && !hasSearchEvidence) {
+        candidate.confidence *= 0.55;
+      }
+      // Auth from nav segment without credential fields
+      const hasCredentialFields = /type="?password|type="?email|autocomplete="?(username|email|current-password)/.test(segText);
+      const hasAuthLinks = /sign[\s_-]?in|log[\s_-]?in|sign[\s_-]?up|register|anmelden|einloggen|konto|account/i.test(segText);
+      if (candidate.type === "auth" && segment.type === "navigation" && !hasCredentialFields && !hasAuthLinks) {
+        candidate.confidence *= 0.85;
+      }
+      // Checkout without cart evidence (after type-corrections, only true checkouts remain)
+      if (candidate.type === "checkout" && !hasCartEvidence) {
+        candidate.confidence *= 0.55;
+      }
+      // Commerce without evidence
+      const hasCommerceEvidence = /price|product|add.to.cart|buy|purchase|kaufen|in\s*den\s*warenkorb|warenkorb|bestellen|jetzt\s*bestellen|zur\s*kasse|\$|€|£/i.test(segText);
+      if (candidate.type === "commerce" && !hasCommerceEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+      // Consent without evidence
+      const hasConsentEvidence = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept.*all|reject.*all/i.test(segText);
+      if (candidate.type === "consent" && !hasConsentEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+      // Settings without evidence
+      const hasSettingsEvidence = /toggle|switch|preference|setting|einstellung|theme|dark.?mode/i.test(segText)
+        || /type="?checkbox|type="?radio|role="?switch/i.test(segText);
+      if (candidate.type === "settings" && !hasSettingsEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+      // Navigation from non-nav segment without nav evidence
+      const hasNavEvidence = /<nav|role="?navigation|role="?menubar|role="?menu[^i]/i.test(segText);
+      if (candidate.type === "navigation" && segment.type !== "navigation" && !hasNavEvidence) {
+        candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
       }
 
     }
