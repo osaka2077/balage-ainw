@@ -64,7 +64,7 @@ export async function analyzeFromHTML(
   const {
     url = "https://unknown",
     llm = false as false | LLMConfig,
-    minConfidence = 0.50,
+    minConfidence = 0.53,
     maxEndpoints = 8,
     cache: cacheOption = true,
   } = options;

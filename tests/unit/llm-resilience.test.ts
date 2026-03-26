@@ -261,16 +261,16 @@ describe("LLM Retry on Parse Error", () => {
 });
 
 // ============================================================================
-// Confidence Filter Tests (MIN_CANDIDATE_CONFIDENCE = 0.50)
+// Confidence Filter Tests (MIN_CANDIDATE_CONFIDENCE = 0.53)
 // ============================================================================
 
 describe("Confidence Filter", () => {
-  it("filters out candidates below MIN_CANDIDATE_CONFIDENCE (0.50)", async () => {
+  it("filters out candidates below MIN_CANDIDATE_CONFIDENCE (0.53)", async () => {
     const candidates = [
       makeValidCandidate("auth", 0.9), // Survives
       makeValidCandidate("form", 0.3), // Filtered
       makeValidCandidate("commerce", 0.85), // Survives (above threshold even after hallucination penalty)
-      makeValidCandidate("content", 0.49), // Filtered (just below)
+      makeValidCandidate("content", 0.52), // Filtered (just below 0.53)
     ];
     const client = createConfidenceTestClient(candidates);
 
@@ -347,7 +347,7 @@ describe("Global Endpoint Cap", () => {
       { llmClient: client },
     );
 
-    expect(genResult.candidates.length).toBeLessThanOrEqual(12);
+    expect(genResult.candidates.length).toBeLessThanOrEqual(10);
     expect(genResult.candidates.length).toBeGreaterThan(0);
   });
 
@@ -373,7 +373,7 @@ describe("Global Endpoint Cap", () => {
     expect(resultTypes).toContain("auth"); // highest base confidence
     expect(resultTypes).toContain("form"); // second highest
     // At least the top-confidence types should survive the cap
-    expect(genResult.candidates.length).toBeLessThanOrEqual(12);
+    expect(genResult.candidates.length).toBeLessThanOrEqual(10);
   });
 
   it("returns all candidates when count <= 10", async () => {

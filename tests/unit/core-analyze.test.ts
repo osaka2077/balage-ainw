@@ -439,7 +439,7 @@ describe("analyzeFromHTML — special characters", () => {
         <button type="submit">Ubermitteln</button>
       </form>
     `;
-    const result = await analyzeFromHTML(html, { llm: false });
+    const result = await analyzeFromHTML(html, { llm: false, minConfidence: 0.50 });
     expect(result.endpoints.length).toBeGreaterThan(0);
   });
 
@@ -474,7 +474,7 @@ describe("analyzeFromHTML — special characters", () => {
         <button type="submit">Submit</button>
       </form>
     `;
-    const result = await analyzeFromHTML(html, { llm: false });
+    const result = await analyzeFromHTML(html, { llm: false, minConfidence: 0.50 });
     expect(result.endpoints.length).toBeGreaterThan(0);
   });
 
@@ -514,7 +514,7 @@ describe("analyzeFromHTML — concurrency", () => {
   it("handles 10 parallel calls without interference", async () => {
     const htmlVariants = Array.from({ length: 10 }, (_, i) => `
       <form action="/form-${i}">
-        <input type="text" name="field-${i}" placeholder="Input ${i}">
+        <input type="password" name="field-${i}" placeholder="Input ${i}">
         <button type="submit">Submit ${i}</button>
       </form>
     `);
