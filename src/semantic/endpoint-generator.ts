@@ -101,7 +101,7 @@ export async function generateEndpoints(
   const credentialGuard = new CredentialGuard();
 
   // Segment-Pre-Filtering: Skip Segmente mit wenig Interaktivitaet
-  const INTERACTIVE_SEGMENT_TYPES = new Set(["form", "search", "checkout"]);
+  const INTERACTIVE_SEGMENT_TYPES = new Set(["form", "search", "checkout", "navigation"]);
   const filteredSegments = segments.filter((seg) => {
     if (seg.interactiveElementCount >= 1) return true;
     if (INTERACTIVE_SEGMENT_TYPES.has(seg.type)) return true;
@@ -463,6 +463,22 @@ async function processSegment(
       const hasNavEvidence = /<nav|role="?navigation|role="?menubar|role="?menu[^i]/i.test(segText);
       if (candidate.type === "navigation" && segment.type !== "navigation" && !hasNavEvidence) {
         candidate.confidence *= candidate.confidence >= 0.7 ? 0.8 : 0.6;
+      }
+
+      // Post-LLM Type-Correction: settings → consent wenn label/description consent-Keywords enthaelt
+      if (candidate.type === "settings") {
+        const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
+        if (/cookie|consent|gdpr|privacy|datenschutz|tracking/.test(candidateText)) {
+          candidate.type = "consent";
+        }
+      }
+
+      // Post-LLM Type-Correction: content → navigation fuer footer/header/navigation Segmente mit Links
+      if (candidate.type === "content" && ["footer", "header", "navigation"].includes(segment.type)) {
+        if (/<a[\s>]|href=/i.test(segText)) {
+          candidate.type = "navigation";
+          candidate.confidence *= 0.95;
+        }
       }
     }
 

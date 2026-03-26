@@ -406,6 +406,11 @@ function collectDomSignals(root: DomNode): DomSignals {
       signals.hasCookieConsent = true;
     }
 
+    // Consent-Buttons allein reichen als Signal (ohne role/id/class Kontext)
+    if (signals.hasConsentButtons && !signals.hasCookieConsent) {
+      signals.hasCookieConsent = true;
+    }
+
     // Consent-Buttons: "accept all", "reject", "alle akzeptieren" etc.
     if (
       tag === "button"
@@ -608,7 +613,8 @@ function inferEndpointType(
 
   if (signals.hasPasswordInput) return "auth";
   // Settings VOR search: verhindert Fehlklassifizierung von Dropdowns als search
-  if (signals.hasSettingsElement && !signals.hasSearchInput && !signals.hasSearchRole) return "settings";
+  // Guard: wenn auch Consent-Signale vorhanden → consent hat Vorrang vor settings
+  if (signals.hasSettingsElement && !signals.hasSearchInput && !signals.hasSearchRole && !signals.hasCookieConsent && !signals.hasConsentButtons) return "settings";
   if (signals.hasSearchRole || signals.hasSearchInput) return "search";
   if (signals.placeholders.some(p => /search|such|find|query/i.test(p))) {
     return "search";
@@ -631,6 +637,11 @@ function inferEndpointType(
     if (/checkout|payment/i.test(action)) return "checkout";
     if (/contact/i.test(action)) return "form";
     if (/subscribe/i.test(action)) return "form";
+  }
+
+  // Footer/Header/Sidebar mit vielen Links → navigation statt content
+  if (["footer", "header", "sidebar"].includes(segmentType) && signals.linkCount >= 3) {
+    return "navigation";
   }
 
   return VALID_ENDPOINT_TYPES.has(segmentType as EndpointType) ? segmentType as EndpointType : "content";
