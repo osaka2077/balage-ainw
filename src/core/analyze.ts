@@ -147,45 +147,31 @@ export async function analyzeFromHTML(
   const mode = llm ? "llm" as const : "heuristic" as const;
 
   if (llm) {
-    const heuristicGateEnabled = process.env["BALAGE_HEURISTIC_GATE"] !== "0";
+    // Ensemble-Modus: Heuristik + LLM laufen PARALLEL, Ergebnisse werden gemerged
+    // Heuristik ist kostenlos (reines DOM-Walking, ~1ms) und liefert Typ-Anchors
+    // LLM liefert Detail-Analyse und findet Sub-Endpoints die die Heuristik verpasst
 
-    let heuristicEndpoints: DetectedEndpoint[] = [];
-    let segmentsForLLM = segments;
-
-    if (heuristicGateEnabled) {
-      const gated: DetectedEndpoint[] = [];
-      const remaining: UISegment[] = [];
-
-      for (const seg of segments) {
-        const result = classifySegmentHeuristically(seg, dom);
-        if (result) {
-          gated.push(result);
-        } else {
-          remaining.push(seg);
-        }
+    // Phase 1: Heuristik auf ALLEN Segmenten (kostenlos)
+    const heuristicEndpoints: DetectedEndpoint[] = [];
+    for (const seg of segments) {
+      const result = classifySegmentHeuristically(seg, dom);
+      if (result) {
+        heuristicEndpoints.push(result);
       }
-
-      heuristicEndpoints = gated;
-      segmentsForLLM = remaining;
-      logger.debug(
-        { gated: gated.length, remaining: remaining.length },
-        "Heuristic gate applied",
-      );
     }
 
+    // Phase 2: LLM auf ALLEN Segmenten (parallel)
     const llmResult = await runLLMAnalysis(
-      segmentsForLLM, llm, url, minConfidence, maxEndpoints,
+      segments, llm, url, minConfidence, maxEndpoints,
     );
 
-    // Merge: Heuristic + LLM, dedup by type+label
-    const allEndpoints = [...heuristicEndpoints, ...llmResult.endpoints];
-    const seen = new Set<string>();
-    endpoints = allEndpoints.filter(ep => {
-      const key = `${ep.type}:${ep.label}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    }).sort((a, b) => b.confidence - a.confidence).slice(0, maxEndpoints);
+    // Phase 3: Ensemble-Merge mit Confidence-Boost bei Uebereinstimmung
+    endpoints = reconcileEnsembleResults(heuristicEndpoints, llmResult.endpoints, maxEndpoints);
+
+    logger.debug(
+      { heuristic: heuristicEndpoints.length, llm: llmResult.endpoints.length, merged: endpoints.length },
+      "Ensemble merge completed",
+    );
 
     llmCalls = llmResult.llmCalls;
   } else {
@@ -215,6 +201,78 @@ export async function analyzeFromHTML(
   }
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Ensemble Reconciler
+// ---------------------------------------------------------------------------
+
+/**
+ * Merges heuristic + LLM results with confidence-boost on agreement.
+ * - Both agree on type: confidence boosted (+0.05)
+ * - Only heuristic found it: kept as-is (high confidence from DOM signals)
+ * - Only LLM found it: kept as-is (LLM adds sub-endpoints the heuristic misses)
+ * - Dedup by type:label similarity
+ */
+function reconcileEnsembleResults(
+  heuristic: DetectedEndpoint[],
+  llm: DetectedEndpoint[],
+  maxEndpoints: number,
+): DetectedEndpoint[] {
+  const result: DetectedEndpoint[] = [];
+  const usedLLM = new Set<number>();
+
+  // Step 1: For each heuristic endpoint, find matching LLM endpoint
+  for (const hep of heuristic) {
+    let bestMatch: { idx: number; ep: DetectedEndpoint } | null = null;
+    let bestSim = 0;
+
+    for (let i = 0; i < llm.length; i++) {
+      if (usedLLM.has(i)) continue;
+      if (llm[i]!.type !== hep.type) continue;
+
+      // Label similarity (word overlap)
+      const hWords = new Set(hep.label.toLowerCase().split(/\s+/));
+      const lWords = new Set(llm[i]!.label.toLowerCase().split(/\s+/));
+      let overlap = 0;
+      for (const w of hWords) if (lWords.has(w)) overlap++;
+      const sim = overlap / Math.max(hWords.size, lWords.size);
+
+      if (sim > bestSim) {
+        bestSim = sim;
+        bestMatch = { idx: i, ep: llm[i]! };
+      }
+    }
+
+    if (bestMatch && bestSim > 0.3) {
+      // Agreement: boost confidence
+      usedLLM.add(bestMatch.idx);
+      result.push({
+        ...bestMatch.ep, // Use LLM's richer labels/descriptions
+        confidence: Math.min(0.98, Math.max(hep.confidence, bestMatch.ep.confidence) + 0.05),
+      });
+    } else {
+      // Heuristic-only: keep as-is
+      result.push(hep);
+    }
+  }
+
+  // Step 2: Add LLM-only endpoints (sub-endpoints the heuristic missed)
+  for (let i = 0; i < llm.length; i++) {
+    if (usedLLM.has(i)) continue;
+    // Check not a duplicate of something already in result
+    const isDup = result.some(r =>
+      r.type === llm[i]!.type &&
+      r.label.toLowerCase() === llm[i]!.label.toLowerCase(),
+    );
+    if (!isDup) {
+      result.push(llm[i]!);
+    }
+  }
+
+  return result
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, maxEndpoints);
 }
 
 // ---------------------------------------------------------------------------
