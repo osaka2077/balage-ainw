@@ -3,6 +3,10 @@
  *
  * Testet die majorityVote() und clampMultiRun() Funktionen isoliert,
  * ohne LLM-Calls — reine Logik-Tests.
+ *
+ * Matching-Algorithmus: Typ-basiert + Positions-Matching (nicht label-basiert).
+ * Innerhalb eines Typs werden Candidates per Greedy-labelSimilarity gematcht,
+ * mit Fallback auf Positions-Reihenfolge wenn Similarity < 0.2.
  */
 
 import { describe, it, expect } from "vitest";
@@ -81,10 +85,8 @@ describe("majorityVote", () => {
     expect(result).toHaveLength(0);
   });
 
-  it("matches endpoints of same type with similar labels across runs", () => {
-    // Labels die sich nur in einem Wort unterscheiden (Jaccard > 0.5):
-    // "User Login Form" vs "User Login Page" -> {user,login,form} vs {user,login,page} -> overlap=2, union=4 -> 0.5 (NOT >0.5)
-    // Besser: Labels mit hohem Overlap verwenden
+  it("matches endpoints of same type across runs (type-based matching)", () => {
+    // Gleicher Typ, gleiche Labels — triviales Matching
     const runs = [
       [makeCandidate({ type: "auth", label: "Login Form", confidence: 0.8 })],
       [makeCandidate({ type: "auth", label: "Login Form", confidence: 0.85 })],
@@ -100,7 +102,81 @@ describe("majorityVote", () => {
     expect(result[0]!.confidence).toBeCloseTo(0.8, 5);
   });
 
-  it("does NOT match endpoints with completely different labels even if same type", () => {
+  it("matches different labels of same type via type+position (core fix)", () => {
+    // DAS ist der Kernfix: LLM generiert verschiedene Labels fuer den gleichen Endpoint.
+    // Altes Verhalten: labelSimilarity("Sign in with Google", "Google SSO Login") < 0.5 → 3 verschiedene Buckets → alle verworfen
+    // Neues Verhalten: Alle sind Typ "auth", Slot 0 → werden als gleicher Endpoint gematcht
+    const runs = [
+      [makeCandidate({ type: "auth", label: "Sign in with Google", confidence: 0.8 })],
+      [makeCandidate({ type: "auth", label: "Google SSO Login", confidence: 0.85 })],
+      [makeCandidate({ type: "auth", label: "Continue with Google OAuth", confidence: 0.75 })],
+    ];
+
+    const result = majorityVote(runs);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe("auth");
+    // Representative vom Run mit hoechster Confidence (0.85)
+    expect(result[0]!.label).toBe("Google SSO Login");
+    expect(result[0]!.confidence).toBeCloseTo((0.8 + 0.85 + 0.75) / 3, 5);
+  });
+
+  it("matches 2 auth endpoints pairwise across runs", () => {
+    // Run 1: [auth-A, auth-B], Run 2: [auth-A', auth-B'], Run 3: [auth-A'', auth-B'']
+    // Sollen paarweise gematcht werden: Slot 0 (A) und Slot 1 (B)
+    const runs = [
+      [
+        makeCandidate({ type: "auth", label: "Google Login", confidence: 0.8 }),
+        makeCandidate({ type: "auth", label: "Email Login", confidence: 0.7 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Sign in with Google", confidence: 0.85 }),
+        makeCandidate({ type: "auth", label: "Email Sign In", confidence: 0.75 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Google OAuth", confidence: 0.82 }),
+        makeCandidate({ type: "auth", label: "Login with Email", confidence: 0.72 }),
+      ],
+    ];
+
+    const result = majorityVote(runs);
+
+    // Beide Slots in allen 3 Runs → beide behalten
+    expect(result).toHaveLength(2);
+
+    const types = result.map(r => r.type);
+    expect(types.every(t => t === "auth")).toBe(true);
+  });
+
+  it("applies majority to each slot independently (2 auth in Run 1, 1 auth in Run 2)", () => {
+    // Run 1: 2 auth, Run 2: 1 auth, Run 3: 1 auth
+    // Slot 0: in allen 3 Runs → behalten
+    // Slot 1: nur in Run 1 → verworfen (1 von 3 < ceil(3/2)=2)
+    const runs = [
+      [
+        makeCandidate({ type: "auth", label: "Google Login", confidence: 0.8 }),
+        makeCandidate({ type: "auth", label: "Email Login", confidence: 0.7 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Google Sign In", confidence: 0.85 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Login with Google", confidence: 0.82 }),
+      ],
+    ];
+
+    const result = majorityVote(runs);
+
+    // Slot 0 (Google): 3 Runs → behalten
+    // Slot 1 (Email): 1 Run → verworfen
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe("auth");
+  });
+
+  it("does NOT match completely unrelated labels even with same type when threshold applies", () => {
+    // Wenn nur 1 Endpoint pro Typ pro Run: Typ-Matching greift immer.
+    // Verschiedene form-Endpoints in verschiedenen Runs werden als gleicher Slot gematcht
+    // wenn es nur einen pro Run gibt (Position 0 = Position 0).
     const runs = [
       [makeCandidate({ type: "form", label: "Contact Form", confidence: 0.8 })],
       [makeCandidate({ type: "form", label: "Newsletter Subscription", confidence: 0.85 })],
@@ -109,8 +185,10 @@ describe("majorityVote", () => {
 
     const result = majorityVote(runs);
 
-    // Kein Label hat Similarity > 0.5 mit einem anderen -> alle unter Threshold
-    expect(result).toHaveLength(0);
+    // Alle sind Typ "form", alle Slot 0 → werden gematcht (3 von 3 Runs)
+    // Das ist gewollt: Das LLM nennt denselben Endpoint unterschiedlich
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe("form");
   });
 
   it("averages confidence correctly: [0.8, 0.6] => 0.7", () => {
@@ -127,9 +205,6 @@ describe("majorityVote", () => {
   });
 
   it("uses label and description from highest-confidence run", () => {
-    // Alle Labels muessen labelSimilarity > 0.5 haben damit sie matchen.
-    // "Login Form" vs "Login Form" = 1.0 (identisch)
-    // Unterschied nur in description und confidence.
     const runs = [
       [makeCandidate({
         label: "Login Form",
@@ -157,7 +232,7 @@ describe("majorityVote", () => {
     expect(result[0]!.confidence).toBeCloseTo((0.6 + 0.95 + 0.75) / 3, 5);
   });
 
-  it("handles multiple different endpoints across runs correctly", () => {
+  it("handles multiple different endpoint types across runs correctly", () => {
     const authCandidate = makeCandidate({ type: "auth", label: "Login Form", confidence: 0.8 });
     const searchCandidate = makeCandidate({ type: "search", label: "Search Box", confidence: 0.9 });
     const navCandidate = makeCandidate({ type: "navigation", label: "Main Navigation", confidence: 0.7 });
@@ -291,12 +366,107 @@ describe("majorityVote", () => {
     const runs = [
       [makeCandidate({ confidence: 0.8 })],
       [makeCandidate({ confidence: 0.85 })],
-      [] as EndpointCandidate[], // Leerer Run (wird rausgefiltert)
+      [] as EndpointCandidate[], // Leerer Run
     ];
 
-    // Valide Runs = 2, Threshold = ceil(2/2) = 1
     const result = majorityVote(runs);
+    // 2 von 3 Runs haben den Endpoint → ceil(3/2)=2 → behalten
     expect(result).toHaveLength(1);
+  });
+
+  // ============================================================================
+  // Neue Tests fuer typ-basiertes Matching
+  // ============================================================================
+
+  it("'Sign in with Google' vs 'Google SSO' vs 'OAuth Login' → same endpoint (label-invariant)", () => {
+    // Exaktes Szenario aus dem Bug-Report: Drei voellig verschiedene Labels
+    // fuer den gleichen auth-Endpoint. Das alte Matching haette 0 Ergebnisse geliefert.
+    const runs = [
+      [makeCandidate({ type: "auth", label: "Sign in with Google", confidence: 0.80 })],
+      [makeCandidate({ type: "auth", label: "Google SSO", confidence: 0.85 })],
+      [makeCandidate({ type: "auth", label: "OAuth Login", confidence: 0.78 })],
+    ];
+
+    const result = majorityVote(runs);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe("auth");
+    // Representative ist der mit hoechster Confidence: "Google SSO" (0.85)
+    expect(result[0]!.label).toBe("Google SSO");
+    expect(result[0]!.confidence).toBeCloseTo((0.80 + 0.85 + 0.78) / 3, 5);
+  });
+
+  it("greedy matching prefers similar labels within same type", () => {
+    // Run 1: [Google Login, Email Login], Run 2: [Email Sign In, Google SSO]
+    // Greedy sollte Google↔Google und Email↔Email matchen, nicht nach Position allein
+    const runs = [
+      [
+        makeCandidate({ type: "auth", label: "Google Login", confidence: 0.80 }),
+        makeCandidate({ type: "auth", label: "Email Login", confidence: 0.70 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Email Sign In", confidence: 0.75 }),
+        makeCandidate({ type: "auth", label: "Google Sign In", confidence: 0.85 }),
+      ],
+    ];
+
+    const result = majorityVote(runs);
+
+    // Beide Slots sollten gematcht werden (2/2 Runs → behalten bei ceil(2/2)=1)
+    expect(result).toHaveLength(2);
+    expect(result.every(r => r.type === "auth")).toBe(true);
+  });
+
+  it("mixed types: each type matched independently", () => {
+    // auth + search + navigation — verschiedene Typen, verschiedene Slot-Gruppen
+    const runs = [
+      [
+        makeCandidate({ type: "auth", label: "Login", confidence: 0.8 }),
+        makeCandidate({ type: "search", label: "Search Bar", confidence: 0.9 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Sign In", confidence: 0.82 }),
+        makeCandidate({ type: "search", label: "Search Box", confidence: 0.88 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Authentication", confidence: 0.78 }),
+        makeCandidate({ type: "search", label: "Search Input", confidence: 0.92 }),
+      ],
+    ];
+
+    const result = majorityVote(runs);
+
+    expect(result).toHaveLength(2);
+    const auth = result.find(r => r.type === "auth");
+    const search = result.find(r => r.type === "search");
+    expect(auth).toBeDefined();
+    expect(search).toBeDefined();
+    // auth representative: "Sign In" hat 0.82 (hoechste)
+    expect(auth!.label).toBe("Sign In");
+    // search representative: "Search Input" hat 0.92 (hoechste)
+    expect(search!.label).toBe("Search Input");
+  });
+
+  it("run with 0 endpoints of a type counts against that type's slots", () => {
+    // 3 Runs, aber nur Run 1 hat einen nav-Endpoint
+    // auth: in allen 3 → behalten. nav: nur in 1 von 3 → verworfen
+    const runs = [
+      [
+        makeCandidate({ type: "auth", label: "Login", confidence: 0.8 }),
+        makeCandidate({ type: "navigation", label: "Main Nav", confidence: 0.7 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Login Page", confidence: 0.85 }),
+      ],
+      [
+        makeCandidate({ type: "auth", label: "Sign In", confidence: 0.82 }),
+      ],
+    ];
+
+    const result = majorityVote(runs);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.type).toBe("auth");
   });
 });
 
