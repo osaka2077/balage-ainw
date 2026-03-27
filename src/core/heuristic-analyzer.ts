@@ -553,6 +553,21 @@ export function classifySegmentHeuristically(
     return buildHeuristicEndpoint(segment, signals, "navigation", 0.80);
   }
 
+  // Gate 5: CTA — Marketing-CTAs die zu Signup/Onboarding fuehren
+  const ctaPattern = /\b(get started|try.{0,5}free|start.{0,5}free|sign up free|start.*(trial|now)|jetzt starten|kostenlos (testen|starten)|free trial)\b/i;
+  const hasCtaButton = signals.buttonLabels.some(lbl => ctaPattern.test(lbl));
+  // Auch Links mit CTA-Pattern erkennen (headings oft = visuell prominente Links)
+  const hasCtaLink = [...signals.headingTexts, ...signals.placeholders].some(t => ctaPattern.test(t));
+
+  if (hasCtaButton || hasCtaLink) {
+    // Nur wenn noch kein auth/form Endpoint im Segment (Vermeidung von Doppel-Erkennung)
+    const hasAuthSignal = signals.hasPasswordInput || signals.hasEmailInput;
+    const hasFormSignal = signals.inputCount >= 2;
+    if (!hasAuthSignal && !hasFormSignal) {
+      return buildHeuristicEndpoint(segment, signals, "form", 0.70);
+    }
+  }
+
   // Keine sichere Heuristik → LLM benoetigt
   return null;
 }

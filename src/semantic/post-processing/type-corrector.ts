@@ -29,9 +29,14 @@ const REAL_SETTINGS_UI = /toggle|switch|checkbox|radio|slider|preference|einstel
 
 const LINK_EVIDENCE = /<a[\s>]|href=/i;
 
-const SUPPORT_LABEL = /submit.?a?.?request|contact.?support|help.?center|get.?help|kundenservice|hilfe|support.*ticket/i;
+const SUPPORT_LABEL = /submit.?a?.?request|contact.?support|help.?center|get.?help|kundenservice|hilfe|support.*ticket|open.?ticket|community.?forum|knowledge.?base|faq/i;
+
+const SUPPORT_SEGMENT = /submit.*request|contact.*support|help.*center|get.*help|kundenservice|hilfe|support.*ticket|open.*ticket|community.*forum|knowledge.*base|faq/i;
 
 const SEARCH_LABEL = /search|property|destination|reise|suche|find|lookup|filter|explore/i;
+
+const TRAVEL_LABEL = /\b(accommodat|hotel|flight|booking|reserv|reise|flug|unterkunft|destination|check.?in|check.?out.?date|travel|trip|guest|passenger)/i;
+const CART_LABEL_EVIDENCE = /\b(cart|warenkorb|basket|bag|add.to)/i;
 
 /**
  * Prueft ob Segment DOM-Evidence fuer Search enthalt.
@@ -64,12 +69,13 @@ export function hasCartEvidence(segText: string): boolean {
  * Wendet Type-Corrections auf Candidates an (in-place Mutation).
  *
  * Reihenfolge der Regeln:
- * 1. checkout -> search (Booking/Travel ohne Cart)
+ * 1. checkout -> search (Booking/Travel ohne Cart via DOM)
  * 2. checkout -> search (Label-basiert ohne Cart)
- * 3. settings -> consent (Cookie/GDPR Keywords)
- * 4. settings -> navigation (Language-Only ohne Settings-UI)
- * 5. content -> navigation (Footer/Header mit Links)
- * 6. navigation -> support (Support Keywords im Label)
+ * 3. checkout/commerce -> search (Travel/Booking Label ohne Cart)
+ * 4. settings -> consent (Cookie/GDPR Keywords)
+ * 5. settings -> navigation (Language-Only ohne Settings-UI)
+ * 6. content -> navigation (Footer/Header mit Links)
+ * 7. navigation/content -> support (Support Keywords in Label oder Segment)
  */
 export function applyTypeCorrections(
   candidates: EndpointCandidate[],
@@ -96,6 +102,15 @@ export function applyTypeCorrections(
       if (hasSearchLabel && !cartEv) {
         candidate.type = "search";
         candidate.confidence *= 0.95;
+      }
+    }
+    // checkout/commerce -> search (Travel/Booking label without cart)
+    if (candidate.type === "checkout" || candidate.type === "commerce") {
+      const labelDesc = `${candidate.label} ${candidate.description}`;
+      const hasTravel = TRAVEL_LABEL.test(labelDesc);
+      const hasCartLabel = CART_LABEL_EVIDENCE.test(segText);
+      if (hasTravel && !hasCartLabel) {
+        candidate.type = "search";
       }
     }
     // settings -> consent
@@ -125,11 +140,12 @@ export function applyTypeCorrections(
         candidate.confidence *= 0.95;
       }
     }
-    // navigation -> support (support keywords in label)
-    if (candidate.type === "navigation") {
+    // navigation/content -> support (support keywords in label or segment)
+    if (candidate.type === "navigation" || candidate.type === "content") {
       const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
       const isSupportLabeled = SUPPORT_LABEL.test(candidateText);
-      if (isSupportLabeled) {
+      const isSupportSegment = SUPPORT_SEGMENT.test(segText);
+      if (isSupportLabeled || isSupportSegment) {
         candidate.type = "support";
         candidate.confidence *= 0.95;
       }
