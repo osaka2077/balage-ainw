@@ -12,9 +12,11 @@ export { applyTypeCorrections, hasSearchEvidence, hasCartEvidence, isBookingStyl
 export { applyConfidencePenalties } from "./confidence-penalizer.js";
 export { deduplicateCandidates, labelSimilarity } from "./deduplicator.js";
 export { applyGapCutoff } from "./gap-cutoff.js";
+export { applySiteSpecificCorrections } from "./site-specific-corrections.js";
 
 import type { EndpointCandidate } from "../types.js";
 import { applyTypeCorrections } from "./type-corrector.js";
+import { applySiteSpecificCorrections } from "./site-specific-corrections.js";
 import { applyConfidencePenalties } from "./confidence-penalizer.js";
 import { deduplicateCandidates } from "./deduplicator.js";
 import { applyGapCutoff } from "./gap-cutoff.js";
@@ -34,6 +36,9 @@ export function runPostProcessing(
 ): EndpointCandidate[] {
   // Phase 1: Type-Corrections (in-place)
   applyTypeCorrections(candidates, segmentText, segmentType);
+
+  // Phase 1b: Site-Specific Corrections (in-place, nach generischen Regeln)
+  applySiteSpecificCorrections(candidates, segmentText);
 
   // Phase 2: Confidence-Penalties (in-place)
   applyConfidencePenalties(candidates, segmentText, segmentType);

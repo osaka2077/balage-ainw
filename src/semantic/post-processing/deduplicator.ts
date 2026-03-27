@@ -19,7 +19,7 @@ const TYPE_CAPS: Record<string, number> = {
   checkout: 1,
   consent: 1,
   settings: 2,
-  support: 1,
+  support: 2,
   content: 3,
   media: 2,
   social: 1,

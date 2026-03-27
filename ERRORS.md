@@ -91,3 +91,31 @@ await page.route("**/*.css", route => route.abort());
 await page.setContent(fixtureHtml, { waitUntil: "domcontentloaded" });
 ```
 **Regel:** HTML-Fixtures sind Snapshots des gerenderten DOM. Bei `setContent` muessen externe Scripts blockiert werden, damit die SPA nicht re-hydrated und den Content ueberschreibt.
+
+### ERR-007: CART_EVIDENCE Regex zu breit — "bag" matcht auf CSS-Klassen
+**Datum:** 2026-03-27
+**Problem:** Booking.com checkout-to-search Korrektur wird blockiert weil CART_EVIDENCE `/bag/i` auf OneTrust-CSS-Klassen matcht (z.B. "bag" in Style-Attributen). CART_LABEL_EVIDENCE hatte gleiches Problem mit `/bag/i`.
+**Falscher Code:**
+```typescript
+const CART_EVIDENCE = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i;
+const CART_LABEL_EVIDENCE = /\b(cart|warenkorb|basket|bag|add.to)/i;
+```
+**Richtiger Code:**
+```typescript
+const CART_EVIDENCE = /\bcart\b|basket|warenkorb|shopping.?bag|checkout.?form|einkaufswagen|zur.?kasse/i;
+const CART_LABEL_EVIDENCE = /\b(cart|warenkorb|basket|shopping.?bag|add.to.cart|add.to.bag|add.to.basket)/i;
+```
+**Regel:** Regex-Patterns fuer DOM-Evidence muessen spezifisch genug sein um CSS-Klassen, Script-Variablen und Inline-Styles nicht als False Positives zu matchen. Eigenstaendige Woerter wie "bag" oder "checkout" sind zu generisch.
+
+### ERR-008: Support-Type-Cap=1 blockiert Sites mit mehreren Support-Endpoints
+**Datum:** 2026-03-27
+**Problem:** Zendesk hat 2 distinkte Support-Endpoints (Submit a Request + Contact Support), aber der Deduplicator-Cap `support: 1` filtert den zweiten raus. Ergebnis: 50% Recall statt 100% fuer Support-Typ.
+**Falscher Code:**
+```typescript
+const TYPE_CAPS = { support: 1 };
+```
+**Richtiger Code:**
+```typescript
+const TYPE_CAPS = { support: 2 };
+```
+**Regel:** Type-Caps muessen die reale Varianz von Endpoints abbilden. Support-Sites haben oft "Submit Request" (Ticket) + "Contact" (Chat/Phone) als separate Flows.
