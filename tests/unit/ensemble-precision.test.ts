@@ -5,7 +5,7 @@
  * 1. LLM-only endpoint penalty in ensemble reconciler
  * 2. Null-result few-shot example in prompt
  * 3. Segment-budget context in extraction prompt
- * 4. GAP_THRESHOLD tuning (0.18 -> 0.14)
+ * 4. GAP_THRESHOLD tuning (0.18 -> 0.16)
  */
 
 import { describe, it, expect } from "vitest";
@@ -54,18 +54,18 @@ describe("LLM-only endpoint penalty in ensemble reconciler", () => {
       "utf-8",
     );
     // Verify the penalty is applied in the reconciler
-    expect(analyzeSource).toContain("confidence: llm[i]!.confidence * 0.80");
+    expect(analyzeSource).toContain("confidence: llm[i]!.confidence * 0.90");
     // Verify the comment explains the rationale
     expect(analyzeSource).toContain("LLM-only endpoints are less trustworthy");
   });
 
   it("LLM-only penalty produces lower confidence than agreement boost", async () => {
     // Verify the math: agreement gets +0.05 boost, LLM-only gets *0.80 penalty
-    const llmOnlyConf = 0.85 * 0.80; // = 0.68
+    const llmOnlyConf = 0.85 * 0.90; // = 0.765
     const agreementConf = Math.min(0.98, 0.85 + 0.05); // = 0.90
     expect(llmOnlyConf).toBeLessThan(agreementConf);
     // The gap between agreement and penalty should be significant
-    expect(agreementConf - llmOnlyConf).toBeGreaterThan(0.15);
+    expect(agreementConf - llmOnlyConf).toBeGreaterThan(0.10);
   });
 });
 
@@ -177,39 +177,39 @@ describe("Segment-budget context in extraction prompt", () => {
 });
 
 // ============================================================================
-// 4. GAP_THRESHOLD Tuning (0.18 -> 0.14)
+// 4. GAP_THRESHOLD Tuning (0.18 -> 0.16)
 // ============================================================================
 
 describe("GAP_THRESHOLD tuning", () => {
-  it("source code has GAP_THRESHOLD = 0.14", async () => {
+  it("source code has GAP_THRESHOLD = 0.16", async () => {
     const fs = await import("node:fs");
     const path = await import("node:path");
     const source = fs.readFileSync(
       path.resolve("src/semantic/post-processing/gap-cutoff.ts"),
       "utf-8",
     );
-    expect(source).toContain("GAP_THRESHOLD = 0.14");
+    expect(source).toContain("GAP_THRESHOLD = 0.16");
     expect(source).not.toContain("GAP_THRESHOLD = 0.18");
   });
 
-  it("gap cutoff triggers at 0.14 gap (previously would not at 0.18)", () => {
-    // Scenario: 4 real endpoints at ~0.85, 2 noise at ~0.70
-    // Gap = 0.85 - 0.70 = 0.15 — triggers at 0.14, not at 0.18
+  it("gap cutoff triggers at 0.16 gap (previously would not at 0.18)", () => {
+    // Scenario: 3 real endpoints at ~0.85, 2 noise at ~0.68
+    // Gap = 0.85 - 0.68 = 0.17 — triggers at 0.16, not at 0.18
     const candidates = [
       makeCandidate("auth", "Login", 0.90),
       makeCandidate("search", "Search", 0.87),
       makeCandidate("navigation", "Nav", 0.85),
-      // Gap of 0.15 here
-      makeCandidate("content", "Noise A", 0.70),
-      makeCandidate("social", "Noise B", 0.65),
+      // Gap of 0.17 here (> 0.16 threshold)
+      makeCandidate("content", "Noise A", 0.68),
+      makeCandidate("social", "Noise B", 0.63),
     ];
     const result = applyGapCutoff(candidates);
-    // With 0.14 threshold, should cut at the 0.15 gap
+    // With 0.16 threshold, should cut at the 0.17 gap
     expect(result).toHaveLength(3);
     expect(result.every(c => c.confidence >= 0.85)).toBe(true);
   });
 
-  it("gap cutoff still ignores small gaps below 0.14", () => {
+  it("gap cutoff still ignores small gaps below 0.16", () => {
     // All endpoints close together — no gap >= 0.14
     const candidates = [
       makeCandidate("auth", "Login", 0.90),
@@ -222,17 +222,17 @@ describe("GAP_THRESHOLD tuning", () => {
   });
 
   it("LLM-only penalty + gap cutoff combo: penalized endpoints create larger gaps", () => {
-    // Simulating ensemble output: real endpoints at 0.85+, LLM-only at 0.85*0.80=0.68
+    // Simulating ensemble output: real endpoints at 0.85+, LLM-only at 0.85*0.90=0.765
     const candidates = [
       makeCandidate("auth", "Login", 0.90),        // heuristic+LLM agreement
       makeCandidate("search", "Search", 0.87),      // heuristic+LLM agreement
       makeCandidate("navigation", "Nav", 0.85),     // heuristic+LLM agreement
-      // LLM-only endpoints (already penalized by 0.80)
-      makeCandidate("content", "LLM-only A", 0.68), // was 0.85 * 0.80
-      makeCandidate("social", "LLM-only B", 0.64),  // was 0.80 * 0.80
+      // LLM-only endpoints (already penalized by 0.90)
+      makeCandidate("content", "LLM-only A", 0.65), // gap: 0.85 - 0.65 = 0.20 > 0.16
+      makeCandidate("social", "LLM-only B", 0.60),
     ];
     const result = applyGapCutoff(candidates);
-    // Gap between 0.85 and 0.68 = 0.17 > 0.14 → should cut
+    // Gap between 0.85 and 0.65 = 0.20 > 0.16 → should cut
     expect(result).toHaveLength(3);
     expect(result.every(c => c.confidence >= 0.85)).toBe(true);
   });

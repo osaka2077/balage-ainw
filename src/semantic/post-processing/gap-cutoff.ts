@@ -42,7 +42,7 @@ const MIN_ENDPOINTS = 3;
  * penalized endpoints have lower confidence, creating larger gaps that this
  * threshold catches. 0.18 was too conservative after penalty introduction.
  */
-const GAP_THRESHOLD = 0.14;
+const GAP_THRESHOLD = 0.16;
 
 /**
  * Wendet Gap-basierten Confidence-Cutoff an.

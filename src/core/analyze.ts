@@ -271,7 +271,7 @@ function reconcileEnsembleResults(
     if (!isDup) {
       result.push({
         ...llm[i]!,
-        confidence: llm[i]!.confidence * 0.80,
+        confidence: llm[i]!.confidence * 0.90,
       });
     }
   }
