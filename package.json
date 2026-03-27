@@ -1,6 +1,6 @@
 {
   "name": "balage",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "description": "AI-native Interface Infrastructure — Semantic & Verified UI Context Layer",
   "license": "MIT",
   "type": "module",
