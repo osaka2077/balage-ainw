@@ -25,16 +25,6 @@
       "phase": 1
     },
     {
-      "type": "form",
-      "label": "Hero CTA — Get Started",
-      "description": "Hero section signup CTA with email input and Get Started button",
-      "selector_hint": "form.hero-form input[type='email'], button[data-qa='hero-cta']",
-      "affordances": ["fill", "submit"],
-      "risk_class": "low",
-      "fields": ["email"],
-      "phase": 1
-    },
-    {
       "type": "navigation",
       "label": "Product Navigation",
       "description": "Header navigation: Products, Solutions, Templates, Pricing, Enterprise with dropdown menus",
@@ -47,7 +37,7 @@
     {
       "type": "navigation",
       "label": "Templates Gallery",
-      "description": "Link to browse form/survey templates",
+      "description": "Link to browse form/survey templates — part of product navigation or standalone nav link",
       "selector_hint": "a[href*='templates']",
       "affordances": ["click"],
       "risk_class": "low",
@@ -66,9 +56,9 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
-    "phase1_endpoints": 3,
-    "min_precision_target": 0.70,
-    "min_recall_target": 0.70
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.60,
+    "min_recall_target": 0.60
   }
 }

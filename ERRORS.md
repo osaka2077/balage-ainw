@@ -132,3 +132,36 @@ const SAFETY_CAP = 10;
 const SAFETY_CAP = 8;
 ```
 **Regel:** SAFETY_CAP muss an der realen Ground-Truth-Verteilung kalibriert sein. 95% der Sites haben <=8 echte Endpoints. Der Cap ist die letzte Verteidigungslinie wenn der Gap-Cutoff nicht greift.
+
+### ERR-011: applySiteSpecificCorrections wird nie aufgerufen (toter Code)
+**Datum:** 2026-03-27
+**Problem:** `applySiteSpecificCorrections()` ist nur innerhalb `runPostProcessing()` registriert, aber `runPostProcessing()` wird nirgendwo importiert oder aufgerufen. Die gesamten site-specific Corrections (Booking checkout->search, OneTrust consent, Zendesk auth->support) waren toter Code und hatten keinen Effekt in Production.
+**Falscher Code:**
+```typescript
+// endpoint-generator.ts importiert nur:
+import { applyTypeCorrections, applyConfidencePenalties, ... } from "./post-processing/index.js";
+// applySiteSpecificCorrections fehlt im Import und Aufruf!
+```
+**Richtiger Code:**
+```typescript
+// Workaround: Kritische Regeln in applyTypeCorrections integriert (type-corrector.ts),
+// da endpoint-generator.ts nicht geaendert werden durfte.
+// Langfristig: endpoint-generator.ts sollte runPostProcessing() nutzen
+// oder applySiteSpecificCorrections explizit importieren und aufrufen.
+```
+**Regel:** Neue Post-Processing-Module muessen in der tatsaechlich aufgerufenen Pipeline registriert werden. `runPostProcessing()` existiert als Orchestrator, wird aber von keinem Aufrufer genutzt — ein klassischer Dead-Code-Fall.
+
+### ERR-012: CART_EVIDENCE false positive fuer "checkout" auf Travel-Sites
+**Datum:** 2026-03-27
+**Problem:** `CART_EVIDENCE = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i` matcht "checkout" auch im Kontext von Check-OUT-Daten (Abreise) auf Travel-Sites wie Booking.com. Das blockiert die checkout->search Korrektur, weil die Pipeline denkt es gibt echte Cart-Evidence.
+**Falscher Code:**
+```typescript
+const CART_EVIDENCE = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i;
+// "checkout" als Wort fuer Abreise-Datum triggert false positive
+```
+**Richtiger Code:**
+```typescript
+const PRECISE_CART_EVIDENCE = /\bcart\b|basket|warenkorb|shopping.?bag|add.to.bag|add.to.cart|checkout.?form|einkaufswagen|zur.?kasse/i;
+// Praeziser: "checkout" nur im Kontext "checkout form", nicht "checkout date"
+```
+**Regel:** Cart-Detection-Regex muss zwischen "checkout" (Shopping) und "check-out" (Travel-Datum) unterscheiden. Generische Regex fuer Rueckwaerts-Kompatibilitaet beibehalten, praezisere Version fuer Travel-Site-Corrections nutzen.

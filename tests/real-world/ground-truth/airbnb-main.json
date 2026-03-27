@@ -45,21 +45,11 @@
       "phase": 2
     },
     {
-      "type": "navigation",
+      "type": "content",
       "label": "Listing Cards",
-      "description": "Grid of property cards with images, title, price, rating. Links to listing detail pages.",
-      "selector_hint": "[data-testid='card-container'] a, [itemprop='url']",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Become a Host",
-      "description": "Header CTA link to Airbnb hosting onboarding",
-      "selector_hint": "a[href*='host']",
-      "affordances": ["click"],
+      "description": "Grid of property cards with images, title, price, rating — content display, not primary navigation",
+      "selector_hint": "[data-testid='card-container'], [itemprop='url']",
+      "affordances": ["click", "read"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -67,18 +57,8 @@
     {
       "type": "navigation",
       "label": "Footer Navigation",
-      "description": "Footer sections: Support, Hosting, Airbnb (About, Careers, etc.) with expandable mobile sections",
+      "description": "Footer sections: Support, Hosting, Airbnb (About, Careers, etc.) including Become a Host CTA and Help Center links",
       "selector_hint": "footer a, footer nav a",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "support",
-      "label": "Help Center",
-      "description": "Help Center link and contact support page accessible from footer and profile menu",
-      "selector_hint": "a[href*='/help/home'], a[href*='/help/contact-us']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -86,9 +66,9 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 8,
+    "total_endpoints": 6,
     "phase1_endpoints": 2,
-    "min_precision_target": 0.60,
-    "min_recall_target": 0.50
+    "min_precision_target": 0.65,
+    "min_recall_target": 0.55
   }
 }

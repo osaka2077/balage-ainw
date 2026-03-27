@@ -35,11 +35,11 @@
       "phase": 2
     },
     {
-      "type": "navigation",
-      "label": "Story Metadata Links",
-      "description": "Per-story links: points, author profile, timestamp, comment count/discussion page",
-      "selector_hint": ".subtext a",
-      "affordances": ["click"],
+      "type": "content",
+      "label": "Story Metadata",
+      "description": "Per-story metadata: points, author, timestamp, comment count — inline within table rows, not a standalone navigation pattern",
+      "selector_hint": ".subtext",
+      "affordances": ["read"],
       "risk_class": "low",
       "fields": [],
       "phase": 2

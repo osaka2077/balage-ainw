@@ -23,11 +23,14 @@ const STRONG_SUPPORT_LABEL = /submit.?a?.?request|contact.?support|open.?ticket|
 /** Auth-Evidence: Felder die nur auf echten Auth-Endpoints vorhanden sind */
 const AUTH_FIELD_EVIDENCE = /type="?password|type="?email|autocomplete="?(username|email|current-password|new-password)/i;
 
-/** OneTrust/CookieLaw Consent-Evidence (haeufig nur als CSS/Script im HTML) */
-const ONETRUST_EVIDENCE = /onetrust|cookielaw|cookie.?consent|ot-sdk-cookie/i;
+/** OneTrust/CookieLaw/Amazon-sp-cc Consent-Evidence (haeufig nur als CSS/Script im HTML) */
+const ONETRUST_EVIDENCE = /onetrust|cookielaw|cookie.?consent|ot-sdk-cookie|sp-cc|consent-js-stub/i;
 
-/** Consent-Label-Pattern */
-const CONSENT_LABEL_PATTERN = /cookie|consent|gdpr|privacy|datenschutz|tracking/i;
+/** Consent-Label-Pattern — erweitert um deutsche Buttons ohne "cookie" im Text */
+const CONSENT_LABEL_PATTERN = /cookie|consent|gdpr|privacy|datenschutz|tracking|akzeptieren|ablehnen|accept\s*all|reject\s*all/i;
+
+/** DOM-Evidence fuer Search-Box Pattern (data-testid, class, id mit searchbox/search-form) */
+const SEARCHBOX_DOM_EVIDENCE = /searchbox|search-box|search-form|data-testid="[^"]*search|data-testid="[^"]*destination|data-testid="[^"]*occupancy|data-testid="[^"]*date-display/i;
 
 /**
  * Travel-Label das faelschlich als checkout erkannt wird
@@ -56,8 +59,10 @@ const GERMAN_SUPPORT_LABEL = /anfrage.?einreichen|kundenservice|hilfe.?center|ko
  * Regeln:
  * 1. auth -> support (starkes Support-Label ohne Auth-Felder)
  * 2. checkout -> search (Travel-Label ohne praezise Cart-Evidence)
- * 3. settings/navigation -> consent (OneTrust/CookieLaw Evidence)
+ * 3. settings/navigation -> consent (OneTrust/CookieLaw/sp-cc Evidence)
  * 4. navigation/content -> support (Deutsche Support-Patterns)
+ * 5. checkout/commerce -> search (Searchbox-DOM-Evidence ohne Cart)
+ * 6. settings -> consent (Deutsche Consent-Labels: Akzeptieren/Ablehnen)
  */
 export function applySiteSpecificCorrections(
   candidates: EndpointCandidate[],
@@ -67,6 +72,7 @@ export function applySiteSpecificCorrections(
   const hasAuthFields = AUTH_FIELD_EVIDENCE.test(segText);
   const hasPreciseCart = PRECISE_CART_EVIDENCE.test(segText);
   const hasOnetrust = ONETRUST_EVIDENCE.test(segText);
+  const hasSearchboxDom = SEARCHBOX_DOM_EVIDENCE.test(segText);
 
   for (const candidate of candidates) {
     // Rule 1: auth -> support (Zendesk-Pattern)
@@ -92,8 +98,8 @@ export function applySiteSpecificCorrections(
       }
     }
 
-    // Rule 3: settings/navigation -> consent (OneTrust Pattern)
-    // Booking.com hat OneTrust-Consent-Banner die vom LLM als "settings" erkannt werden.
+    // Rule 3: settings/navigation -> consent (OneTrust / sp-cc Pattern)
+    // Booking.com hat OneTrust, Amazon hat sp-cc-Consent-Banner die als "settings" erkannt werden.
     if ((candidate.type === "settings" || candidate.type === "navigation") && hasOnetrust) {
       const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
       if (CONSENT_LABEL_PATTERN.test(candidateText)) {
@@ -108,6 +114,26 @@ export function applySiteSpecificCorrections(
       if (GERMAN_SUPPORT_LABEL.test(candidateText)) {
         candidate.type = "support";
         candidate.confidence *= 0.95;
+      }
+    }
+
+    // Rule 5: checkout/commerce -> search (Searchbox DOM-Evidence)
+    // Booking.com search form has data-testid="searchbox-*", destination, occupancy elements.
+    // LLM mis-classifies as checkout/commerce because of "book"/"booking" in context.
+    // Searchbox DOM patterns are strong evidence for search, not checkout.
+    if ((candidate.type === "checkout" || candidate.type === "commerce") && hasSearchboxDom && !hasPreciseCart) {
+      candidate.type = "search";
+      candidate.confidence *= 0.95;
+    }
+
+    // Rule 6: settings -> consent (Deutsche Consent-Labels ohne "cookie" im Label)
+    // Amazon DE hat "Cookie Consent Banner" als settings erkannt, mit sp-cc-accept
+    // und Buttons "Akzeptieren"/"Ablehnen" — aber das OneTrust-Pattern greift nicht
+    // weil sp-cc kein OneTrust ist. Pruefe: settings + Consent-Label im Candidate.
+    if (candidate.type === "settings") {
+      const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
+      if (CONSENT_LABEL_PATTERN.test(candidateText)) {
+        candidate.type = "consent";
       }
     }
   }

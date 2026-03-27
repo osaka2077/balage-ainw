@@ -166,15 +166,17 @@ export function collectDomSignals(root: DomNode): DomSignals {
 
     // Cookie-Consent / GDPR-Banner Erkennung
     const consentPattern = /cookie|consent|gdpr|privacy|datenschutz/i;
+    // Erweitert um Amazon sp-cc Pattern (sp-cc = "special cookie consent")
+    const consentIdPattern = /cookie|consent|gdpr|privacy|datenschutz|sp-cc/i;
     const hasConsentRole = role === "dialog" || role === "alertdialog";
-    const hasConsentId = consentPattern.test(attrs["id"] ?? "");
+    const hasConsentId = consentIdPattern.test(attrs["id"] ?? "");
     const hasConsentClass = consentPattern.test(attrs["class"] ?? "");
 
     if (
       (hasConsentRole || hasConsentId || hasConsentClass)
-      && consentPattern.test(
+      && (consentPattern.test(
         [attrs["aria-label"] ?? "", node.textContent ?? ""].join(" "),
-      )
+      ) || consentIdPattern.test(attrs["id"] ?? ""))
     ) {
       signals.hasCookieConsent = true;
     }
@@ -184,13 +186,18 @@ export function collectDomSignals(root: DomNode): DomSignals {
       signals.hasCookieConsent = true;
     }
 
-    // Consent-Buttons: "accept all", "reject", "alle akzeptieren" etc.
+    // Consent-Buttons: "accept all", "reject", "alle akzeptieren", "akzeptieren" etc.
     if (
       tag === "button"
       || (tag === "input" && (type === "submit" || type === "button"))
     ) {
       const btnLabel = (node.textContent ?? attrs["value"] ?? attrs["aria-label"] ?? "").toLowerCase();
+      const btnId = (attrs["id"] ?? "").toLowerCase();
       if (/accept\s*all|reject\s*all?|alle\s*akzeptieren|alle\s*ablehnen|cookie\s*settings/i.test(btnLabel)) {
+        signals.hasConsentButtons = true;
+      }
+      // Einfaches "Akzeptieren"/"Ablehnen" mit consent-bezogener ID (z.B. sp-cc-accept)
+      if (/\bakzeptieren\b|\bablehnen\b/i.test(btnLabel) && /consent|cookie|sp-cc|gdpr|privacy/i.test(btnId)) {
         signals.hasConsentButtons = true;
       }
     }

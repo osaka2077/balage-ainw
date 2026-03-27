@@ -9,6 +9,12 @@ import type { EndpointCandidate } from "../types.js";
 
 // Evidence-Pattern Regexes (Modul-Level fuer Performance)
 const CART_EVIDENCE = /cart|basket|warenkorb|bag|checkout|einkaufswagen/i;
+/**
+ * Praezise Cart-Evidence: Nur echte Shopping-Cart-Patterns.
+ * "checkout" allein reicht NICHT — bei Travel-Sites ist checkout = Abreisedatum.
+ * "bag" allein reicht NICHT — muss "shopping bag" oder "add to bag" sein.
+ */
+const PRECISE_CART_EVIDENCE = /\bcart\b|basket|warenkorb|shopping.?bag|add.to.bag|add.to.cart|add.to.basket|checkout.?form|einkaufswagen|zur.?kasse/i;
 
 const SEARCH_EVIDENCE_DOM = /type="?search|role="?search|placeholder="[^"]*search|aria-label="[^"]*search|name="?q"?|name="?query"?|name="?s"?|placeholder="[^"]*such|placeholder="[^"]*find/i;
 const SEARCH_EVIDENCE_INPUT = /input.*search|search.*input|searchbar|search-bar|search_bar/i;
@@ -21,8 +27,8 @@ const SEARCH_EVIDENCE_METHOD = /method="?get/i;
 const BOOKING_STYLE_DATE = /check.?in|departure|arrival/i;
 const BOOKING_STYLE_DEST = /destination|where.*going|guests?|rooms?|reiseziel/i;
 
-const CONSENT_LABEL = /cookie|consent|gdpr|privacy|datenschutz|tracking/;
-const CONSENT_SEGMENT = /cookie|consent|gdpr|datenschutz|accept\s*all|reject\s*all|alle\s*akzeptieren/i;
+const CONSENT_LABEL = /cookie|consent|gdpr|privacy|datenschutz|tracking/i;
+const CONSENT_SEGMENT = /cookie|consent|gdpr|datenschutz|accept\s*all|reject\s*all|alle\s*akzeptieren|onetrust|cookielaw|sp-cc/i;
 
 const LANGUAGE_LABEL = /language|locale|sprache|idioma|langue/i;
 const REAL_SETTINGS_UI = /toggle|switch|checkbox|radio|slider|preference|einstellung/i;
@@ -37,6 +43,9 @@ const SEARCH_LABEL = /search|property|destination|reise|suche|find|lookup|filter
 
 const TRAVEL_LABEL = /\b(accommodat|hotel|flight|booking|reserv|reise|flug|unterkunft|destination|check.?in|check.?out.?date|travel|trip|guest|passenger)/i;
 const CART_LABEL_EVIDENCE = /\b(cart|warenkorb|basket|bag|add.to)/i;
+
+/** Searchbox-DOM-Evidence: data-testid mit searchbox/destination/occupancy Patterns */
+const SEARCHBOX_DOM_EVIDENCE = /searchbox|search-box|search-form|data-testid="[^"]*searchbox|data-testid="[^"]*destination-container|data-testid="[^"]*occupancy/i;
 
 /**
  * Prueft ob Segment DOM-Evidence fuer Search enthalt.
@@ -70,6 +79,7 @@ export function hasCartEvidence(segText: string): boolean {
  *
  * Reihenfolge der Regeln:
  * 1. checkout -> search (Booking/Travel ohne Cart via DOM)
+ * 1b. checkout/commerce -> search (Searchbox-DOM-Evidence ohne praezise Cart)
  * 2. checkout -> search (Label-basiert ohne Cart)
  * 3. checkout/commerce -> search (Travel/Booking Label ohne Cart)
  * 4. settings -> consent (Cookie/GDPR Keywords)
@@ -84,14 +94,26 @@ export function applyTypeCorrections(
 ): void {
   const segText = segmentText.toLowerCase();
   const cartEv = hasCartEvidence(segText);
+  const preciseCartEv = PRECISE_CART_EVIDENCE.test(segText);
   const searchEv = hasSearchEvidence(segText);
   const bookingSearch = isBookingStyleSearch(segText);
+  const hasSearchboxDom = SEARCHBOX_DOM_EVIDENCE.test(segText);
 
   for (const candidate of candidates) {
     // checkout -> search (Booking/Travel)
     if (candidate.type === "checkout" && !cartEv) {
       if (searchEv || bookingSearch) {
         candidate.type = "search";
+      }
+    }
+    // checkout/commerce -> search (Searchbox-DOM-Evidence ohne praezise Cart)
+    // Travel-Sites wie Booking.com haben "checkout" im Text (= Check-out-Datum),
+    // das den generischen cartEv-Check triggert. Searchbox-DOM-Patterns wie
+    // data-testid="searchbox-*" sind starke Evidence fuer Search, nicht Cart.
+    if ((candidate.type === "checkout" || candidate.type === "commerce") && !preciseCartEv) {
+      if (hasSearchboxDom || (searchEv && bookingSearch)) {
+        candidate.type = "search";
+        candidate.confidence *= 0.95;
       }
     }
     // checkout -> search (label-based)

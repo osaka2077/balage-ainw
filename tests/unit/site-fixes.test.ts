@@ -411,3 +411,123 @@ describe("Fix 3: CTA-Gate in heuristic analyzer", () => {
     expect(result!.confidence).toBe(0.70);
   });
 });
+
+// ============================================================================
+// Fix 6: Amazon sp-cc Consent-Erkennung (heuristic-analyzer)
+// ============================================================================
+
+describe("Fix 6: Amazon sp-cc consent detection", () => {
+  it("recognizes sp-cc-accept as consent button", () => {
+    // Amazon hat input id="sp-cc-accept" mit aria-label="Akzeptieren"
+    const consentButton = makeDomNode({
+      tagName: "input",
+      attributes: {
+        type: "submit",
+        id: "sp-cc-accept",
+        "aria-label": "Akzeptieren",
+        value: "Akzeptieren",
+      },
+      isInteractive: true,
+    });
+    const consentWrapper = makeDomNode({
+      tagName: "div",
+      attributes: { id: "sp-cc" },
+      children: [consentButton],
+    });
+    const segment = makeSegment({
+      type: "content",
+      interactiveElementCount: 1,
+      nodes: [consentWrapper],
+    });
+    const fullDom = makeDomNode({ children: [consentWrapper] });
+
+    const result = classifySegmentHeuristically(segment, fullDom);
+    expect(result).not.toBeNull();
+    expect(result!.type).toBe("consent");
+  });
+
+  it("recognizes Ablehnen with sp-cc ID as consent button", () => {
+    const rejectButton = makeDomNode({
+      tagName: "input",
+      attributes: {
+        type: "submit",
+        id: "sp-cc-rejectall-link",
+        "aria-label": "Ablehnen",
+        value: "Ablehnen",
+      },
+      isInteractive: true,
+    });
+    const consentWrapper = makeDomNode({
+      tagName: "div",
+      attributes: { id: "sp-cc" },
+      children: [rejectButton],
+    });
+    const segment = makeSegment({
+      type: "content",
+      interactiveElementCount: 1,
+      nodes: [consentWrapper],
+    });
+    const fullDom = makeDomNode({ children: [consentWrapper] });
+
+    const result = classifySegmentHeuristically(segment, fullDom);
+    expect(result).not.toBeNull();
+    expect(result!.type).toBe("consent");
+  });
+});
+
+// ============================================================================
+// Fix 7: Searchbox DOM Evidence (type-corrector)
+// ============================================================================
+
+describe("Fix 7: Searchbox DOM evidence for travel sites", () => {
+  it("corrects checkout with searchbox data-testid to search", () => {
+    const candidates = [
+      makeCandidate("checkout", "Book Accommodation", 0.85, "Search and book hotels"),
+    ];
+    // "checkout" appears as date keyword, but searchbox DOM is present
+    const segText = 'data-testid="searchbox-layout-wide" check-in checkout destination guests';
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("search");
+  });
+
+  it("does not correct when genuine cart evidence present", () => {
+    const candidates = [
+      makeCandidate("checkout", "Shopping Cart", 0.9, "Your cart items"),
+    ];
+    // Has searchbox pattern BUT also real cart evidence
+    const segText = 'data-testid="searchbox-layout" add to cart warenkorb';
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("checkout");
+  });
+});
+
+// ============================================================================
+// Fix 8: Site-specific settings -> consent (Rule 6)
+// ============================================================================
+
+describe("Fix 8: settings -> consent with consent label (site-specific)", () => {
+  it("corrects settings to consent when label has Cookie keyword", () => {
+    const candidates = [
+      makeCandidate("settings", "Cookie Consent Banner", 0.85, "Privacy cookie settings"),
+    ];
+    // Kein OneTrust, aber der Label selbst hat "Cookie Consent"
+    applySiteSpecificCorrections(candidates, "some page content without onetrust");
+    expect(candidates[0]!.type).toBe("consent");
+  });
+
+  it("corrects settings with sp-cc segment evidence", () => {
+    const candidates = [
+      makeCandidate("settings", "Privacy Banner", 0.80, "Accept or reject"),
+    ];
+    applySiteSpecificCorrections(candidates, "sp-cc-accept akzeptieren sp-cc-wrapper");
+    expect(candidates[0]!.type).toBe("consent");
+  });
+
+  it("does not correct settings without consent keywords in label or segment", () => {
+    const candidates = [
+      makeCandidate("settings", "Theme Selector", 0.80, "Choose dark or light mode"),
+    ];
+    applySiteSpecificCorrections(candidates, "generic page without consent markers");
+    expect(candidates[0]!.type).toBe("settings");
+  });
+});

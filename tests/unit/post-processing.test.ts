@@ -117,6 +117,51 @@ describe("applyTypeCorrections", () => {
     applyTypeCorrections(candidates, "some text");
     expect(candidates).toHaveLength(0);
   });
+
+  // --- Neue Tests fuer Booking/Amazon/Travel Fixes ---
+
+  it("corrects checkout to search with searchbox DOM evidence (Booking pattern)", () => {
+    const candidates = [makeCandidate("checkout", "Accommodation Search", 0.85, "Search for hotels")];
+    // Segment enthaelt "checkout" (Check-out-Datum) UND searchbox DOM-Evidence
+    const segText = 'data-testid="searchbox-form-button-icon" destination check-in checkout date guests';
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("search");
+  });
+
+  it("corrects commerce to search with searchbox DOM evidence (Booking pattern)", () => {
+    const candidates = [makeCandidate("commerce", "Booking Search", 0.80, "Book accommodation")];
+    const segText = 'data-testid="searchbox-layout-wide" data-testid="destination-container" data-testid="occupancy-config"';
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("search");
+  });
+
+  it("does not correct checkout to search with searchbox evidence when real cart present", () => {
+    const candidates = [makeCandidate("checkout", "Shopping Cart", 0.85, "Your items")];
+    // Reale Cart-Evidence (nicht nur "checkout")
+    const segText = 'data-testid="searchbox-layout" add to cart warenkorb';
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("checkout");
+  });
+
+  it("corrects settings to consent with OneTrust segment evidence", () => {
+    const candidates = [makeCandidate("settings", "Banner Controls", 0.80, "Manage settings")];
+    const segText = "onetrust-banner-sdk accept all cookies";
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("consent");
+  });
+
+  it("corrects settings to consent with sp-cc segment evidence", () => {
+    const candidates = [makeCandidate("settings", "Privacy Controls", 0.80, "Manage consent")];
+    const segText = "sp-cc-accept akzeptieren ablehnen";
+    applyTypeCorrections(candidates, segText);
+    expect(candidates[0]!.type).toBe("consent");
+  });
+
+  it("corrects settings to consent with Cookie label (case insensitive)", () => {
+    const candidates = [makeCandidate("settings", "Cookie Consent Banner", 0.80, "Privacy settings for cookies")];
+    applyTypeCorrections(candidates, "some page content with sp-cc-wrapper");
+    expect(candidates[0]!.type).toBe("consent");
+  });
 });
 
 // ============================================================================

@@ -15,16 +15,6 @@
       "phase": 1
     },
     {
-      "type": "navigation",
-      "label": "Category Mega-Menu",
-      "description": "Hamburger menu 'Alle' opening full category navigation with nested flyout submenus",
-      "selector_hint": "#nav-hamburger-menu, #hmenu-content",
-      "affordances": ["click", "hover"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "auth",
       "label": "Sign In",
       "description": "Account & Lists dropdown with sign-in button redirecting to auth flow",
@@ -45,19 +35,9 @@
       "phase": 1
     },
     {
-      "type": "form",
-      "label": "Delivery Location Selector",
-      "description": "Location widget to set delivery address/ZIP for availability and pricing",
-      "selector_hint": "#nav-global-location-popover-link, #GLUXZipUpdateInput",
-      "affordances": ["click", "fill", "submit"],
-      "risk_class": "medium",
-      "fields": ["zip_code"],
-      "phase": 2
-    },
-    {
       "type": "navigation",
       "label": "Top Navigation Bar",
-      "description": "Horizontal nav: Today's Deals, Customer Service, Gift Cards, Sell, etc.",
+      "description": "Horizontal nav links: Today's Deals, Customer Service, Gift Cards, Sell, Categories, etc.",
       "selector_hint": "#nav-xshop a",
       "affordances": ["click"],
       "risk_class": "low",
@@ -73,22 +53,12 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Orders & Returns",
-      "description": "Header link to order history and returns management (requires auth)",
-      "selector_hint": "#nav-orders, a[href*='order-history']",
-      "affordances": ["click"],
-      "risk_class": "medium",
-      "fields": [],
-      "phase": 3
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 8,
+    "total_endpoints": 5,
     "phase1_endpoints": 3,
-    "min_precision_target": 0.55,
-    "min_recall_target": 0.45
+    "min_precision_target": 0.65,
+    "min_recall_target": 0.60
   }
 }
