@@ -95,6 +95,10 @@ docs/cli-reference.md
 WAVE*.md
 REFACTORING-WAVE-PLAN.md
 
+# Benchmark run results (generated per-run, not versioned)
+tests/real-world/benchmark-results-*.json
+tests/real-world/vision-baseline-results-*.json
+
 # Temp
 tmp/
 *.tmp
