@@ -388,6 +388,18 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
       reasoning: "Header with navigation + support links. Support actions are distinct from navigation.",
     },
   },
+  // Example 9: Decorative/content-only section — ZERO endpoints
+  {
+    input: `SEGMENT [content] confidence=0.6
+  DIV[class="hero-banner"]
+    HEADING(1): "Welcome to our site"
+    TEXT: "We make great things happen. Trusted by thousands of customers worldwide."
+    IMG[src="hero.jpg", alt="Hero banner"]`,
+    output: {
+      endpoints: [],
+      reasoning: "No interactive elements. Decorative content only — no forms, buttons, links, or inputs. Not every segment contains endpoints.",
+    },
+  },
 ];
 
 // ============================================================================
@@ -457,6 +469,29 @@ export function buildExtractionPrompt(
   parts.push(prunedSegment.textRepresentation);
   parts.push("```");
   parts.push("");
+
+  // Segment-Budget: give the LLM context about page size to prevent over-generation
+  if (allSegments && allSegments.length > 0) {
+    const currentIndex = allSegments.findIndex(
+      (s) => s.type === prunedSegment.segmentType && s.label === prunedSegment.segmentId,
+    );
+    // Fallback: derive index from segment ID position or use 0
+    const displayIndex = currentIndex >= 0 ? currentIndex + 1 : undefined;
+    parts.push("## Endpoint Budget");
+    if (displayIndex) {
+      parts.push(
+        `This page has ${allSegments.length} segments. You are analyzing segment ${displayIndex}/${allSegments.length}.`,
+      );
+    } else {
+      parts.push(
+        `This page has ${allSegments.length} segments total.`,
+      );
+    }
+    parts.push(
+      "A typical page has 4-7 important endpoints total. Be selective — only return endpoints that represent genuinely distinct interactive features, not decorative or redundant elements.",
+    );
+    parts.push("");
+  }
 
   parts.push("## Your Task");
   parts.push(

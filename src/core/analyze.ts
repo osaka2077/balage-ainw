@@ -259,6 +259,8 @@ function reconcileEnsembleResults(
   }
 
   // Step 2: Add LLM-only endpoints (sub-endpoints the heuristic missed)
+  // LLM-only endpoints are less trustworthy — penalize confidence so they
+  // are more likely to fall below the gap-cutoff threshold.
   for (let i = 0; i < llm.length; i++) {
     if (usedLLM.has(i)) continue;
     // Check not a duplicate of something already in result
@@ -267,7 +269,10 @@ function reconcileEnsembleResults(
       r.label.toLowerCase() === llm[i]!.label.toLowerCase(),
     );
     if (!isDup) {
-      result.push(llm[i]!);
+      result.push({
+        ...llm[i]!,
+        confidence: llm[i]!.confidence * 0.80,
+      });
     }
   }
 

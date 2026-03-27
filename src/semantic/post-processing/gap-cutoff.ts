@@ -38,10 +38,11 @@ const MIN_ENDPOINTS = 3;
 
 /**
  * Minimaler Confidence-Gap um als Trennlinie zu gelten.
- * 0.18 erfordert einen deutlichen Sprung — verhindert aggressive Schnitte
- * bei moderaten Confidence-Unterschieden (0.12 war zu niedrig).
+ * 0.14 works with the LLM-only penalty (0.80x) in the ensemble reconciler:
+ * penalized endpoints have lower confidence, creating larger gaps that this
+ * threshold catches. 0.18 was too conservative after penalty introduction.
  */
-const GAP_THRESHOLD = 0.18;
+const GAP_THRESHOLD = 0.14;
 
 /**
  * Wendet Gap-basierten Confidence-Cutoff an.
