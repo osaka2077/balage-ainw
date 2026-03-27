@@ -32,6 +32,16 @@ export interface DomSignals {
   formAction: string | undefined;
   ariaLabel: string | undefined;
   placeholders: string[];
+  /** Auth-relevante Links (a-Tags mit sign-up/register/login Text) */
+  authLinkTexts: string[];
+  /** Pagination-Links (a-Tags mit next/more/page Pattern) */
+  paginationLinks: Array<{ text: string; nodeIndex: number }>;
+  /** Footer-Bereich: Anzahl Links in <footer> oder role="contentinfo" */
+  footerLinkCount: number;
+  /** Ob das Segment ein <footer> oder role="contentinfo" Element enthaelt */
+  hasFooterElement: boolean;
+  /** Gesamtzahl der besuchten Nodes (fuer Position-Berechnung) */
+  totalNodeCount: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -57,6 +67,15 @@ export const SEGMENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export const VALID_ENDPOINT_TYPES = new Set<EndpointType>(["auth","form","search","navigation","checkout","commerce","content","consent","support","media","social","settings"]);
+
+/** Auth-relevante Link-Texte: einzelne Links die zu Auth-Flows fuehren */
+export const AUTH_LINK_PATTERN = /\b(sign\s*up|register|create\s*account|join\s*now|sign\s*in|log\s*in|anmelden|registrieren|konto\s*erstellen|my\s+account)\b/i;
+
+/** SSO/OAuth-Pattern: Links die bereits Teil eines SSO-Flows sind (kein separater Auth-Endpoint) */
+const SSO_LINK_PATTERN = /\b(sign\s*in\s*with|log\s*in\s*with|continue\s*with|anmelden\s*mit)\b/i;
+
+/** Pagination-Pattern: Links die zur naechsten Seite fuehren */
+export const PAGINATION_PATTERN = /\b(next|more|next\s*page|weitere|n(?:ae|ä)chste|page\s*\d|seite\s*\d|load\s*more|show\s*more)\b/i;
 
 // ---------------------------------------------------------------------------
 // DOM Walking & Signal Collection
@@ -92,6 +111,11 @@ export function collectDomSignals(root: DomNode): DomSignals {
     formAction: undefined,
     ariaLabel: undefined,
     placeholders: [],
+    authLinkTexts: [],
+    paginationLinks: [],
+    footerLinkCount: 0,
+    hasFooterElement: false,
+    totalNodeCount: 0,
   };
 
   walkDom(root, (node) => {
@@ -99,6 +123,19 @@ export function collectDomSignals(root: DomNode): DomSignals {
     const attrs = node.attributes ?? {};
     const type = (attrs["type"] ?? "").toLowerCase();
     const role = (attrs["role"] ?? "").toLowerCase();
+
+    signals.totalNodeCount++;
+
+    // Footer-Element erkennen: zaehle Links innerhalb separatem Walk
+    if (tag === "footer" || role === "contentinfo") {
+      signals.hasFooterElement = true;
+      let footerLinks = 0;
+      walkDom(node, (child) => {
+        if (child.tagName === "a") footerLinks++;
+      });
+      // Subtrahiere 0 weil das Footer-Element selbst kein Link ist
+      signals.footerLinkCount = Math.max(signals.footerLinkCount, footerLinks);
+    }
 
     // Inputs
     if (tag === "input" || tag === "textarea" || tag === "select") {
@@ -135,7 +172,20 @@ export function collectDomSignals(root: DomNode): DomSignals {
     }
 
     // Links
-    if (tag === "a") signals.linkCount++;
+    if (tag === "a") {
+      signals.linkCount++;
+      const linkText = (node.textContent ?? attrs["aria-label"] ?? "").trim();
+
+      // Auth-Link-Erkennung: einzelne Links mit auth-relevantem Text
+      if (linkText && AUTH_LINK_PATTERN.test(linkText) && !SSO_LINK_PATTERN.test(linkText)) {
+        signals.authLinkTexts.push(linkText);
+      }
+
+      // Pagination-Link-Erkennung
+      if (linkText && PAGINATION_PATTERN.test(linkText)) {
+        signals.paginationLinks.push({ text: linkText, nodeIndex: signals.totalNodeCount });
+      }
+    }
 
     // Buttons — Label sammeln
     if (
@@ -283,6 +333,21 @@ export function inferLabel(segmentType: string, signals: DomSignals): string {
     return "Authentication Form";
   }
 
+  // Auth-Links (einzelne a-Tags mit auth-Text, ohne Password-Felder)
+  if (signals.authLinkTexts.length > 0 && !signals.hasPasswordInput) {
+    const firstAuth = signals.authLinkTexts[0]!;
+    if (/sign\s*up|register|join\s*now|create\s*account|registrieren|konto\s*erstellen/i.test(firstAuth)) {
+      return "Registration / Sign-Up Link";
+    }
+    if (/sign\s*in|log\s*in|anmelden/i.test(firstAuth)) {
+      return "Login / Sign-In Link";
+    }
+    if (/my\s+account/i.test(firstAuth)) {
+      return "Account Link";
+    }
+    return "Auth Link";
+  }
+
   // Search
   if (signals.hasSearchRole || signals.hasSearchInput) {
     return "Search Form";
@@ -334,6 +399,16 @@ export function inferLabel(segmentType: string, signals: DomSignals): string {
   // Settings / Preferences
   if (signals.hasSettingsElement) {
     return "Settings / Preferences";
+  }
+
+  // Pagination-Links
+  if (signals.paginationLinks.length > 0) {
+    return "Pagination";
+  }
+
+  // Footer-Navigation
+  if (signals.hasFooterElement && signals.footerLinkCount >= 5) {
+    return "Footer Navigation";
   }
 
   // Navigation
@@ -494,6 +569,9 @@ export function buildEvidence(
   if (signals.hasProductData) evidence.push("Contains product data attributes");
   if (signals.hasSettingsElement) evidence.push("Contains settings controls (select/radio/toggle)");
   if (signals.hasCartLink) evidence.push("Contains cart/commerce link or icon");
+  if (signals.authLinkTexts.length > 0) evidence.push(`Auth link(s): ${signals.authLinkTexts.join(", ")}`);
+  if (signals.paginationLinks.length > 0) evidence.push(`Pagination link(s): ${signals.paginationLinks.map(p => p.text).join(", ")}`);
+  if (signals.hasFooterElement) evidence.push(`Footer with ${signals.footerLinkCount} links`);
   if (signals.formAction) evidence.push(`Form action: ${signals.formAction}`);
   evidence.push(
     `Interactive elements: ${signals.inputCount} inputs, ${signals.linkCount} links`,
@@ -548,7 +626,19 @@ export function classifySegmentHeuristically(
     return buildHeuristicEndpoint(segment, signals, "consent", 0.85);
   }
 
-  // Gate 4: Pure navigation (<nav> mit Links, keine Inputs)
+  // Gate 4: Auth-Links — einzelne Links mit auth-relevantem Text
+  // VOR Pure-Navigation, da Auth-Links spezifischer sind als generische Nav.
+  // NICHT triggern wenn: Segment bereits Auth-Signale hat (Password/Email-Inputs)
+  // NICHT triggern wenn: Link SSO-Pattern matcht ("Sign in with Google") — bereits im Signal ausgefiltert
+  if (
+    signals.authLinkTexts.length > 0
+    && !signals.hasPasswordInput
+    && !signals.hasEmailInput
+  ) {
+    return buildHeuristicEndpoint(segment, signals, "auth", 0.72);
+  }
+
+  // Gate 5: Pure navigation (<nav> mit Links, keine Inputs)
   if (
     segment.type === "navigation"
     && signals.linkCount >= 3
@@ -560,7 +650,7 @@ export function classifySegmentHeuristically(
     return buildHeuristicEndpoint(segment, signals, "navigation", 0.80);
   }
 
-  // Gate 5: CTA — Marketing-CTAs die zu Signup/Onboarding fuehren
+  // Gate 6: CTA — Marketing-CTAs die zu Signup/Onboarding fuehren
   const ctaPattern = /\b(get started|try.{0,5}free|start.{0,5}free|sign up free|start.*(trial|now)|jetzt starten|kostenlos (testen|starten)|free trial)\b/i;
   const hasCtaButton = signals.buttonLabels.some(lbl => ctaPattern.test(lbl));
   // Auch Links mit CTA-Pattern erkennen (headings oft = visuell prominente Links)
@@ -573,6 +663,22 @@ export function classifySegmentHeuristically(
     if (!hasAuthSignal && !hasFormSignal) {
       return buildHeuristicEndpoint(segment, signals, "form", 0.70);
     }
+  }
+
+  // Gate 7: Pagination-Links — "More", "Next Page" etc. am Seitenende (letztes 20% der Nodes)
+  if (signals.paginationLinks.length > 0 && signals.totalNodeCount > 0) {
+    const threshold = signals.totalNodeCount * 0.80;
+    const hasEndPagination = signals.paginationLinks.some(
+      p => p.nodeIndex >= threshold,
+    );
+    if (hasEndPagination) {
+      return buildHeuristicEndpoint(segment, signals, "navigation", 0.65);
+    }
+  }
+
+  // Gate 8: Footer-Navigation — <footer> oder role="contentinfo" mit 5+ Links
+  if (signals.hasFooterElement && signals.footerLinkCount >= 5) {
+    return buildHeuristicEndpoint(segment, signals, "navigation", 0.68);
   }
 
   // Keine sichere Heuristik → LLM benoetigt
