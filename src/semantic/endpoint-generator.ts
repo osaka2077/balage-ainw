@@ -153,7 +153,7 @@ export async function generateEndpoints(
   for (const candidate of filtered) {
     if (CONSENT_KEYWORDS.test(candidate.label)) {
       if (candidate.type !== "consent") {
-        candidate.type = "consent" as any;
+        candidate.type = "consent";
         candidate.confidence *= 0.7; // Penalty fuer korrigierten Typ
       }
     }
@@ -165,10 +165,13 @@ export async function generateEndpoints(
   // 8. Global Cap: Confidence-Gap-basiert statt fester Cap
   const sorted = deduped.sort((a, b) => b.confidence - a.confidence);
   const SAFETY_CAP = 10;
-  const MIN_ENDPOINTS = 5;
-  const GAP_THRESHOLD = 0.12;
+  const MIN_ENDPOINTS = 3;
+  const GAP_THRESHOLD = 0.18;
 
   // Finde den groessten Confidence-Gap (natuerliche Trennlinie zwischen echten und noise Endpoints)
+  // MIN_ENDPOINTS=3 garantiert dass kleine Sites (3-6 GT) nicht abgeschnitten werden.
+  // GAP_THRESHOLD=0.18 erfordert einen deutlichen Sprung um false positives zu entfernen,
+  // verhindert aber aggressive Schnitte bei moderaten Confidence-Unterschieden (0.12 war zu niedrig).
   let cutoffIndex = sorted.length;
   if (sorted.length > MIN_ENDPOINTS) {
     let maxGap = 0;

@@ -160,20 +160,57 @@ export async function analyzeFromHTML(
       }
     }
 
-    // Phase 2: LLM auf ALLEN Segmenten (parallel)
-    const llmResult = await runLLMAnalysis(
-      segments, llm, url, minConfidence, maxEndpoints,
-    );
+    // Multi-Run-Stabilisierung: Wenn BALAGE_RUNS gesetzt, fuehre N LLM-Runs
+    // parallel durch und verwende Majority-Vote um LLM-Varianz zu glaetten.
+    const runCount = parseInt(process.env["BALAGE_RUNS"] ?? "1", 10);
+    const effectiveRuns = Math.max(1, Math.min(runCount, 5)); // Cap bei 5
 
-    // Phase 3: Ensemble-Merge mit Confidence-Boost bei Uebereinstimmung
-    endpoints = reconcileEnsembleResults(heuristicEndpoints, llmResult.endpoints, maxEndpoints);
+    if (effectiveRuns > 1) {
+      // Phase 2a: N LLM-Runs parallel
+      const runPromises = Array.from({ length: effectiveRuns }, () =>
+        runLLMAnalysis(segments, llm, url, minConfidence, maxEndpoints),
+      );
+      const runResults = await Promise.allSettled(runPromises);
+      const successfulRuns = runResults
+        .filter((r): r is PromiseFulfilledResult<{ endpoints: DetectedEndpoint[]; llmCalls: number }> =>
+          r.status === "fulfilled",
+        )
+        .map(r => r.value);
 
-    logger.debug(
-      { heuristic: heuristicEndpoints.length, llm: llmResult.endpoints.length, merged: endpoints.length },
-      "Ensemble merge completed",
-    );
+      if (successfulRuns.length === 0) {
+        // Alle Runs fehlgeschlagen: Fallback auf Heuristik
+        logger.warn({ runs: effectiveRuns }, "All multi-run LLM calls failed, falling back to heuristic");
+        endpoints = heuristicEndpoints;
+      } else {
+        // Majority-Vote: Ein Endpoint zaehlt nur wenn er in >= ceil(N/2) Runs vorkommt
+        const majorityThreshold = Math.ceil(successfulRuns.length / 2);
+        const stabilized = stabilizeMultiRunResults(successfulRuns.map(r => r.endpoints), majorityThreshold);
 
-    llmCalls = llmResult.llmCalls;
+        // Phase 3: Ensemble-Merge mit stabilisierten LLM-Ergebnissen
+        endpoints = reconcileEnsembleResults(heuristicEndpoints, stabilized, maxEndpoints);
+        llmCalls = successfulRuns.reduce((sum, r) => sum + r.llmCalls, 0);
+
+        logger.debug(
+          { runs: successfulRuns.length, majorityThreshold, heuristic: heuristicEndpoints.length, stabilized: stabilized.length, merged: endpoints.length },
+          "Multi-run ensemble merge completed",
+        );
+      }
+    } else {
+      // Single-Run (default): Normaler Ensemble-Modus
+      const llmResult = await runLLMAnalysis(
+        segments, llm, url, minConfidence, maxEndpoints,
+      );
+
+      // Phase 3: Ensemble-Merge mit Confidence-Boost bei Uebereinstimmung
+      endpoints = reconcileEnsembleResults(heuristicEndpoints, llmResult.endpoints, maxEndpoints);
+
+      logger.debug(
+        { heuristic: heuristicEndpoints.length, llm: llmResult.endpoints.length, merged: endpoints.length },
+        "Ensemble merge completed",
+      );
+
+      llmCalls = llmResult.llmCalls;
+    }
   } else {
     endpoints = runHeuristicAnalysis(
       segments, dom, minConfidence, maxEndpoints,
@@ -273,6 +310,93 @@ function reconcileEnsembleResults(
   return result
     .sort((a, b) => b.confidence - a.confidence)
     .slice(0, maxEndpoints);
+}
+
+// ---------------------------------------------------------------------------
+// Multi-Run Stabilizer — Majority-Vote ueber N LLM-Runs
+// ---------------------------------------------------------------------------
+
+/**
+ * Stabilisiert LLM-Ergebnisse ueber mehrere Runs via Majority-Vote.
+ *
+ * Matching: Zwei Endpoints aus verschiedenen Runs "matchen" wenn sie
+ * den gleichen Typ haben UND ihre Labels aehnlich genug sind (Jaccard > 0.3).
+ *
+ * Majority-Vote: Ein Endpoint wird nur beibehalten wenn er in
+ * >= majorityThreshold Runs vorkommt.
+ *
+ * Confidence: Durchschnitt der Confidence-Werte aus den Runs wo er vorkam.
+ */
+function stabilizeMultiRunResults(
+  allRuns: DetectedEndpoint[][],
+  majorityThreshold: number,
+): DetectedEndpoint[] {
+  if (allRuns.length === 0) return [];
+  if (allRuns.length === 1) return allRuns[0]!;
+
+  // Sammle alle einzigartigen Endpoint-"Buckets" (type + fuzzy label)
+  interface EndpointBucket {
+    type: string;
+    /** Repraesentatives Label (aus dem Run mit hoechster Confidence) */
+    representative: DetectedEndpoint;
+    /** Confidence-Werte aus jedem Run in dem er vorkam */
+    confidences: number[];
+    /** Anzahl der Runs in denen er vorkam */
+    runCount: number;
+  }
+  const buckets: EndpointBucket[] = [];
+
+  for (const runEndpoints of allRuns) {
+    for (const ep of runEndpoints) {
+      // Suche bestehenden Bucket via type + label similarity
+      let matched = false;
+      for (const bucket of buckets) {
+        if (bucket.type !== ep.type) continue;
+
+        const bWords = new Set(bucket.representative.label.toLowerCase().split(/\s+/));
+        const eWords = new Set(ep.label.toLowerCase().split(/\s+/));
+        let overlap = 0;
+        for (const w of bWords) if (eWords.has(w)) overlap++;
+        const sim = overlap / Math.max(bWords.size, eWords.size);
+
+        if (sim > 0.3) {
+          bucket.confidences.push(ep.confidence);
+          bucket.runCount++;
+          // Update Representative wenn neuer Endpoint hoehere Confidence hat
+          if (ep.confidence > bucket.representative.confidence) {
+            bucket.representative = ep;
+          }
+          matched = true;
+          break;
+        }
+      }
+
+      if (!matched) {
+        buckets.push({
+          type: ep.type,
+          representative: ep,
+          confidences: [ep.confidence],
+          runCount: 1,
+        });
+      }
+    }
+  }
+
+  // Majority-Vote: Nur Endpoints behalten die in >= threshold Runs vorkamen
+  const stable = buckets
+    .filter(b => b.runCount >= majorityThreshold)
+    .map(b => ({
+      ...b.representative,
+      // Durchschnittliche Confidence ueber alle Runs
+      confidence: b.confidences.reduce((sum, c) => sum + c, 0) / b.confidences.length,
+    }));
+
+  logger.debug(
+    { totalBuckets: buckets.length, stableBuckets: stable.length, majorityThreshold },
+    "Multi-run stabilization completed",
+  );
+
+  return stable.sort((a, b) => b.confidence - a.confidence);
 }
 
 // ---------------------------------------------------------------------------
