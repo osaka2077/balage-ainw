@@ -366,39 +366,39 @@ describe("applyGapCutoff", () => {
   });
 
   it("respects dynamic safety cap based on candidate count", () => {
-    // 15 Candidates → cap = min(max(4, ceil(9)), 8) = 8
+    // 15 Candidates → cap = min(max(5, ceil(11.25)), 9) = 9
     const candidates = Array.from({ length: 15 }, (_, i) =>
       makeCandidate("navigation", `Nav ${i}`, 0.9 - i * 0.01),
     );
     const result = applyGapCutoff(candidates);
-    expect(result.length).toBeLessThanOrEqual(8);
+    expect(result.length).toBeLessThanOrEqual(9);
   });
 
-  it("applies stricter cap for fewer candidates (5 → cap 4)", () => {
-    // 5 Candidates, kein Gap → dynamicCap = max(4, ceil(3)) = 4
+  it("applies stricter cap for fewer candidates (5 → cap 5)", () => {
+    // 5 Candidates, kein Gap → dynamicCap = max(5, ceil(3.75)) = 5
     const candidates = Array.from({ length: 5 }, (_, i) =>
       makeCandidate("navigation", `Nav ${i}`, 0.9 - i * 0.01),
-    );
-    const result = applyGapCutoff(candidates);
-    expect(result.length).toBeLessThanOrEqual(4);
-  });
-
-  it("applies medium cap for 8 candidates (cap 5)", () => {
-    // 8 Candidates, kein Gap → dynamicCap = max(4, ceil(4.8)) = 5
-    const candidates = Array.from({ length: 8 }, (_, i) =>
-      makeCandidate("form", `Form ${i}`, 0.9 - i * 0.01),
     );
     const result = applyGapCutoff(candidates);
     expect(result.length).toBeLessThanOrEqual(5);
   });
 
-  it("applies cap 6 for 10 candidates", () => {
-    // 10 Candidates, kein Gap → dynamicCap = max(4, ceil(6)) = 6
+  it("applies medium cap for 8 candidates (cap 6)", () => {
+    // 8 Candidates, kein Gap → dynamicCap = max(5, ceil(6)) = 6
+    const candidates = Array.from({ length: 8 }, (_, i) =>
+      makeCandidate("form", `Form ${i}`, 0.9 - i * 0.01),
+    );
+    const result = applyGapCutoff(candidates);
+    expect(result.length).toBeLessThanOrEqual(6);
+  });
+
+  it("applies cap 8 for 10 candidates", () => {
+    // 10 Candidates, kein Gap → dynamicCap = max(5, ceil(7.5)) = 8
     const candidates = Array.from({ length: 10 }, (_, i) =>
       makeCandidate("content", `Content ${i}`, 0.9 - i * 0.01),
     );
     const result = applyGapCutoff(candidates);
-    expect(result.length).toBeLessThanOrEqual(6);
+    expect(result.length).toBeLessThanOrEqual(8);
   });
 });
 
@@ -407,30 +407,30 @@ describe("applyGapCutoff", () => {
 // ============================================================================
 
 describe("calculateDynamicCap", () => {
-  it("returns 4 for 5 candidates (floor)", () => {
-    // max(4, ceil(5 * 0.6)) = max(4, ceil(3.0)) = max(4, 3) = 4
-    expect(calculateDynamicCap(5)).toBe(4);
+  it("returns 5 for 5 candidates (floor)", () => {
+    // max(5, ceil(5 * 0.75)) = max(5, 4) = 5
+    expect(calculateDynamicCap(5)).toBe(5);
   });
 
-  it("returns 5 for 8 candidates", () => {
-    // max(4, ceil(8 * 0.6)) = max(4, ceil(4.8)) = max(4, 5) = 5
-    expect(calculateDynamicCap(8)).toBe(5);
+  it("returns 6 for 8 candidates", () => {
+    // max(5, ceil(8 * 0.75)) = max(5, 6) = 6
+    expect(calculateDynamicCap(8)).toBe(6);
   });
 
-  it("returns 6 for 10 candidates", () => {
-    // max(4, ceil(10 * 0.6)) = max(4, 6) = 6
-    expect(calculateDynamicCap(10)).toBe(6);
+  it("returns 8 for 10 candidates", () => {
+    // max(5, ceil(10 * 0.75)) = max(5, 8) = 8
+    expect(calculateDynamicCap(10)).toBe(8);
   });
 
-  it("returns 8 (clamped) for 15 candidates", () => {
-    // min(max(4, ceil(15 * 0.6)), 8) = min(max(4, 9), 8) = min(9, 8) = 8
-    expect(calculateDynamicCap(15)).toBe(8);
+  it("returns 9 (clamped) for 15 candidates", () => {
+    // min(max(5, ceil(15 * 0.75)), 9) = min(max(5, 12), 9) = 9
+    expect(calculateDynamicCap(15)).toBe(9);
   });
 
-  it("returns 4 for very small candidate counts", () => {
-    expect(calculateDynamicCap(1)).toBe(4);
-    expect(calculateDynamicCap(2)).toBe(4);
-    expect(calculateDynamicCap(3)).toBe(4);
+  it("returns 5 for very small candidate counts", () => {
+    expect(calculateDynamicCap(1)).toBe(5);
+    expect(calculateDynamicCap(2)).toBe(5);
+    expect(calculateDynamicCap(3)).toBe(5);
   });
 });
 
@@ -439,7 +439,7 @@ describe("calculateDynamicCap", () => {
 // ============================================================================
 
 describe("deduplicateCandidates — navigation cap", () => {
-  it("limits navigation endpoints to 3 (down from 5)", () => {
+  it("limits navigation endpoints to 4", () => {
     const candidates = [
       makeCandidate("navigation", "Main Nav", 0.9),
       makeCandidate("navigation", "Footer Nav", 0.85),
@@ -449,7 +449,7 @@ describe("deduplicateCandidates — navigation cap", () => {
     ];
     const result = deduplicateCandidates(candidates);
     const navItems = result.filter(c => c.type === "navigation");
-    expect(navItems).toHaveLength(3);
+    expect(navItems).toHaveLength(4);
   });
 
   it("limits content endpoints to 2 (down from 3)", () => {

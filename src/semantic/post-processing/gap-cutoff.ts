@@ -14,19 +14,20 @@ import type { EndpointCandidate } from "../types.js";
  * False Positives. Sites mit wenigen Candidates (5-6) brauchen keinen Cap 8,
  * Sites mit vielen (15+) sind trotzdem auf 8 begrenzt.
  *
- * Formel: cap = min(max(4, ceil(candidateCount * 0.6)), 8)
- * - Mindestens 4 (kleine Sites nicht beschneiden)
- * - Maximal 60% der Candidates ueberleben
- * - Absolutes Maximum bleibt 8 (95% GT-Abdeckung)
+ * Formel: cap = min(max(5, ceil(candidateCount * 0.75)), 9)
+ * - Mindestens 5 (kleine Sites nicht beschneiden)
+ * - Maximal 75% der Candidates ueberleben
+ * - Absolutes Maximum 9 (deckt 95% GT-Verteilung)
  *
  * Beispiele:
- * - 5 Candidates → cap = max(4, 3) = 4
- * - 8 Candidates → cap = max(4, 5) = 5
- * - 10 Candidates → cap = max(4, 6) = 6
- * - 15 Candidates → cap = min(9, 8) = 8
+ * - 5 Candidates → cap = max(5, 4) = 5
+ * - 7 Candidates → cap = max(5, 6) = 6
+ * - 9 Candidates → cap = max(5, 7) = 7
+ * - 12 Candidates → cap = min(9, 9) = 9
+ * - 15 Candidates → cap = min(12, 9) = 9
  */
 export function calculateDynamicCap(candidateCount: number): number {
-  return Math.min(Math.max(4, Math.ceil(candidateCount * 0.6)), 8);
+  return Math.min(Math.max(5, Math.ceil(candidateCount * 0.75)), 9);
 }
 
 /**

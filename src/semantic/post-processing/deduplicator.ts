@@ -19,7 +19,7 @@ const COMMERCE_ACTION_PATTERN = /add to cart|add to bag|in den warenkorb|zum war
  *   Cap 3 erlaubte Over-Detection bei content-lastigen Sites.
  */
 const TYPE_CAPS: Record<string, number> = {
-  navigation: 3,
+  navigation: 4,
   auth: 4,
   search: 1,
   commerce: 2,
