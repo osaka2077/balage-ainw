@@ -119,3 +119,16 @@ const TYPE_CAPS = { support: 1 };
 const TYPE_CAPS = { support: 2 };
 ```
 **Regel:** Type-Caps muessen die reale Varianz von Endpoints abbilden. Support-Sites haben oft "Submit Request" (Ticket) + "Contact" (Chat/Phone) als separate Flows.
+
+### ERR-009: SAFETY_CAP=10 zu hoch — Over-Detection bei Sites mit dichter Confidence-Verteilung
+**Datum:** 2026-03-27
+**Problem:** Wikipedia, Stripe, Shopify, Stackoverflow, Typeform detektierten 9-10 Endpoints bei 5-6 Ground-Truth. Der Gap-Cutoff fand keinen Gap >= 0.18 in diesen dichten Confidence-Verteilungen, also griff nur der SAFETY_CAP — der bei 10 nichts abschnitt. Precision fiel von 72.4% auf 70.5%. Support-Cap 1->2 (ERR-008 Fix) verschaerfte das Problem, weil ein zusaetzlicher Typ-Slot geoeffnet wurde.
+**Falscher Code:**
+```typescript
+const SAFETY_CAP = 10;
+```
+**Richtiger Code:**
+```typescript
+const SAFETY_CAP = 8;
+```
+**Regel:** SAFETY_CAP muss an der realen Ground-Truth-Verteilung kalibriert sein. 95% der Sites haben <=8 echte Endpoints. Der Cap ist die letzte Verteidigungslinie wenn der Gap-Cutoff nicht greift.

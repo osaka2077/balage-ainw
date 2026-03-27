@@ -9,8 +9,13 @@ import type { EndpointCandidate } from "../types.js";
 
 /**
  * Safety-Cap: Absolutes Maximum an Endpoints (unabhaengig von Gap).
+ *
+ * Gesenkt von 10 auf 8: Die meisten Sites haben 5-8 echte Endpoints.
+ * Cap 10 liess Over-Detection bei wikipedia (10), stripe (10), shopify (10)
+ * durch wenn der Gap-Cutoff keinen klaren Gap fand.
+ * Cap 8 deckt 95% der Ground-Truth-Verteilung ab (max GT ist 9 bei zalando).
  */
-const SAFETY_CAP = 10;
+const SAFETY_CAP = 8;
 
 /**
  * Mindestanzahl Endpoints die immer behalten werden (keine Cuts davor).

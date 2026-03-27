@@ -320,12 +320,12 @@ describe("applyGapCutoff", () => {
     }
   });
 
-  it("respects safety cap of 10", () => {
+  it("respects safety cap of 8", () => {
     const candidates = Array.from({ length: 15 }, (_, i) =>
       makeCandidate("navigation", `Nav ${i}`, 0.9 - i * 0.01),
     );
     const result = applyGapCutoff(candidates);
-    expect(result.length).toBeLessThanOrEqual(10);
+    expect(result.length).toBeLessThanOrEqual(8);
   });
 });
 
