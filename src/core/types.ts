@@ -75,6 +75,12 @@ export interface AnalyzeOptions {
   maxEndpoints?: number;
   /** Fingerprint cache. Default: true. Pass false to disable or options to configure. */
   cache?: boolean | FingerprintCacheOptions;
+  /**
+   * Number of parallel LLM calls per segment for majority-vote stabilization.
+   * Each segment gets N LLM calls; endpoints must appear in >= ceil(N/2) runs.
+   * Falls back to BALAGE_RUNS env var. Range: 1-5. Default: 1 (no multi-run).
+   */
+  multiRun?: number;
 }
 
 export interface FingerprintCacheOptions {

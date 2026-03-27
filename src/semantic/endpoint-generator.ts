@@ -39,6 +39,7 @@ import {
   deduplicateCandidates,
   applyGapCutoff,
 } from "./post-processing/index.js";
+import { majorityVote, clampMultiRun } from "./multi-run-voter.js";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:endpoint-generator" });
 
@@ -83,6 +84,8 @@ export interface EndpointGeneratorOptions {
   pruneOptions?: PruneForLLMOptions;
   maxRetries?: number;
   maxConcurrency?: number;
+  /** Number of parallel LLM calls per segment for majority-vote stabilization (1-5, default 1) */
+  multiRun?: number;
 }
 
 /**
@@ -99,7 +102,9 @@ export async function generateEndpoints(
   }
 
   const envConcurrency = parseInt(process.env["BALAGE_MAX_CONCURRENCY"] ?? "6", 10);
+  const envMultiRun = parseInt(process.env["BALAGE_RUNS"] ?? "1", 10);
   const { llmClient, pruneOptions, maxRetries = 2, maxConcurrency = envConcurrency } = options;
+  const effectiveMultiRun = clampMultiRun(options.multiRun ?? envMultiRun);
   const allCandidates: EndpointCandidate[] = [];
 
   // Security-Module initialisieren
@@ -125,15 +130,49 @@ export async function generateEndpoints(
   }));
 
   const executing = new Set<Promise<void>>();
+  // Gesamtzahl LLM-Calls: Segmente * Runs
+  let totalLlmCalls = 0;
 
   for (const segment of filteredSegments) {
     const task = (async () => {
-      const candidates = await processSegment(
-        segment, llmClient, maxRetries, pruneOptions,
-        context, sanitizer, injectionDetector, credentialGuard,
-        pageSegmentSummaries,
-      );
-      allCandidates.push(...candidates);
+      if (effectiveMultiRun > 1) {
+        // Multi-Run: N parallele processSegment-Calls pro Segment, dann Majority-Vote
+        const runPromises = Array.from({ length: effectiveMultiRun }, () =>
+          processSegment(
+            segment, llmClient, maxRetries, pruneOptions,
+            context, sanitizer, injectionDetector, credentialGuard,
+            pageSegmentSummaries,
+          ),
+        );
+        const runResults = await Promise.allSettled(runPromises);
+        const successfulRuns = runResults
+          .filter((r): r is PromiseFulfilledResult<EndpointCandidate[]> => r.status === "fulfilled")
+          .map(r => r.value);
+
+        totalLlmCalls += successfulRuns.length;
+
+        if (successfulRuns.length === 0) {
+          logger.warn({ segmentId: segment.id, runs: effectiveMultiRun }, "All multi-run calls failed for segment");
+          return;
+        }
+
+        const merged = majorityVote(successfulRuns);
+        allCandidates.push(...merged);
+
+        logger.debug(
+          { segmentId: segment.id, runs: successfulRuns.length, before: successfulRuns.flat().length, after: merged.length },
+          "Segment multi-run majority vote applied",
+        );
+      } else {
+        // Single-Run: normales Verhalten
+        const candidates = await processSegment(
+          segment, llmClient, maxRetries, pruneOptions,
+          context, sanitizer, injectionDetector, credentialGuard,
+          pageSegmentSummaries,
+        );
+        totalLlmCalls += 1;
+        allCandidates.push(...candidates);
+      }
     })();
     executing.add(task);
     task.finally(() => executing.delete(task));
@@ -176,7 +215,7 @@ export async function generateEndpoints(
     "Global endpoint cap applied",
   );
 
-  return { candidates: capped, llmCalls: filteredSegments.length };
+  return { candidates: capped, llmCalls: totalLlmCalls };
 }
 
 /**
