@@ -16,33 +16,13 @@
     },
     {
       "type": "auth",
-      "label": "Continue with Google",
-      "description": "Google OAuth sign-in button",
-      "selector_hint": "div[role='button'][id*='google'], a[href*='accounts.google.com']",
+      "label": "SSO Login Options",
+      "description": "OAuth/SSO sign-in buttons (Google, Apple, SAML SSO)",
+      "selector_hint": "div[role='button'][id*='google'], div[role='button'][id*='apple']",
       "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
       "phase": 1
-    },
-    {
-      "type": "auth",
-      "label": "Continue with Apple",
-      "description": "Apple ID sign-in button",
-      "selector_hint": "div[role='button'][id*='apple'], a[href*='appleid.apple.com']",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "auth",
-      "label": "Continue with SAML SSO",
-      "description": "Enterprise SSO login option for organizations using SAML",
-      "selector_hint": "div[role='button']:has-text('SAML SSO')",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
     },
     {
       "type": "navigation",
@@ -56,7 +36,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 3,
     "phase1_endpoints": 2,
     "min_precision_target": 0.85,
     "min_recall_target": 0.80

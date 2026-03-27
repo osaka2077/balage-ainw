@@ -45,7 +45,7 @@
       "phase": 2
     },
     {
-      "type": "navigation",
+      "type": "content",
       "label": "Question Feed",
       "description": "Central list of questions with titles, vote counts, answer counts, and tags",
       "selector_hint": "div#questions, div.s-post-summary",
@@ -55,9 +55,9 @@
       "phase": 2
     },
     {
-      "type": "navigation",
+      "type": "form",
       "label": "Ask Question",
-      "description": "Ask Question button to create a new question post",
+      "description": "Ask Question CTA button to create a new question post",
       "selector_hint": "a[href='/questions/ask'], a.s-btn__filled",
       "affordances": ["click"],
       "risk_class": "medium",
