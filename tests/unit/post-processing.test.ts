@@ -13,7 +13,7 @@ import type { EndpointCandidate } from "../../src/semantic/types.js";
 import { applyTypeCorrections } from "../../src/semantic/post-processing/type-corrector.js";
 import { applyConfidencePenalties } from "../../src/semantic/post-processing/confidence-penalizer.js";
 import { deduplicateCandidates, labelSimilarity } from "../../src/semantic/post-processing/deduplicator.js";
-import { applyGapCutoff } from "../../src/semantic/post-processing/gap-cutoff.js";
+import { applyGapCutoff, calculateDynamicCap } from "../../src/semantic/post-processing/gap-cutoff.js";
 import { runPostProcessing } from "../../src/semantic/post-processing/index.js";
 
 // ============================================================================
@@ -365,12 +365,124 @@ describe("applyGapCutoff", () => {
     }
   });
 
-  it("respects safety cap of 8", () => {
+  it("respects dynamic safety cap based on candidate count", () => {
+    // 15 Candidates → cap = min(max(4, ceil(9)), 8) = 8
     const candidates = Array.from({ length: 15 }, (_, i) =>
       makeCandidate("navigation", `Nav ${i}`, 0.9 - i * 0.01),
     );
     const result = applyGapCutoff(candidates);
     expect(result.length).toBeLessThanOrEqual(8);
+  });
+
+  it("applies stricter cap for fewer candidates (5 → cap 4)", () => {
+    // 5 Candidates, kein Gap → dynamicCap = max(4, ceil(3)) = 4
+    const candidates = Array.from({ length: 5 }, (_, i) =>
+      makeCandidate("navigation", `Nav ${i}`, 0.9 - i * 0.01),
+    );
+    const result = applyGapCutoff(candidates);
+    expect(result.length).toBeLessThanOrEqual(4);
+  });
+
+  it("applies medium cap for 8 candidates (cap 5)", () => {
+    // 8 Candidates, kein Gap → dynamicCap = max(4, ceil(4.8)) = 5
+    const candidates = Array.from({ length: 8 }, (_, i) =>
+      makeCandidate("form", `Form ${i}`, 0.9 - i * 0.01),
+    );
+    const result = applyGapCutoff(candidates);
+    expect(result.length).toBeLessThanOrEqual(5);
+  });
+
+  it("applies cap 6 for 10 candidates", () => {
+    // 10 Candidates, kein Gap → dynamicCap = max(4, ceil(6)) = 6
+    const candidates = Array.from({ length: 10 }, (_, i) =>
+      makeCandidate("content", `Content ${i}`, 0.9 - i * 0.01),
+    );
+    const result = applyGapCutoff(candidates);
+    expect(result.length).toBeLessThanOrEqual(6);
+  });
+});
+
+// ============================================================================
+// Dynamic Cap Calculation (T-006)
+// ============================================================================
+
+describe("calculateDynamicCap", () => {
+  it("returns 4 for 5 candidates (floor)", () => {
+    // max(4, ceil(5 * 0.6)) = max(4, ceil(3.0)) = max(4, 3) = 4
+    expect(calculateDynamicCap(5)).toBe(4);
+  });
+
+  it("returns 5 for 8 candidates", () => {
+    // max(4, ceil(8 * 0.6)) = max(4, ceil(4.8)) = max(4, 5) = 5
+    expect(calculateDynamicCap(8)).toBe(5);
+  });
+
+  it("returns 6 for 10 candidates", () => {
+    // max(4, ceil(10 * 0.6)) = max(4, 6) = 6
+    expect(calculateDynamicCap(10)).toBe(6);
+  });
+
+  it("returns 8 (clamped) for 15 candidates", () => {
+    // min(max(4, ceil(15 * 0.6)), 8) = min(max(4, 9), 8) = min(9, 8) = 8
+    expect(calculateDynamicCap(15)).toBe(8);
+  });
+
+  it("returns 4 for very small candidate counts", () => {
+    expect(calculateDynamicCap(1)).toBe(4);
+    expect(calculateDynamicCap(2)).toBe(4);
+    expect(calculateDynamicCap(3)).toBe(4);
+  });
+});
+
+// ============================================================================
+// Navigation Cap (T-007)
+// ============================================================================
+
+describe("deduplicateCandidates — navigation cap", () => {
+  it("limits navigation endpoints to 3 (down from 5)", () => {
+    const candidates = [
+      makeCandidate("navigation", "Main Nav", 0.9),
+      makeCandidate("navigation", "Footer Nav", 0.85),
+      makeCandidate("navigation", "Sidebar Nav", 0.8),
+      makeCandidate("navigation", "Breadcrumb Nav", 0.75),
+      makeCandidate("navigation", "Mobile Nav", 0.7),
+    ];
+    const result = deduplicateCandidates(candidates);
+    const navItems = result.filter(c => c.type === "navigation");
+    expect(navItems).toHaveLength(3);
+  });
+
+  it("limits content endpoints to 2 (down from 3)", () => {
+    const candidates = [
+      makeCandidate("content", "Accordion A", 0.9),
+      makeCandidate("content", "Tabs B", 0.85),
+      makeCandidate("content", "Carousel C", 0.8),
+    ];
+    const result = deduplicateCandidates(candidates);
+    const contentItems = result.filter(c => c.type === "content");
+    expect(contentItems).toHaveLength(2);
+  });
+});
+
+// ============================================================================
+// OpenAI Seed Parameter (T-008)
+// ============================================================================
+
+describe("OpenAI client — seed parameter", () => {
+  it("seed: 42 is configured in OpenAI client create call", async () => {
+    // Verifiziere dass der OpenAI-Client den seed-Parameter setzt.
+    // Da der echte Client einen API-Key braucht, testen wir ueber den Source-Code.
+    // Dieser Test dient als Regression-Guard fuer den seed-Parameter.
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const clientSource = fs.readFileSync(
+      path.resolve("src/semantic/llm-client.ts"),
+      "utf-8",
+    );
+    // Pruefe dass seed: 42 im OpenAI-Client gesetzt ist
+    expect(clientSource).toContain("seed: 42");
+    // Pruefe dass json_object response_format gesetzt ist
+    expect(clientSource).toContain('type: "json_object"');
   });
 });
 

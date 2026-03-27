@@ -8,14 +8,26 @@
 import type { EndpointCandidate } from "../types.js";
 
 /**
- * Safety-Cap: Absolutes Maximum an Endpoints (unabhaengig von Gap).
+ * Dynamischer Safety-Cap: Maximum an Endpoints skaliert mit Candidate-Anzahl.
  *
- * Gesenkt von 10 auf 8: Die meisten Sites haben 5-8 echte Endpoints.
- * Cap 10 liess Over-Detection bei wikipedia (10), stripe (10), shopify (10)
- * durch wenn der Gap-Cutoff keinen klaren Gap fand.
- * Cap 8 deckt 95% der Ground-Truth-Verteilung ab (max GT ist 9 bei zalando).
+ * Problem: Globaler Cap 8 trifft 13/20 Sites im Benchmark — Hauptquelle fuer
+ * False Positives. Sites mit wenigen Candidates (5-6) brauchen keinen Cap 8,
+ * Sites mit vielen (15+) sind trotzdem auf 8 begrenzt.
+ *
+ * Formel: cap = min(max(4, ceil(candidateCount * 0.6)), 8)
+ * - Mindestens 4 (kleine Sites nicht beschneiden)
+ * - Maximal 60% der Candidates ueberleben
+ * - Absolutes Maximum bleibt 8 (95% GT-Abdeckung)
+ *
+ * Beispiele:
+ * - 5 Candidates → cap = max(4, 3) = 4
+ * - 8 Candidates → cap = max(4, 5) = 5
+ * - 10 Candidates → cap = max(4, 6) = 6
+ * - 15 Candidates → cap = min(9, 8) = 8
  */
-const SAFETY_CAP = 8;
+export function calculateDynamicCap(candidateCount: number): number {
+  return Math.min(Math.max(4, Math.ceil(candidateCount * 0.6)), 8);
+}
 
 /**
  * Mindestanzahl Endpoints die immer behalten werden (keine Cuts davor).
@@ -55,5 +67,6 @@ export function applyGapCutoff(
     }
   }
 
-  return sorted.slice(0, Math.min(cutoffIndex, SAFETY_CAP));
+  const dynamicCap = calculateDynamicCap(candidates.length);
+  return sorted.slice(0, Math.min(cutoffIndex, dynamicCap));
 }

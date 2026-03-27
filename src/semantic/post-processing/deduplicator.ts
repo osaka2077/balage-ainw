@@ -10,9 +10,16 @@ import type { EndpointCandidate } from "../types.js";
 /** Commerce-Action-Pattern fuer Dedup */
 const COMMERCE_ACTION_PATTERN = /add to cart|add to bag|in den warenkorb|zum warenkorb/i;
 
-/** Per-type cap: differenzierte Limits pro Typ */
+/**
+ * Per-type cap: differenzierte Limits pro Typ.
+ *
+ * navigation: 5 → 3 — Die meisten Sites haben 1-2 Navigation-Endpoints.
+ *   Cap 5 liess zu viele durch und war Haupttreiber fuer False Positives.
+ * content: 3 → 2 — Content-Endpoints sind selten primaere Interaktionspunkte.
+ *   Cap 3 erlaubte Over-Detection bei content-lastigen Sites.
+ */
 const TYPE_CAPS: Record<string, number> = {
-  navigation: 5,
+  navigation: 3,
   auth: 4,
   search: 1,
   commerce: 2,
@@ -20,7 +27,7 @@ const TYPE_CAPS: Record<string, number> = {
   consent: 1,
   settings: 2,
   support: 2,
-  content: 3,
+  content: 2,
   media: 2,
   social: 1,
   form: 2,

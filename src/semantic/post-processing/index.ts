@@ -11,7 +11,7 @@
 export { applyTypeCorrections, hasSearchEvidence, hasCartEvidence, isBookingStyleSearch } from "./type-corrector.js";
 export { applyConfidencePenalties } from "./confidence-penalizer.js";
 export { deduplicateCandidates, labelSimilarity } from "./deduplicator.js";
-export { applyGapCutoff } from "./gap-cutoff.js";
+export { applyGapCutoff, calculateDynamicCap } from "./gap-cutoff.js";
 export { applySiteSpecificCorrections } from "./site-specific-corrections.js";
 
 import type { EndpointCandidate } from "../types.js";
