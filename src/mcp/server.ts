@@ -19,6 +19,19 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { analyzeFromHTML, detectFramework, inferSelector, htmlToDomNode, VERSION } from "../core/index.js";
 
+/** Max HTML input size: 2 MB (schuetzt vor OOM bei uebergrossen Payloads) */
+const MAX_HTML_BYTES = 2 * 1024 * 1024;
+
+function assertHtmlSize(html: string, paramName = "html"): void {
+  const byteLen = Buffer.byteLength(html, "utf-8");
+  if (byteLen > MAX_HTML_BYTES) {
+    throw new Error(
+      `${paramName} exceeds maximum size (${(byteLen / 1024 / 1024).toFixed(1)} MB > 2 MB limit). ` +
+      "Truncate the HTML or pass a smaller page.",
+    );
+  }
+}
+
 const server = new McpServer({
   name: "balage",
   version: VERSION,
@@ -38,6 +51,7 @@ server.tool(
     max_endpoints: z.number().int().min(1).max(50).optional().describe("Maximum endpoints to return (default: 10)"),
   },
   async ({ html, url, min_confidence, max_endpoints }) => {
+    assertHtmlSize(html);
     const result = await analyzeFromHTML(html, {
       url,
       minConfidence: min_confidence,
@@ -85,6 +99,7 @@ server.tool(
     html: z.string().describe("Raw HTML of the page"),
   },
   async ({ html }) => {
+    assertHtmlSize(html);
     const fw = detectFramework(html);
     if (!fw) {
       return { content: [{ type: "text" as const, text: "No web framework detected." }] };
@@ -109,6 +124,7 @@ server.tool(
     html: z.string().describe("HTML snippet containing the element"),
   },
   async ({ html }) => {
+    assertHtmlSize(html);
     const dom = htmlToDomNode(html);
     const selector = inferSelector(dom);
     return {

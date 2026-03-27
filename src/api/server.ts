@@ -32,6 +32,7 @@ export async function createServer(config: ApiServerConfig): Promise<FastifyInst
   const server: ServerWithConfig = Fastify({
     logger: false,
     disableRequestLogging: true,
+    bodyLimit: 2 * 1024 * 1024, // 2 MB — genuegt fuer grosse HTML-Seiten
   });
 
   // Config am Server haengen fuer Routes
@@ -52,6 +53,15 @@ export async function createServer(config: ApiServerConfig): Promise<FastifyInst
   await server.register(websocket);
 
   // --- Middleware ---
+
+  // Security Headers
+  server.addHook("onRequest", async (_request, reply) => {
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("X-Frame-Options", "DENY");
+    reply.header("X-XSS-Protection", "0");
+    reply.header("Referrer-Policy", "strict-origin-when-cross-origin");
+    reply.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  });
 
   // Auth Hook (preHandler)
   server.addHook("preHandler", createAuthHook(config.apiKeys));
