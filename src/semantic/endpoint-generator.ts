@@ -35,6 +35,7 @@ import type {
 } from "./types.js";
 import {
   applyTypeCorrections,
+  applySiteSpecificCorrections,
   applyConfidencePenalties,
   deduplicateCandidates,
   applyGapCutoff,
@@ -469,6 +470,7 @@ async function processSegment(
     const segText = cleanText.toLowerCase();
 
     applyTypeCorrections(candidates, segText, segment.type);
+    applySiteSpecificCorrections(candidates, segText);
     applyConfidencePenalties(candidates, segText, segment.type);
 
     // Setze segmentId auf jeden Candidate fuer spaeteres Segment-Matching
