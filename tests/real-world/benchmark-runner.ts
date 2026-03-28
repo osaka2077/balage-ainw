@@ -156,6 +156,9 @@ const LLM_CACHE_DIR = join(import.meta.dirname!, ".llm-cache");
 const FIXTURE_MODE = process.env.BALAGE_FIXTURE_MODE === "1";
 const FIXTURES_DIR = join(import.meta.dirname!, "fixtures");
 
+// Train/Hold-Out split — BALAGE_SET=train|holdout (default: all sites)
+const BENCHMARK_SET = process.env.BALAGE_SET as "train" | "holdout" | undefined;
+
 // Label-Patterns fuer semantische Zuordnung
 const AUTH_LABEL_PATTERN = /login|sign.?in|auth|password|credential/i;
 const SEARCH_LABEL_PATTERN = /search|find|query|lookup/i;
@@ -769,8 +772,26 @@ function loadGroundTruths(): Array<{ file: string; data: GroundTruth }> {
   const dir = join(import.meta.dirname!, "ground-truth");
   const files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
 
+  // Lade Hold-Out-Config fuer Train/Hold-Out-Split
+  let holdoutSites: Set<string> | null = null;
+  if (BENCHMARK_SET === "train" || BENCHMARK_SET === "holdout") {
+    const configPath = join(import.meta.dirname!, "holdout-sites.json");
+    const config = JSON.parse(readFileSync(configPath, "utf-8")) as { holdout: string[] };
+    holdoutSites = new Set(config.holdout);
+    log(`[SET] Running ${BENCHMARK_SET.toUpperCase()} set (${BENCHMARK_SET === "holdout" ? holdoutSites.size : files.length - holdoutSites.size} sites)`);
+  }
+
   const results: Array<{ file: string; data: GroundTruth }> = [];
   for (const file of files) {
+    const fileId = basename(file, ".json");
+
+    // Filter nach Train/Hold-Out
+    if (holdoutSites) {
+      const isHoldout = holdoutSites.has(fileId);
+      if (BENCHMARK_SET === "train" && isHoldout) continue;
+      if (BENCHMARK_SET === "holdout" && !isHoldout) continue;
+    }
+
     const raw = readFileSync(join(dir, file), "utf-8");
     results.push({ file, data: JSON.parse(raw) as GroundTruth });
   }

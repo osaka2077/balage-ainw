@@ -14,6 +14,8 @@
     "benchmark:vision": "vitest run tests/real-world/vision-baseline.test.ts --reporter=verbose",
     "benchmark:check": "tsx scripts/regression-check.ts",
     "benchmark:fixture": "BALAGE_FIXTURE_MODE=1 BALAGE_LLM_CACHE=1 vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
+    "benchmark:train": "BALAGE_SET=train vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
+    "benchmark:holdout": "BALAGE_SET=holdout vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
     "lint": "eslint src/ packages/mcp/src/",
     "typecheck": "tsc --noEmit"
   },
