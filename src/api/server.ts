@@ -84,8 +84,22 @@ export async function createServer(config: ApiServerConfig): Promise<FastifyInst
   server.wsManager = wsManager;
 
   server.get("/api/v1/ws", { websocket: true }, (socket, request) => {
+    // Primaer: API-Key aus Sec-WebSocket-Protocol Header
+    const protocolHeader = request.headers["sec-websocket-protocol"];
+    const headerApiKey = typeof protocolHeader === "string" ? protocolHeader.trim() : "";
+
+    // Fallback: Query-Parameter (deprecated, loggt Warning)
     const query = request.query as Record<string, string>;
-    const apiKey = query["apiKey"] ?? "";
+    const queryApiKey = query["apiKey"] ?? "";
+
+    if (queryApiKey && !headerApiKey) {
+      logger.warn(
+        "WebSocket API key passed as query parameter is deprecated — use Sec-WebSocket-Protocol header or auth message",
+        { remoteAddress: request.ip },
+      );
+    }
+
+    const apiKey = headerApiKey || queryApiKey;
     wsManager.handleConnection(socket, apiKey);
   });
 

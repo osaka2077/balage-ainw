@@ -9,9 +9,13 @@ import { createLogger } from "../observability/index.js";
 
 const logger = createLogger({ name: "api:websocket" });
 
+/** Timeout fuer pending-auth Verbindungen (5 Sekunden) */
+const AUTH_TIMEOUT_MS = 5_000;
+
 interface Connection {
   socket: WebSocket;
   apiKey: string;
+  authenticated: boolean;
   subscriptions: Set<string>;
   lastPong: number;
 }
@@ -33,26 +37,45 @@ export class WebSocketManager {
 
   /** Neue WebSocket-Verbindung registrieren */
   handleConnection(socket: WebSocket, apiKey: string): void {
-    const isValid = this.apiKeys.some((k) => safeCompare(k.key, apiKey));
-    if (!isValid) {
-      socket.send(JSON.stringify({
-        type: "error",
-        code: "AUTH_INVALID_KEY",
-        message: "Invalid API key",
-      } satisfies WebSocketMessage));
-      socket.close(4001, "Invalid API key");
-      return;
+    // Wenn API-Key vorhanden (Header oder Query), sofort validieren
+    if (apiKey) {
+      const isValid = this.apiKeys.some((k) => safeCompare(k.key, apiKey));
+      if (!isValid) {
+        socket.send(JSON.stringify({
+          type: "error",
+          code: "AUTH_INVALID_KEY",
+          message: "Invalid API key",
+        } satisfies WebSocketMessage));
+        socket.close(4001, "Invalid API key");
+        return;
+      }
     }
 
     const connection: Connection = {
       socket,
       apiKey,
+      authenticated: apiKey !== "",
       subscriptions: new Set(),
       lastPong: Date.now(),
     };
 
     this.connections.set(socket, connection);
-    logger.debug("WebSocket connection established", { apiKey: apiKey.slice(0, 8) + "..." });
+
+    if (connection.authenticated) {
+      logger.debug("WebSocket connection established", { apiKey: apiKey.slice(0, 8) + "..." });
+    } else {
+      // Kein API-Key — warte auf auth-Message, mit Timeout
+      logger.debug("WebSocket connection pending auth");
+      const authTimer = setTimeout(() => {
+        const conn = this.connections.get(socket);
+        if (conn && !conn.authenticated) {
+          this.sendError(socket, "AUTH_TIMEOUT", "Authentication timeout — send auth message within 5s");
+          socket.close(4001, "Authentication timeout");
+          this.connections.delete(socket);
+        }
+      }, AUTH_TIMEOUT_MS);
+      socket.once("close", () => clearTimeout(authTimer));
+    }
 
     socket.on("message", (data: RawData) => {
       this.handleMessage(socket, data.toString());
@@ -84,7 +107,17 @@ export class WebSocketManager {
       return;
     }
 
+    // Auth-Message ist die einzige die vor Authentifizierung erlaubt ist
+    if (!connection.authenticated && msg.type !== "auth") {
+      this.sendError(socket, "AUTH_REQUIRED", "Send auth message before other commands");
+      return;
+    }
+
     switch (msg.type) {
+      case "auth":
+        this.handleAuth(socket, connection, msg);
+        break;
+
       case "subscribe":
         if (msg.workflowId) {
           connection.subscriptions.add(msg.workflowId);
@@ -108,10 +141,43 @@ export class WebSocketManager {
     }
   }
 
+  /** Auth-Message verarbeiten */
+  private handleAuth(socket: WebSocket, connection: Connection, msg: WebSocketMessage): void {
+    if (connection.authenticated) {
+      this.sendError(socket, "AUTH_ALREADY_AUTHENTICATED", "Connection already authenticated");
+      return;
+    }
+
+    const apiKey = msg.apiKey ?? "";
+    if (!apiKey) {
+      this.sendError(socket, "AUTH_MISSING_KEY", "API key required in auth message");
+      socket.close(4001, "Missing API key");
+      this.connections.delete(socket);
+      return;
+    }
+
+    const isValid = this.apiKeys.some((k) => safeCompare(k.key, apiKey));
+    if (!isValid) {
+      this.sendError(socket, "AUTH_INVALID_KEY", "Invalid API key");
+      socket.close(4001, "Invalid API key");
+      this.connections.delete(socket);
+      return;
+    }
+
+    connection.apiKey = apiKey;
+    connection.authenticated = true;
+    logger.debug("WebSocket authenticated via message", { apiKey: apiKey.slice(0, 8) + "..." });
+
+    // Bestaetigung senden
+    if (socket.readyState === 1) {
+      socket.send(JSON.stringify({ type: "auth", message: "authenticated" } satisfies WebSocketMessage));
+    }
+  }
+
   /** Event an alle Subscriber eines Workflows senden */
   broadcast(workflowId: string, event: WorkflowProgressEvent): void {
     for (const connection of this.connections.values()) {
-      if (connection.subscriptions.has(workflowId)) {
+      if (connection.authenticated && connection.subscriptions.has(workflowId)) {
         const message: WebSocketMessage = {
           type: "workflow_progress",
           workflowId,
