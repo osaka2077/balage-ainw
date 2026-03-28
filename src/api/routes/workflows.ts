@@ -7,6 +7,7 @@ import type { FastifyInstance } from "fastify";
 import { WorkflowRunRequestSchema, PaginationQuerySchema } from "../schemas.js";
 import { requirePermission } from "../middleware/auth.js";
 import { NotFoundError, IdempotencyConflictError, ValidationError } from "../errors.js";
+import { BoundedMap } from "../bounded-map.js";
 import type {
   WorkflowStatusResponse,
   WorkflowSummary,
@@ -16,7 +17,7 @@ import type {
   ApiServerConfig,
 } from "../types.js";
 
-// In-Memory Stores
+// In-Memory Stores — groessenbegrenzt gegen Memory-Exhaustion (SEC-003)
 interface WorkflowRecord {
   id: string;
   status: WorkflowState;
@@ -28,8 +29,8 @@ interface WorkflowRecord {
   completedAt?: string;
 }
 
-const workflowStore = new Map<string, WorkflowRecord>();
-const idempotencyStore = new Map<string, IdempotencyEntry>();
+const workflowStore = new BoundedMap<string, WorkflowRecord>(10_000);
+const idempotencyStore = new BoundedMap<string, IdempotencyEntry>(50_000);
 
 function hashRequest(body: unknown): string {
   return createHash("sha256").update(JSON.stringify(body)).digest("hex");

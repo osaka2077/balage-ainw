@@ -7,10 +7,11 @@ import { PaginationQuerySchema } from "../schemas.js";
 import { requirePermission } from "../middleware/auth.js";
 import { NotFoundError } from "../errors.js";
 import type { Endpoint, SemanticFingerprint } from "../../../shared_interfaces.js";
+import { BoundedMap } from "../bounded-map.js";
 
-// In-Memory Stores
-const endpointStore = new Map<string, Endpoint>();
-const fingerprintStore = new Map<string, SemanticFingerprint>();
+// In-Memory Stores — groessenbegrenzt gegen Memory-Exhaustion (SEC-003)
+const endpointStore = new BoundedMap<string, Endpoint>(10_000);
+const fingerprintStore = new BoundedMap<string, SemanticFingerprint>(10_000);
 
 export function _getEndpointStore(): Map<string, Endpoint> {
   return endpointStore;

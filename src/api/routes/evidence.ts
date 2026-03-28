@@ -7,8 +7,9 @@ import { requirePermission } from "../middleware/auth.js";
 import { NotFoundError } from "../errors.js";
 import type { Evidence } from "../../../shared_interfaces.js";
 import type { EvidenceChainEntry, EvidenceChainResponse } from "../types.js";
+import { BoundedMap } from "../bounded-map.js";
 
-// In-Memory Store
+// In-Memory Store — groessenbegrenzt gegen Memory-Exhaustion (SEC-003)
 interface EvidenceRecord {
   id: string;
   traceId: string;
@@ -16,7 +17,7 @@ interface EvidenceRecord {
   timestamp: string;
 }
 
-const evidenceStore = new Map<string, EvidenceRecord>();
+const evidenceStore = new BoundedMap<string, EvidenceRecord>(10_000);
 
 export function _getEvidenceStore(): Map<string, EvidenceRecord> {
   return evidenceStore;

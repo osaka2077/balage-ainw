@@ -7,10 +7,12 @@ import type { FastifyInstance } from "fastify";
 import { ActionExecuteRequestSchema } from "../schemas.js";
 import { requirePermission } from "../middleware/auth.js";
 import { NotFoundError, ValidationError, IdempotencyConflictError } from "../errors.js";
+import { BoundedMap } from "../bounded-map.js";
 import type { ActionExecuteResponse, IdempotencyEntry } from "../types.js";
 import { _getEndpointStore } from "./endpoints.js";
 
-const actionIdempotencyStore = new Map<string, IdempotencyEntry>();
+// Groessenbegrenzt gegen Memory-Exhaustion (SEC-003)
+const actionIdempotencyStore = new BoundedMap<string, IdempotencyEntry>(50_000);
 
 export function _getActionIdempotencyStore(): Map<string, IdempotencyEntry> {
   return actionIdempotencyStore;

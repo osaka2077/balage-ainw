@@ -2,10 +2,32 @@
  * WebSocket Manager — Real-Time Streaming fuer Workflow Progress
  */
 
+import { z } from "zod";
 import type { WebSocket, RawData } from "ws";
 import type { WorkflowProgressEvent, WebSocketMessage, ApiKeyConfig } from "./types.js";
 import { safeCompare } from "./middleware/auth.js";
 import { createLogger } from "../observability/index.js";
+
+// Zod-Schema fuer eingehende WebSocket-Nachrichten (SEC-004)
+const IncomingWebSocketMessageSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("auth"),
+    apiKey: z.string().min(1).optional(),
+  }),
+  z.object({
+    type: z.literal("subscribe"),
+    workflowId: z.string().uuid(),
+  }),
+  z.object({
+    type: z.literal("unsubscribe"),
+    workflowId: z.string().uuid(),
+  }),
+  z.object({
+    type: z.literal("pong"),
+  }),
+]);
+
+type IncomingWebSocketMessage = z.infer<typeof IncomingWebSocketMessageSchema>;
 
 const logger = createLogger({ name: "api:websocket" });
 
@@ -94,18 +116,27 @@ export class WebSocketManager {
     });
   }
 
-  /** Nachricht von Client verarbeiten */
+  /** Nachricht von Client verarbeiten — Zod-validiert (SEC-004) */
   private handleMessage(socket: WebSocket, raw: string): void {
     const connection = this.connections.get(socket);
     if (!connection) return;
 
-    let msg: WebSocketMessage;
+    let json: unknown;
     try {
-      msg = JSON.parse(raw) as WebSocketMessage;
+      json = JSON.parse(raw);
     } catch {
       this.sendError(socket, "INVALID_MESSAGE", "Invalid JSON");
       return;
     }
+
+    const parsed = IncomingWebSocketMessageSchema.safeParse(json);
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0]?.message ?? "Validation failed";
+      this.sendError(socket, "INVALID_MESSAGE", `Message validation failed: ${firstIssue}`);
+      return;
+    }
+
+    const msg = parsed.data;
 
     // Auth-Message ist die einzige die vor Authentifizierung erlaubt ist
     if (!connection.authenticated && msg.type !== "auth") {
@@ -119,36 +150,29 @@ export class WebSocketManager {
         break;
 
       case "subscribe":
-        if (msg.workflowId) {
-          connection.subscriptions.add(msg.workflowId);
-          logger.debug("Subscribed to workflow", { workflowId: msg.workflowId });
-        }
+        connection.subscriptions.add(msg.workflowId);
+        logger.debug("Subscribed to workflow", { workflowId: msg.workflowId });
         break;
 
       case "unsubscribe":
-        if (msg.workflowId) {
-          connection.subscriptions.delete(msg.workflowId);
-          logger.debug("Unsubscribed from workflow", { workflowId: msg.workflowId });
-        }
+        connection.subscriptions.delete(msg.workflowId);
+        logger.debug("Unsubscribed from workflow", { workflowId: msg.workflowId });
         break;
 
       case "pong":
         connection.lastPong = Date.now();
         break;
-
-      default:
-        this.sendError(socket, "UNKNOWN_MESSAGE_TYPE", `Unknown type: ${msg.type}`);
     }
   }
 
   /** Auth-Message verarbeiten */
-  private handleAuth(socket: WebSocket, connection: Connection, msg: WebSocketMessage): void {
+  private handleAuth(socket: WebSocket, connection: Connection, msg: IncomingWebSocketMessage): void {
     if (connection.authenticated) {
       this.sendError(socket, "AUTH_ALREADY_AUTHENTICATED", "Connection already authenticated");
       return;
     }
 
-    const apiKey = msg.apiKey ?? "";
+    const apiKey = ("apiKey" in msg ? msg.apiKey : undefined) ?? "";
     if (!apiKey) {
       this.sendError(socket, "AUTH_MISSING_KEY", "API key required in auth message");
       socket.close(4001, "Missing API key");
