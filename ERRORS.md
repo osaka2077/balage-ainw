@@ -166,3 +166,26 @@ const PRECISE_CART_EVIDENCE = /\bcart\b|basket|warenkorb|shopping.?bag|add.to.ba
 // Praeziser: "checkout" nur im Kontext "checkout form", nicht "checkout date"
 ```
 **Regel:** Cart-Detection-Regex muss zwischen "checkout" (Shopping) und "check-out" (Travel-Datum) unterscheiden. Generische Regex fuer Rueckwaerts-Kompatibilitaet beibehalten, praezisere Version fuer Travel-Site-Corrections nutzen.
+
+### ERR-013: Benchmark stddev() nutzt Populations-Varianz statt Stichproben-Varianz
+**Datum:** 2026-03-28
+**Problem:** Die `stddev()`-Funktion in `tests/real-world/benchmark-runner.ts` (Zeile 1184-1189) dividiert durch `values.length` statt `values.length - 1`. Bei N=3 Multi-Runs (Standard-Konfiguration) unterschaetzt dies die wahre Streuung um ~33%. Die berichteten Varianz-Werte sind systematisch zu optimistisch.
+**Falscher Code:**
+```typescript
+function stddev(values: number[]): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
+  return Math.sqrt(variance);
+}
+```
+**Richtiger Code:**
+```typescript
+function stddev(values: number[]): number {
+  if (values.length < 2) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (values.length - 1);
+  return Math.sqrt(variance);
+}
+```
+**Regel:** Bei kleinen Stichproben (N < 30) IMMER Bessel's Correction verwenden (Division durch N-1 statt N). Populations-Varianz nur bei vollstaendigen Populationen.
