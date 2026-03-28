@@ -27,10 +27,15 @@ const SEARCH_EVIDENCE_METHOD = /method="?get/i;
 const BOOKING_STYLE_DATE = /check.?in|departure|arrival/i;
 const BOOKING_STYLE_DEST = /destination|where.*going|guests?|rooms?|reiseziel/i;
 
-const CONSENT_LABEL = /cookie|consent|gdpr|privacy|datenschutz|tracking/i;
+const CONSENT_LABEL = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept\s*all|reject\s*all|alle\s*akzeptieren|alle\s*ablehnen/i;
 const CONSENT_SEGMENT = /cookie|consent|gdpr|datenschutz|accept\s*all|reject\s*all|alle\s*akzeptieren|onetrust|cookielaw|sp-cc/i;
 
-const LANGUAGE_LABEL = /language|locale|sprache|idioma|langue/i;
+/**
+ * Navigation-Selector-Labels: Elemente die das LLM als "settings" klassifiziert,
+ * die aber auf den meisten Sites einfache Navigation-Elemente sind.
+ * Erweitert ueber language/locale hinaus auf Theme, Category, Currency, Country.
+ */
+const NAV_SELECTOR_LABEL = /language|locale|sprache|idioma|langue|theme|appearance|dark\s*mode|light\s*mode|categor|filter|currency|waehrung|w\u00e4hrung|country|region|country\s*selector|region\s*selector/i;
 const REAL_SETTINGS_UI = /toggle|switch|checkbox|radio|slider|preference|einstellung/i;
 
 const LINK_EVIDENCE = /<a[\s>]|href=/i;
@@ -82,8 +87,9 @@ export function hasCartEvidence(segText: string): boolean {
  * 1b. checkout/commerce -> search (Searchbox-DOM-Evidence ohne praezise Cart)
  * 2. checkout -> search (Label-basiert ohne Cart)
  * 3. checkout/commerce -> search (Travel/Booking Label ohne Cart)
- * 4. settings -> consent (Cookie/GDPR Keywords)
- * 5. settings -> navigation (Language-Only ohne Settings-UI)
+ * 4. settings -> consent (Cookie/GDPR/Privacy Keywords)
+ * 5. settings -> navigation (Nav-Selector-Labels ohne Settings-UI:
+ *    Theme/Appearance, Category/Filter, Currency, Language, Country/Region)
  * 6. content -> navigation (Footer/Header mit Links)
  * 7. navigation/content -> support (Support Keywords in Label oder Segment)
  */
@@ -144,13 +150,15 @@ export function applyTypeCorrections(
         candidate.type = "consent";
       }
     }
-    // settings -> navigation (language-only)
+    // settings -> navigation (nav-selector labels without real settings UI)
+    // Theme selectors, category filters, currency/country switchers, language pickers
+    // are typically navigation elements, not settings — unless real settings UI is present.
     if (candidate.type === "settings") {
-      const isLanguageOnly = LANGUAGE_LABEL.test(
+      const isNavSelector = NAV_SELECTOR_LABEL.test(
         `${candidate.label} ${candidate.description}`,
       );
       const hasRealSettingsUI = REAL_SETTINGS_UI.test(segText);
-      if (isLanguageOnly && !hasRealSettingsUI) {
+      if (isNavSelector && !hasRealSettingsUI) {
         candidate.type = "navigation";
         candidate.confidence *= 0.9;
       }
