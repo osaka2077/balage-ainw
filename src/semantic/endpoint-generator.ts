@@ -25,7 +25,7 @@ import {
   EndpointTypeSchema,
 } from "../../shared_interfaces.js";
 import type { UISegment, Endpoint, Affordance } from "../../shared_interfaces.js";
-import type { LLMClient, LLMRequest } from "./llm-client.js";
+import type { LLMClient, LLMRequest, OpenAIJsonSchemaParam } from "./llm-client.js";
 import type {
   GenerationContext,
   EndpointCandidate,
@@ -75,6 +75,81 @@ const LLMEndpointResponseSchema = z.object({
   endpoints: z.array(EndpointCandidateSchema),
   reasoning: z.string(),
 });
+
+// ============================================================================
+// OpenAI Structured Outputs JSON Schema
+// Manuell aus dem Zod-Schema abgeleitet. OpenAI erfordert:
+// - strict: true
+// - Alle Properties in required
+// - additionalProperties: false auf jedem Object
+// - Keine $ref — alles inline
+// ============================================================================
+
+const ENDPOINT_RESPONSE_JSON_SCHEMA: OpenAIJsonSchemaParam = {
+  name: "endpoint_response",
+  strict: true,
+  schema: {
+    type: "object",
+    properties: {
+      endpoints: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            type: {
+              type: "string",
+              enum: [
+                "auth", "form", "checkout", "commerce", "search",
+                "navigation", "support", "content", "consent",
+                "media", "social", "settings",
+              ],
+            },
+            label: { type: "string" },
+            description: { type: "string" },
+            confidence: { type: "number" },
+            anchors: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  // Optional im Zod-Schema → anyOf string|null fuer Structured Outputs
+                  selector: { anyOf: [{ type: "string" }, { type: "null" }] },
+                  ariaRole: { anyOf: [{ type: "string" }, { type: "null" }] },
+                  ariaLabel: { anyOf: [{ type: "string" }, { type: "null" }] },
+                  textContent: { anyOf: [{ type: "string" }, { type: "null" }] },
+                },
+                required: ["selector", "ariaRole", "ariaLabel", "textContent"],
+                additionalProperties: false,
+              },
+            },
+            affordances: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  type: { type: "string" },
+                  expectedOutcome: { type: "string" },
+                  reversible: { type: "boolean" },
+                },
+                required: ["type", "expectedOutcome", "reversible"],
+                additionalProperties: false,
+              },
+            },
+            reasoning: { type: "string" },
+          },
+          required: [
+            "type", "label", "description", "confidence",
+            "anchors", "affordances", "reasoning",
+          ],
+          additionalProperties: false,
+        },
+      },
+      reasoning: { type: "string" },
+    },
+    required: ["endpoints", "reasoning"],
+    additionalProperties: false,
+  },
+};
 
 // ============================================================================
 // Public API
@@ -434,10 +509,13 @@ async function processSegment(
     const userPrompt = buildExtractionPrompt(securePruned, context, allSegments);
 
     // 4. LLM-Call mit Retry
+    // openaiJsonSchema wird nur vom OpenAI-Client genutzt (Structured Outputs).
+    // Anthropic ignoriert das Feld. Fallback auf json_object passiert im Client.
     const request: LLMRequest = {
       systemPrompt: ENDPOINT_EXTRACTION_SYSTEM_PROMPT_WITH_EXAMPLES,
       userPrompt,
       responseSchema: LLMEndpointResponseSchema,
+      openaiJsonSchema: ENDPOINT_RESPONSE_JSON_SCHEMA,
       temperature: 0,
       maxTokens: 2048,
     };

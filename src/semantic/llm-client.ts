@@ -32,9 +32,22 @@ export interface LLMRequest {
   systemPrompt: string;
   userPrompt: string;
   responseSchema?: z.ZodSchema;
+  /**
+   * OpenAI Structured Outputs JSON Schema.
+   * Wenn gesetzt, nutzt der OpenAI-Client `response_format: { type: "json_schema" }`
+   * statt `json_object`. Bei Anthropic wird dieses Feld ignoriert.
+   */
+  openaiJsonSchema?: OpenAIJsonSchemaParam;
   temperature?: number;
   maxTokens?: number;
   model?: string;
+}
+
+/** Parameter-Typ fuer OpenAI Structured Outputs response_format */
+export interface OpenAIJsonSchemaParam {
+  name: string;
+  strict: boolean;
+  schema: Record<string, unknown>;
 }
 
 export interface LLMResponse {
@@ -72,6 +85,9 @@ export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClien
     async complete(request: LLMRequest): Promise<LLMResponse> {
       const model = request.model ?? modelId;
       let lastError: Error | undefined;
+      // Structured Outputs wird versucht wenn ein JSON-Schema mitgegeben wurde.
+      // Bei Fehler (z.B. Modell unterstuetzt es nicht) Fallback auf json_object.
+      let useStructuredOutputs = !!request.openaiJsonSchema;
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         if (attempt > 0) {
@@ -82,6 +98,22 @@ export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClien
 
         const start = Date.now();
         try {
+          // Response-Format: Structured Outputs wenn verfuegbar, sonst json_object
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let responseFormat: any;
+          if (useStructuredOutputs && request.openaiJsonSchema) {
+            responseFormat = {
+              type: "json_schema",
+              json_schema: {
+                name: request.openaiJsonSchema.name,
+                strict: request.openaiJsonSchema.strict,
+                schema: request.openaiJsonSchema.schema,
+              },
+            };
+          } else {
+            responseFormat = { type: "json_object" };
+          }
+
           const response = await client.chat.completions.create({
             model,
             messages: [
@@ -90,7 +122,7 @@ export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClien
             ],
             temperature: request.temperature ?? 0,
             max_tokens: request.maxTokens ?? 4096,
-            response_format: { type: "json_object" },
+            response_format: responseFormat,
             seed: 42,
           });
 
@@ -101,7 +133,12 @@ export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClien
           let parsedContent: unknown;
           if (request.responseSchema) {
             try {
-              const parsed = JSON.parse(raw) as unknown;
+              let parsed = JSON.parse(raw) as unknown;
+              // Structured Outputs liefert null fuer optionale Felder —
+              // Zod .optional() erwartet undefined. Nur cleanen wenn SO aktiv war.
+              if (useStructuredOutputs && request.openaiJsonSchema) {
+                parsed = stripNulls(parsed);
+              }
               parsedContent = request.responseSchema.parse(parsed);
             } catch (parseErr) {
               throw new LLMParseError(
@@ -132,6 +169,20 @@ export async function createOpenAIClient(config: OpenAIConfig): Promise<LLMClien
               undefined,
               err instanceof Error ? err : undefined,
             );
+            continue;
+          }
+
+          // Structured Outputs Fallback: wenn der Call fehlschlaegt und wir
+          // Structured Outputs verwendet haben, auf json_object zurueckfallen
+          // und sofort erneut versuchen (zaehlt nicht als extra Retry).
+          if (useStructuredOutputs) {
+            useStructuredOutputs = false;
+            logger.warn(
+              { model, error: err instanceof Error ? err.message : String(err) },
+              "Structured Outputs failed, falling back to json_object",
+            );
+            // Den aktuellen Attempt nicht zaehlen — retry mit json_object
+            attempt--;
             continue;
           }
 
@@ -331,4 +382,27 @@ export function createMockClient(
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Konvertiert `null`-Werte rekursiv zu `undefined`.
+ * OpenAI Structured Outputs liefert `null` fuer optionale Felder,
+ * aber Zod `.optional()` erwartet `undefined`. Diese Funktion
+ * wird nur im Structured-Outputs-Pfad aufgerufen.
+ */
+function stripNulls(obj: unknown): unknown {
+  if (obj === null) return undefined;
+  if (Array.isArray(obj)) return obj.map(stripNulls);
+  if (typeof obj === "object" && obj !== null) {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const stripped = stripNulls(value);
+      // Felder mit undefined-Wert komplett weglassen, damit Zod .optional() greift
+      if (stripped !== undefined) {
+        result[key] = stripped;
+      }
+    }
+    return result;
+  }
+  return obj;
 }
