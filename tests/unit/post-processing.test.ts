@@ -440,7 +440,7 @@ describe("calculateDynamicCap", () => {
 // ============================================================================
 
 describe("deduplicateCandidates — navigation cap", () => {
-  it("limits navigation endpoints to 4", () => {
+  it("limits navigation endpoints to 3", () => {
     const candidates = [
       makeCandidate("navigation", "Main Nav", 0.9),
       makeCandidate("navigation", "Footer Nav", 0.85),
@@ -450,7 +450,7 @@ describe("deduplicateCandidates — navigation cap", () => {
     ];
     const result = deduplicateCandidates(candidates);
     const navItems = result.filter(c => c.type === "navigation");
-    expect(navItems).toHaveLength(4);
+    expect(navItems).toHaveLength(3);
   });
 
   it("limits content endpoints to 2 (down from 3)", () => {
