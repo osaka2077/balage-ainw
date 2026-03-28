@@ -61,6 +61,8 @@ export async function createServer(config: ApiServerConfig): Promise<FastifyInst
     reply.header("X-XSS-Protection", "0");
     reply.header("Referrer-Policy", "strict-origin-when-cross-origin");
     reply.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    reply.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    reply.header("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none'");
   });
 
   // Auth Hook (preHandler)
