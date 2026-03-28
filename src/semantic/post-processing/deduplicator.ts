@@ -10,6 +10,25 @@ import type { EndpointCandidate } from "../types.js";
 /** Commerce-Action-Pattern fuer Dedup */
 const COMMERCE_ACTION_PATTERN = /add to cart|add to bag|in den warenkorb|zum warenkorb/i;
 
+/** Synonym-Map: normalisiert gaengige Label-Varianten vor dem Vergleich */
+const LABEL_SYNONYMS: Record<string, string> = {
+  "login": "sign in",
+  "log in": "sign in",
+  "anmelden": "sign in",
+  "einloggen": "sign in",
+  "register": "sign up",
+  "create account": "sign up",
+  "registrieren": "sign up",
+  "konto erstellen": "sign up",
+  "shopping cart": "cart",
+  "warenkorb": "cart",
+  "basket": "cart",
+  "einkaufswagen": "cart",
+  "suche": "search",
+  "hilfe": "help",
+  "kontakt": "contact",
+};
+
 /**
  * Per-type cap: differenzierte Limits pro Typ.
  *
@@ -38,9 +57,21 @@ const TYPE_CAPS: Record<string, number> = {
  *
  * Wird auch extern benoetigt (z.B. Benchmark-Matching).
  */
+/** Normalisiert einen Label-String: Synonyme ersetzen, Kleinbuchstaben, Wort-Set */
+function normalizeLabel(label: string): Set<string> {
+  let normalized = label.toLowerCase();
+  // Laengere Synonyme zuerst ersetzen (multi-word vor single-word)
+  const sortedSynonyms = Object.entries(LABEL_SYNONYMS)
+    .sort((a, b) => b[0].length - a[0].length);
+  for (const [from, to] of sortedSynonyms) {
+    normalized = normalized.replaceAll(from, to);
+  }
+  return new Set(normalized.split(/\s+/).filter(Boolean));
+}
+
 export function labelSimilarity(a: string, b: string): number {
-  const wordsA = new Set(a.toLowerCase().split(/\s+/).filter(Boolean));
-  const wordsB = new Set(b.toLowerCase().split(/\s+/).filter(Boolean));
+  const wordsA = normalizeLabel(a);
+  const wordsB = normalizeLabel(b);
 
   if (wordsA.size === 0 && wordsB.size === 0) return 1;
   if (wordsA.size === 0 || wordsB.size === 0) return 0;

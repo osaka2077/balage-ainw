@@ -139,14 +139,14 @@ describe("Segment-budget context in extraction prompt", () => {
     const prompt = buildExtractionPrompt(MOCK_SEGMENT, MOCK_CONTEXT, allSegments);
     expect(prompt).toContain("## Endpoint Budget");
     expect(prompt).toContain("This page has 3 segments");
-    expect(prompt).toContain("4-7 important endpoints total");
+    expect(prompt).toContain("3-6 important endpoints total");
     expect(prompt).toContain("Be selective");
   });
 
   it("does NOT include segment budget when no allSegments", () => {
     const prompt = buildExtractionPrompt(MOCK_SEGMENT, MOCK_CONTEXT);
     expect(prompt).not.toContain("## Endpoint Budget");
-    expect(prompt).not.toContain("4-7 important endpoints total");
+    expect(prompt).not.toContain("3-6 important endpoints total");
   });
 
   it("does NOT include segment budget when allSegments is empty", () => {

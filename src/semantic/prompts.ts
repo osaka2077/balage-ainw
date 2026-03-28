@@ -400,6 +400,53 @@ export const ENDPOINT_EXTRACTION_FEW_SHOT = [
       reasoning: "No interactive elements. Decorative content only — no forms, buttons, links, or inputs. Not every segment contains endpoints.",
     },
   },
+  // Example 10: SSO Login Page — multiple SSO buttons = 1 endpoint
+  {
+    input: `SEGMENT [form] confidence=0.9
+  FORM
+    HEADING(2): "Log in to your account"
+    LABEL: "Email"
+      INPUT[type=email, required]
+    BUTTON[type=submit]: "Continue with email"
+    DIV[class="sso-divider"]
+      TEXT: "or continue with"
+    BUTTON: "Continue with Google"
+    BUTTON: "Continue with Microsoft"
+    BUTTON: "Continue with Apple"
+    LINK: "Forgot password?"
+    LINK: "Create account"`,
+    output: {
+      endpoints: [
+        {
+          type: "auth",
+          label: "Login Form",
+          description: "Email login form with Continue button and password recovery link.",
+          confidence: 0.95,
+          anchors: [{ selector: "form", textContent: "Log in to your account" }],
+          affordances: [
+            { type: "fill", expectedOutcome: "Enter email address", reversible: true },
+            { type: "submit", expectedOutcome: "Continue login flow", reversible: false },
+          ],
+          reasoning: "Email input + submit button = primary auth form.",
+        },
+        {
+          type: "auth",
+          label: "SSO Options",
+          description: "Google, Microsoft, and Apple single sign-on buttons grouped as one endpoint.",
+          confidence: 0.85,
+          anchors: [
+            { selector: "button", textContent: "Continue with Google" },
+            { selector: "button", textContent: "Continue with Microsoft" },
+          ],
+          affordances: [
+            { type: "click", expectedOutcome: "Start OAuth flow with selected provider", reversible: true },
+          ],
+          reasoning: "3 SSO buttons = 1 auth endpoint (SSO Options), NOT 3 separate endpoints. They all serve the same purpose: third-party authentication.",
+        },
+      ],
+      reasoning: "Login page with email form + 3 SSO buttons. SSO buttons are grouped as ONE endpoint because they serve the same purpose (third-party auth). Forgot password and Create account links are secondary nav, not separate endpoints.",
+    },
+  },
 ];
 
 // ============================================================================
@@ -488,7 +535,7 @@ export function buildExtractionPrompt(
       );
     }
     parts.push(
-      "A typical page has 4-7 important endpoints total. Be selective — only return endpoints that represent genuinely distinct interactive features, not decorative or redundant elements.",
+      "A typical page has 3-6 important endpoints total. Be selective — only return endpoints that represent genuinely distinct interactive features, not decorative or redundant elements.",
     );
     parts.push("");
   }

@@ -298,9 +298,10 @@ describe("labelSimilarity", () => {
   });
 
   it("returns correct Jaccard similarity for partial overlap", () => {
-    // "user login" vs "login form" -> intersection=1(login), union=3(user,login,form) -> 1/3
+    // After synonym normalization: "user login" → "user sign in", "login form" → "sign in form"
+    // intersection={sign,in}=2, union={user,sign,in,form}=4 → 2/4 = 0.5
     const sim = labelSimilarity("User Login", "Login Form");
-    expect(sim).toBeCloseTo(1 / 3);
+    expect(sim).toBeCloseTo(0.5);
   });
 
   it("is case-insensitive", () => {
