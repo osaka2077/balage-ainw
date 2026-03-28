@@ -81,11 +81,14 @@ Each endpoint object:
   "reasoning": "<why this is this type>"
 }
 
-CONFIDENCE CALIBRATION:
-- 0.9-1.0: Certain — primary interactive element (login form, main search bar)
-- 0.7-0.9: Likely real but secondary (newsletter signup, secondary nav)
-- 0.5-0.7: Might be an endpoint — borderline cases
-- Below 0.5: Probably not a meaningful endpoint — omit or assign very low confidence
+CONFIDENCE CALIBRATION — USE THE FULL RANGE:
+- 0.90-1.0: Primary interactive elements with clear purpose (login form with fields, main search bar, cart button)
+- 0.75-0.89: Clear endpoints but secondary (SSO options group, newsletter signup, sidebar navigation)
+- 0.60-0.74: Likely endpoints with some ambiguity (footer nav, help link in header, language selector)
+- 0.45-0.59: Borderline — could be endpoint or decorative (social links, breadcrumbs, generic content tabs)
+- Below 0.45: Probably not a meaningful endpoint — omit
+
+IMPORTANT: Spread your confidence scores across the full range. Do NOT cluster everything at 0.85-0.90. A login form (0.95) should be clearly distinguished from a footer link (0.55).
 
 COMMON MISCLASSIFICATIONS — AVOID THESE:
 - A form with date-pickers (check-in/check-out) and a "Search"/"Find" button on travel/booking sites is SEARCH, not CHECKOUT. Checkout requires cart, payment, or pricing elements.
