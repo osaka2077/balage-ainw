@@ -133,23 +133,24 @@ const SAFETY_CAP = 8;
 ```
 **Regel:** SAFETY_CAP muss an der realen Ground-Truth-Verteilung kalibriert sein. 95% der Sites haben <=8 echte Endpoints. Der Cap ist die letzte Verteidigungslinie wenn der Gap-Cutoff nicht greift.
 
-### ERR-011: applySiteSpecificCorrections wird nie aufgerufen (toter Code)
-**Datum:** 2026-03-27
+### ERR-011: applySiteSpecificCorrections wird nie aufgerufen (toter Code) — GEFIXT
+**Datum:** 2026-03-27 (dokumentiert) / 2026-03-28 (gefixt)
 **Problem:** `applySiteSpecificCorrections()` ist nur innerhalb `runPostProcessing()` registriert, aber `runPostProcessing()` wird nirgendwo importiert oder aufgerufen. Die gesamten site-specific Corrections (Booking checkout->search, OneTrust consent, Zendesk auth->support) waren toter Code und hatten keinen Effekt in Production.
 **Falscher Code:**
 ```typescript
-// endpoint-generator.ts importiert nur:
-import { applyTypeCorrections, applyConfidencePenalties, ... } from "./post-processing/index.js";
-// applySiteSpecificCorrections fehlt im Import und Aufruf!
+// endpoint-generator.ts processSegment():
+applyTypeCorrections(candidates, segText, segment.type);
+// applySiteSpecificCorrections FEHLTE HIER
+applyConfidencePenalties(candidates, segText, segment.type);
 ```
 **Richtiger Code:**
 ```typescript
-// Workaround: Kritische Regeln in applyTypeCorrections integriert (type-corrector.ts),
-// da endpoint-generator.ts nicht geaendert werden durfte.
-// Langfristig: endpoint-generator.ts sollte runPostProcessing() nutzen
-// oder applySiteSpecificCorrections explizit importieren und aufrufen.
+// endpoint-generator.ts processSegment() — Reihenfolge wie in runPostProcessing():
+applyTypeCorrections(candidates, segText, segment.type);
+applySiteSpecificCorrections(candidates, segText);
+applyConfidencePenalties(candidates, segText, segment.type);
 ```
-**Regel:** Neue Post-Processing-Module muessen in der tatsaechlich aufgerufenen Pipeline registriert werden. `runPostProcessing()` existiert als Orchestrator, wird aber von keinem Aufrufer genutzt — ein klassischer Dead-Code-Fall.
+**Regel:** Neue Post-Processing-Module muessen in der tatsaechlich aufgerufenen Pipeline registriert werden. Wenn `runPostProcessing()` nicht als Ganzes genutzt wird, muss jede Einzelfunktion explizit importiert und in der richtigen Reihenfolge aufgerufen werden.
 
 ### ERR-012: CART_EVIDENCE false positive fuer "checkout" auf Travel-Sites
 **Datum:** 2026-03-27
