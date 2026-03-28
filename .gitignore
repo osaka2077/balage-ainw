@@ -103,3 +103,4 @@ tests/real-world/vision-baseline-results-*.json
 tmp/
 *.tmp
 .mailmap
+.gitnexus
