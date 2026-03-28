@@ -114,10 +114,16 @@ export async function generateEndpoints(
   const credentialGuard = new CredentialGuard();
 
   // Segment-Pre-Filtering: Skip Segmente mit wenig Interaktivitaet
-  const INTERACTIVE_SEGMENT_TYPES = new Set(["form", "search", "checkout", "navigation"]);
+  // Gruppe 1: Typen die IMMER durchgelassen werden (auch mit 0 interaktiven Elementen)
+  const ALWAYS_PASS_TYPES = new Set(["form", "search", "checkout", "navigation"]);
+  // Gruppe 2: Typen die durchgelassen werden weil sie haeufig relevante Links/Endpoints enthalten
+  // Footer: Support-Links, Help, Contact. Header: Auth-Buttons, Language-Selector.
+  // Modal/Overlay: Cookie-Banner, Login-Modals. Sidebar: Navigation-Links.
+  const STRUCTURAL_PASS_TYPES = new Set(["footer", "header", "modal", "overlay", "sidebar"]);
   const filteredSegments = segments.filter((seg) => {
     if (seg.interactiveElementCount >= 1) return true;
-    if (INTERACTIVE_SEGMENT_TYPES.has(seg.type)) return true;
+    if (ALWAYS_PASS_TYPES.has(seg.type)) return true;
+    if (STRUCTURAL_PASS_TYPES.has(seg.type)) return true;
     logger.debug({ segmentId: seg.id, type: seg.type, interactive: seg.interactiveElementCount }, "Skipping low-interactivity segment");
     return false;
   });
