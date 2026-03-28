@@ -4,6 +4,7 @@
 
 import type { WebSocket, RawData } from "ws";
 import type { WorkflowProgressEvent, WebSocketMessage, ApiKeyConfig } from "./types.js";
+import { safeCompare } from "./middleware/auth.js";
 import { createLogger } from "../observability/index.js";
 
 const logger = createLogger({ name: "api:websocket" });
@@ -32,7 +33,7 @@ export class WebSocketManager {
 
   /** Neue WebSocket-Verbindung registrieren */
   handleConnection(socket: WebSocket, apiKey: string): void {
-    const isValid = this.apiKeys.some((k) => k.key === apiKey);
+    const isValid = this.apiKeys.some((k) => safeCompare(k.key, apiKey));
     if (!isValid) {
       socket.send(JSON.stringify({
         type: "error",
