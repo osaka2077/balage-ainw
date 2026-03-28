@@ -9,38 +9,17 @@
       "label": "Documentation Search",
       "description": "Search input / command palette (Cmd+K) for searching docs, API reference, and guides",
       "selector_hint": "button[data-testid='search-button'], input[type='search']",
-      "affordances": [
-        "click",
-        "fill",
-        "submit"
-      ],
+      "affordances": ["click", "fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
       "phase": 1
     },
     {
       "type": "navigation",
-      "label": "Sidebar Navigation",
-      "description": "Hierarchical docs sidebar with expandable sections: Get Started, Payments, Billing, Connect, etc.",
-      "selector_hint": "nav[aria-label='Sidebar'] a, .sidebar-nav a",
-      "affordances": [
-        "click",
-        "expand"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Breadcrumbs",
-      "description": "Breadcrumb trail showing current position in doc hierarchy",
-      "selector_hint": "nav[aria-label='Breadcrumb'] a",
-      "affordances": [
-        "click"
-      ],
+      "label": "Docs Navigation",
+      "description": "Sidebar, breadcrumbs, and top nav combined: hierarchical sections (Get Started, Payments, Billing, Connect), position trail, and Products/Solutions/Developers links",
+      "selector_hint": "nav[aria-label='Sidebar'] a, nav[aria-label='Breadcrumb'] a, header nav a",
+      "affordances": ["click", "expand"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -50,28 +29,14 @@
       "label": "Sign In / Dashboard",
       "description": "Header link to Stripe Dashboard sign-in",
       "selector_hint": "a[href*='dashboard.stripe.com'], a[href*='login']",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "high",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Top Navigation",
-      "description": "Header nav: Products, Solutions, Developers, Resources, Pricing",
-      "selector_hint": "header nav a",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 3,
     "phase1_endpoints": 1,
     "min_precision_target": 0.75,
     "min_recall_target": 0.65

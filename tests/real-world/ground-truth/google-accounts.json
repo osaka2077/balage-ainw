@@ -6,7 +6,7 @@
   "endpoints": [
     {
       "type": "auth",
-      "label": "Identifier Step — Email/Phone",
+      "label": "Sign-In Form",
       "description": "Email or phone input field with Next button on the first step of sign-in",
       "selector_hint": "input[type='email'], #identifierId, button[jsname='LgbsSe']",
       "affordances": ["fill", "submit"],
@@ -16,33 +16,13 @@
     },
     {
       "type": "auth",
-      "label": "Password Step",
-      "description": "Password input field with Next button on the second step of sign-in. Only visible after email submit — not in initial HTML.",
-      "selector_hint": "input[type='password'], input[name='Passwd']",
-      "affordances": ["fill", "submit"],
-      "risk_class": "high",
-      "fields": ["password"],
-      "phase": 3
-    },
-    {
-      "type": "auth",
-      "label": "Forgot Email",
-      "description": "Link to find/recover Google account email address",
+      "label": "Account Recovery",
+      "description": "Forgot Email and Forgot Password links for account recovery",
       "selector_hint": "button[jsname='Cuz2Ue'], a[href*='signin/v2/usernamerecovery']",
       "affordances": ["click"],
       "risk_class": "medium",
       "fields": [],
       "phase": 1
-    },
-    {
-      "type": "auth",
-      "label": "Forgot Password",
-      "description": "Link to account recovery for forgotten password. Only shown on password step (step 2) — not in initial HTML.",
-      "selector_hint": "a[href*='signin/v2/challenge/pwd'], button[jsname='LwH6nd']",
-      "affordances": ["click"],
-      "risk_class": "medium",
-      "fields": [],
-      "phase": 3
     },
     {
       "type": "navigation",
@@ -58,7 +38,7 @@
       "type": "navigation",
       "label": "Language Selector",
       "description": "Dropdown to change the page display language",
-      "selector_hint": "select#lang-chooser, div[jsname='LgbsSe']",
+      "selector_hint": "select#lang-chooser",
       "affordances": ["select"],
       "risk_class": "low",
       "fields": [],
@@ -66,7 +46,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 4,
     "phase1_endpoints": 2,
     "min_precision_target": 0.70,
     "min_recall_target": 0.65

@@ -1,0 +1,24 @@
+{
+  "description": "Hold-Out-Set — 5 Sites die NIE fuer Prompt-Tuning oder Post-Processing verwendet werden. Hold-Out F1 ist die einzige ehrliche Metrik.",
+  "defined_at": "2026-03-28",
+  "holdout": [
+    "notion-login",
+    "target-main",
+    "stackoverflow-main",
+    "airbnb-main",
+    "angular-material-demo"
+  ],
+  "selection_rationale": {
+    "notion-login": "easy, SaaS Auth — baseline login page",
+    "target-main": "medium, US Retail/E-Commerce",
+    "stackoverflow-main": "medium, Content/Q&A Developer site",
+    "airbnb-main": "hard, Travel/E-Commerce React SPA",
+    "angular-material-demo": "extreme, Shadow DOM Developer Tool"
+  },
+  "rules": [
+    "NEVER use these sites for prompt tuning",
+    "NEVER add site-specific post-processing rules for these sites",
+    "NEVER adjust GT for these sites to improve F1",
+    "If Hold-Out F1 drops >8pp below Train-Set F1 = overfitting alarm"
+  ]
+}

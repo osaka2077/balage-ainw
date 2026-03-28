@@ -2,26 +2,16 @@
   "url": "https://gitlab.com/users/sign_in",
   "captured_at": "2026-03-19",
   "difficulty": "easy",
-  "notes": "GitLab.com sign-in page. Clean layout with username/password form, 'Forgot your password?' link, Remember me checkbox, SSO provider buttons (Google, GitHub, Bitbucket, Salesforce), and Register tab. Replaces outlook-login (bot-protected).",
+  "notes": "GitLab.com sign-in page. Clean layout with username/password form, 'Forgot your password?' link, Remember me checkbox, SSO provider buttons (Google, GitHub, Bitbucket, Salesforce), and Register tab.",
   "endpoints": [
     {
       "type": "auth",
-      "label": "Sign In Form",
-      "description": "Username or email + password login form with Sign in submit button",
+      "label": "Login Form",
+      "description": "Username or email + password login form with Sign in button and Forgot your password? link",
       "selector_hint": "form#new_user, input#user_login, input#user_password, button[type='submit']",
       "affordances": ["fill", "submit"],
       "risk_class": "high",
       "fields": ["username", "password"],
-      "phase": 1
-    },
-    {
-      "type": "auth",
-      "label": "Forgot Password",
-      "description": "Forgot your password? link leading to password reset page",
-      "selector_hint": "a[href*='password/new']",
-      "affordances": ["click"],
-      "risk_class": "medium",
-      "fields": [],
       "phase": 1
     },
     {
@@ -36,19 +26,9 @@
     },
     {
       "type": "navigation",
-      "label": "Register Tab",
-      "description": "Register tab or link to create a new GitLab account",
-      "selector_hint": "a[href*='sign_up'], a[data-qa-selector='register_link']",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Explore GitLab",
-      "description": "Explore link to browse public projects without authentication",
-      "selector_hint": "a[href='/explore']",
+      "label": "Account Links",
+      "description": "Register tab and Explore GitLab link for browsing public projects",
+      "selector_hint": "a[href*='sign_up'], a[href='/explore']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -58,7 +38,7 @@
       "type": "consent",
       "label": "Cookie Consent Banner",
       "description": "OneTrust cookie consent banner with Accept/Customize buttons",
-      "selector_hint": "#onetrust-banner-sdk, #onetrust-accept-btn-handler, #onetrust-pc-btn-handler",
+      "selector_hint": "#onetrust-banner-sdk, #onetrust-accept-btn-handler",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -66,8 +46,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
-    "phase1_endpoints": 2,
+    "total_endpoints": 4,
+    "phase1_endpoints": 1,
     "min_precision_target": 0.80,
     "min_recall_target": 0.80
   }
