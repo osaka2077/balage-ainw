@@ -1,76 +1,53 @@
 {
   "url": "https://dev.to",
   "captured_at": "2026-03-29",
-  "difficulty": "hard",
-  "notes": "DEV Community",
+  "difficulty": "medium",
+  "notes": "DEV Community developer blog/forum homepage. Header with search bar, Log in / Create Account links. Left sidebar with navigation links (Home, DEV++, Podcasts, Videos, Tags, etc.). Main content is article feed. No SSO buttons visible on homepage — those appear only on login page.",
   "endpoints": [
-    {
-      "type": "auth",
-      "label": "Social/SSO Login",
-      "description": "5 OAuth/SSO provider buttons",
-      "selector_hint": "a.crayons-story__hidden-navigation-link",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "a[href*=\"/enter\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
     {
       "type": "search",
       "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "#search-input",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "Site search input in header",
+      "selector_hint": "#search-input, input[type='search']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Log In / Create Account",
+      "description": "Log in and Create Account links in header",
+      "selector_hint": "a[href*='/enter'], a[href*='sign-up']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
       "phase": 1
     },
     {
       "type": "navigation",
-      "label": "Main Navigation",
-      "description": "Primary nav (14 links): Home, DEV++, Videos, DEV Education Tracks, DEV Challenges, DEV Help, Advertise on DEV, Organization Accounts",
-      "selector_hint": "[data-testid=\"main-nav\"] a",
-      "affordances": [
-        "click"
-      ],
+      "label": "Sidebar Navigation",
+      "description": "Left sidebar with links: Home, DEV++, Podcasts, Videos, Tags, FAQ, DEV Shop, Sponsors, About, Contact",
+      "selector_hint": "nav[aria-label='Primary sidebar'] a, [data-testid='main-nav'] a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
-      "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with 5 links",
-      "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "type": "content",
+      "label": "Article Feed",
+      "description": "Main content area with developer article cards (title, author, tags, reactions)",
+      "selector_hint": "article a, [class*='crayons-story'] a",
+      "affordances": ["click", "read"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
-    "phase1_endpoints": 1,
+    "total_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

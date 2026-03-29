@@ -1,29 +1,35 @@
 {
   "url": "https://www.arte.tv/de/",
   "captured_at": "2026-03-29",
-  "difficulty": "hard",
-  "notes": "ARTE Mediathek | Viel mehr als TV",
+  "difficulty": "medium",
+  "notes": "ARTE Mediathek German streaming homepage. Dark theme. Header with search icon and user account icon. Secondary navigation bar (TV-Programm, Live, Bald online, ARTE Concert). Content rows with video thumbnails. Footer with newsletter signup form and links. The two newsletter forms (banner + footer) are merged into one since they serve the same purpose. Model detects search functionality via the search icon button.",
   "endpoints": [
     {
       "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "a[href*=\"/de/profile/auth/register\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
+      "label": "Account / Profile",
+      "description": "User profile/account icon in header for login/registration",
+      "selector_hint": "a[href*='/de/profile'], [aria-label*='Profil']",
+      "affordances": ["click"],
+      "risk_class": "high",
       "fields": [],
       "phase": 2
     },
     {
+      "type": "search",
+      "label": "Search",
+      "description": "Search icon/button in header that opens search overlay",
+      "selector_hint": "button[aria-label*='Suche'], a[href*='search']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 1
+    },
+    {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (4 links): TV-Programm, Live, Bald online, ARTE Concert",
-      "selector_hint": "[aria-label=\"Sekundäre Navigation\"] a",
-      "affordances": [
-        "click"
-      ],
+      "description": "Secondary nav bar: TV-Programm, Live, Bald online, ARTE Concert, plus category navigation",
+      "selector_hint": "[aria-label*='Navigation'] a, nav a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -31,11 +37,9 @@
     {
       "type": "navigation",
       "label": "Footer Navigation",
-      "description": "Footer with 39 links",
+      "description": "Footer with legal links, social media, language selection, partner links",
       "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -43,39 +47,17 @@
     {
       "type": "form",
       "label": "Newsletter Signup",
-      "description": "Email subscription form",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "Email newsletter subscription form with email input and checkboxes",
+      "selector_hint": "form[class*='newsletter'], input[name*='newsletter']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "newsletterEmail",
-        "newsletterZoneCheckbox-replay_banner"
-      ],
-      "phase": 2
-    },
-    {
-      "type": "form",
-      "label": "Newsletter Signup",
-      "description": "Email subscription form",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "newsletterEmail",
-        "newsletterZoneCheckbox-replay_footer"
-      ],
+      "fields": ["email"],
       "phase": 2
     }
   ],
   "expected_metrics": {
     "total_endpoints": 5,
-    "phase1_endpoints": 0,
+    "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

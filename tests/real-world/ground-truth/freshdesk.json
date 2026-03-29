@@ -1,44 +1,25 @@
 {
   "url": "https://freshdesk.com",
   "captured_at": "2026-03-29",
-  "difficulty": "hard",
-  "notes": "Freshdesk: AI-powered platform for modern customer service | Freshworks",
+  "difficulty": "medium",
+  "notes": "Freshdesk SaaS marketing homepage. Top navigation with product links (Products, Solutions, Pricing, Resources), Login link, and Try it Free CTA button. Cookie consent banner visible. No search bar on the marketing homepage. The 'newsletter signup' was actually a demo/webinar form that is not a standard newsletter — removed as it is buried deep in page content.",
   "endpoints": [
     {
       "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "[aria-label=\"Try it free\"]",
-      "affordances": [
-        "click"
-      ],
+      "label": "Free Trial / Login",
+      "description": "Try it Free CTA button and Login link in header",
+      "selector_hint": "a[href*='signup'], a[href*='login']",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "search",
-      "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "#vendor-search-handler",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
       "phase": 1
     },
     {
       "type": "consent",
       "label": "Cookie Consent Banner",
-      "description": "GDPR cookie/consent banner with Accept/Reject",
-      "selector_hint": "#onetrust-reject-all-handler",
-      "affordances": [
-        "click"
-      ],
+      "description": "GDPR cookie consent banner with Accept/Reject options",
+      "selector_hint": "#onetrust-reject-all-handler, [class*='consent']",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -46,11 +27,9 @@
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (19 links): English, Deutsch, Nederlands, Français, Svenska, Español (España), Español (América Latina), Português",
-      "selector_hint": "nav.sc-6293d692-0 a",
-      "affordances": [
-        "click"
-      ],
+      "description": "Primary nav: Products, Solutions, Pricing, Resources dropdowns with sub-items",
+      "selector_hint": "nav a, header nav a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -58,39 +37,16 @@
     {
       "type": "navigation",
       "label": "Footer Navigation",
-      "description": "Footer with 45 links",
+      "description": "Footer with product links, company info, legal, social media links",
       "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "form",
-      "label": "Newsletter Signup",
-      "description": "Email subscription form",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "first-name",
-        "last-name",
-        "email",
-        "company",
-        "webinar-slot",
-        "disclaimer-checkbox",
-        "consent-checkbox"
-      ],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 4,
     "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

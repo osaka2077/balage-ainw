@@ -1,79 +1,43 @@
 {
   "url": "https://www.coursera.org",
   "captured_at": "2026-03-29",
-  "difficulty": "hard",
-  "notes": "Coursera | Courses, Professional Certificates, and Degrees Online",
+  "difficulty": "medium",
+  "notes": "Coursera online learning homepage. Search bar prominently centered, Login/Join links in header, course category tabs, featured courses grid. No cookie consent banner visible in screenshot. No contact form on homepage — the search bar was misidentified as a form.",
   "endpoints": [
-    {
-      "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "a.cds-149",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
     {
       "type": "search",
       "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "#search-autocomplete-input",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "Course search input with autocomplete",
+      "selector_hint": "#search-autocomplete-input, input[type='search']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Login / Join",
+      "description": "Log In and Join for Free buttons/links in header",
+      "selector_hint": "a[href*='login'], a[href*='signup']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
       "phase": 1
     },
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (9 links): für für Einzelpersonen, für Unternehmen, für für Hochschulen, für Behörden, Abschlüsse, Anmelden, Kostenlose Teilnahme",
-      "selector_hint": "[data-testid=\"page-header-wrapper\"] a",
-      "affordances": [
-        "click"
-      ],
+      "description": "Header nav: Explore dropdown, For Individuals, For Business, For Universities, For Government",
+      "selector_hint": "[data-testid='page-header-wrapper'] a, nav a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with 82 links",
-      "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "form",
-      "label": "Contact Form",
-      "description": "Contact/message form",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "query"
-      ],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
-    "phase1_endpoints": 1,
+    "total_endpoints": 3,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

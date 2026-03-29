@@ -1,63 +1,42 @@
 {
   "url": "https://alternativeto.net",
   "captured_at": "2026-03-29",
-  "difficulty": "hard",
-  "notes": "AlternativeTo - Crowdsourced software recommendations | AlternativeTo",
+  "difficulty": "medium",
+  "notes": "AlternativeTo software recommendations homepage. Prominent search bar, Sign In/Sign Up links in header, category navigation (New Apps, All Apps, News, Lists). Model detects search and auth reliably. Navigation is present but model misses it as a separate type.",
   "endpoints": [
-    {
-      "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "a[href*=\"/api/auth/login\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
     {
       "type": "search",
       "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "#search-input",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "App/software search input with suggestions",
+      "selector_hint": "#search-input, input[type='search']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
       "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Sign In / Sign Up",
+      "description": "Sign In and Sign Up links in header",
+      "selector_hint": "a[href*='/api/auth/login'], a[href*='register']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     },
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (4 links): NEW APPSNEW APP RELEASES, ALL APPSBROWSE ALL APPS, NEWSTECH NEWS, LISTS",
-      "selector_hint": "nav.flex a",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with 22 links",
-      "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "description": "Primary nav tabs: New Apps, All Apps, News, Lists",
+      "selector_hint": "nav a, [class*='nav'] a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 3,
     "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

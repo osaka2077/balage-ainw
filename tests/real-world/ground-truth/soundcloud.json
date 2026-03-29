@@ -1,32 +1,25 @@
 {
   "url": "https://soundcloud.com",
   "captured_at": "2026-03-29",
-  "difficulty": "hard",
-  "notes": "Stream and listen to music online for free with SoundCloud",
+  "difficulty": "medium",
+  "notes": "SoundCloud music streaming homepage. Header with Sign In/Create Account buttons, search bar, trending tracks, player controls at bottom. No shopping cart — SoundCloud is a streaming platform, not an e-commerce site. Cookie consent banner not visible in screenshot.",
   "endpoints": [
     {
       "type": "search",
       "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "[aria-label=\"Search\"]",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "Search input for artists, tracks, albums, playlists",
+      "selector_hint": "input[type='search'], [aria-label='Search']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
       "phase": 1
     },
     {
-      "type": "checkout",
-      "label": "Shopping Cart",
-      "description": "Cart icon/link to basket or checkout",
-      "selector_hint": "a[href*=\"/artist\"]",
-      "affordances": [
-        "click"
-      ],
+      "type": "auth",
+      "label": "Sign In / Create Account",
+      "description": "Sign In and Create Account buttons in header",
+      "selector_hint": "a[href*='signin'], button[title='Sign in']",
+      "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
       "phase": 1
@@ -34,11 +27,9 @@
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (3 links): Home, Feed, Library",
-      "selector_hint": "nav.left a",
-      "affordances": [
-        "click"
-      ],
+      "description": "Header navigation with Upload, Explore Artist Pro links and SoundCloud logo",
+      "selector_hint": "header nav a, header a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2

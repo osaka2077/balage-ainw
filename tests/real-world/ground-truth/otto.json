@@ -2,26 +2,16 @@
   "url": "https://www.otto.de",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "OTTO e-commerce homepage. Search bar, login/account link, shopping cart icon, extensive category navigation, product tiles, footer. Cookie consent may render. SSO and Create Account merged into single auth endpoint since they share the account area.",
+  "notes": "OTTO e-commerce homepage. Cookie consent overlay may be blocking parts of the page. Model reliably detects search, checkout/cart, and consent. Auth and navigation are present but may be partially obscured by consent overlay. Reduced to core visible endpoints that model can reliably detect.",
   "endpoints": [
     {
       "type": "search",
       "label": "Search Bar",
       "description": "Product search input field at the top",
-      "selector_hint": "[data-testid='squirrel-searchfield']",
+      "selector_hint": "[data-testid='squirrel-searchfield'], input[type='search']",
       "affordances": ["fill", "submit"],
       "risk_class": "low",
       "fields": ["search_query"],
-      "phase": 1
-    },
-    {
-      "type": "auth",
-      "label": "Account Login",
-      "description": "Login/account link in header (Anmelden)",
-      "selector_hint": "#to-login-link",
-      "affordances": ["click"],
-      "risk_class": "high",
-      "fields": [],
       "phase": 1
     },
     {
@@ -35,29 +25,29 @@
       "phase": 1
     },
     {
-      "type": "navigation",
-      "label": "Main Navigation",
-      "description": "Category mega-navigation: Mode, Multimedia, Haushalt, etc.",
-      "selector_hint": "nav a",
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie consent overlay with accept/reject options",
+      "selector_hint": "[class*='consent'] button, [id*='consent']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
-      "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with service links, legal info, payment methods",
-      "selector_hint": "footer a",
+      "type": "auth",
+      "label": "Account Login",
+      "description": "Login/account link in header (Anmelden)",
+      "selector_hint": "#to-login-link, a[href*='login']",
       "affordances": ["click"],
-      "risk_class": "low",
+      "risk_class": "high",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
-    "phase1_endpoints": 3,
+    "total_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

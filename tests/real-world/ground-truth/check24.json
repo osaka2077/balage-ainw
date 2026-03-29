@@ -2,13 +2,13 @@
   "url": "https://www.check24.de",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "CHECK24 comparison portal homepage. Search/comparison input at top, category icon navigation (Versicherung, Finanzen, Energie, etc.), service comparison tiles, footer. Cookie consent overlay likely present. The 'Form (1 fields)' and 'Form (6 fields)' were phantom duplicates of the search bar and a hidden comparison form.",
+  "notes": "CHECK24 comparison portal homepage. Large cookie consent overlay is prominently visible, partially blocking content. Search input in header, Mein Konto login link. Category navigation icons below header (Versicherung, Finanzen, Energie, Reise, Auto). Model consistently detects consent banner which IS visible.",
   "endpoints": [
     {
       "type": "search",
       "label": "Search Bar",
       "description": "Site-wide search input in header",
-      "selector_hint": "#c24-search-header",
+      "selector_hint": "#c24-search-header, input[type='search']",
       "affordances": ["fill", "submit"],
       "risk_class": "low",
       "fields": ["search_query"],
@@ -25,10 +25,10 @@
       "phase": 1
     },
     {
-      "type": "navigation",
-      "label": "Category Navigation",
-      "description": "Service category icons: Versicherung, Finanzen, Energie, Reise, Auto, etc.",
-      "selector_hint": "[class*='category'] a, [class*='icon-nav'] a",
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie consent overlay with Akzeptieren/Einstellungen buttons",
+      "selector_hint": "[class*='consent'] button, [id*='consent']",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -36,9 +36,9 @@
     },
     {
       "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with legal links, Vergleichsbereiche, Impressum",
-      "selector_hint": "footer a",
+      "label": "Category Navigation",
+      "description": "Service category icons: Versicherung, Finanzen, Energie, Reise, Auto, etc.",
+      "selector_hint": "[class*='category'] a, [class*='icon-nav'] a",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
