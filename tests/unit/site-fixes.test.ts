@@ -157,11 +157,19 @@ describe("Fix 2: Support-type correction", () => {
     expect(candidates[0]!.type).toBe("navigation");
   });
 
-  it("does not convert auth type to support (type-corrector only)", () => {
-    // type-corrector allein konvertiert auth NICHT zu support
-    // (das macht site-specific-corrections)
+  it("converts auth with support label to support", () => {
+    // Auth endpoints with explicit support keywords in label should be
+    // reclassified to support (e.g., zendesk "Contact Support" detected as auth)
     const candidates = [
-      makeCandidate("auth", "Contact Support Login", 0.8, "Login to help center"),
+      makeCandidate("auth", "Contact Support", 0.8, "Link to support team"),
+    ];
+    applyTypeCorrections(candidates, "help center page");
+    expect(candidates[0]!.type).toBe("support");
+  });
+
+  it("does NOT convert auth without support keywords", () => {
+    const candidates = [
+      makeCandidate("auth", "Login Form", 0.8, "Email and password login"),
     ];
     applyTypeCorrections(candidates, "help center login page");
     expect(candidates[0]!.type).toBe("auth");

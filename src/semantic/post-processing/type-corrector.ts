@@ -165,14 +165,18 @@ export function applyTypeCorrections(
         candidate.confidence *= 0.95;
       }
     }
-    // navigation/content -> support (support keywords in candidate label)
-    // Only convert if the candidate's OWN label has support keywords.
-    // Segment-based conversion was too broad — even with 2+ indicators,
-    // it converts shopify endpoints incorrectly.
-    if (candidate.type === "navigation" || candidate.type === "content") {
+    // any type -> support (support keywords in label, description, OR anchor texts)
+    // Checks candidate's own label/description AND anchor textContent/ariaLabels.
+    // Needed because LLMs sometimes give generic labels ("Global Navigation Primary")
+    // for endpoints whose anchors clearly contain support actions.
+    if (candidate.type !== "support" && candidate.type !== "search" && candidate.type !== "checkout") {
       const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
       const isSupportLabeled = SUPPORT_LABEL.test(candidateText);
-      if (isSupportLabeled) {
+      const hasSupportAnchors = candidate.anchors?.some(a => {
+        const anchorText = `${a.textContent ?? ""} ${a.ariaLabel ?? ""}`.toLowerCase();
+        return SUPPORT_LABEL.test(anchorText);
+      }) ?? false;
+      if (isSupportLabeled || hasSupportAnchors) {
         candidate.type = "support";
         candidate.confidence *= 0.95;
       }
