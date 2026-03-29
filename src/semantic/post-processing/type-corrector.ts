@@ -164,8 +164,8 @@ export function applyTypeCorrections(
     }
     // navigation/content -> support (support keywords in candidate label)
     // Only convert if the candidate's OWN label has support keywords.
-    // Previously also checked segment text, which was too broad — a footer
-    // mentioning "help" anywhere would convert ALL nav endpoints to support.
+    // Segment-based conversion was too broad — even with 2+ indicators,
+    // it converts shopify endpoints incorrectly.
     if (candidate.type === "navigation" || candidate.type === "content") {
       const candidateText = `${candidate.label} ${candidate.description}`.toLowerCase();
       const isSupportLabeled = SUPPORT_LABEL.test(candidateText);
