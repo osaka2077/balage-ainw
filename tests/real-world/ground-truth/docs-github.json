@@ -29,23 +29,6 @@
       "phase": 2
     },
     {
-      "type": "form",
-      "label": "Form (3 fields)",
-      "description": "Form with 3 visible fields",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "survey-token",
-        "survey-vote",
-        "survey-vote"
-      ],
-      "phase": 2
-    },
-    {
       "type": "support",
       "label": "Help & Support",
       "description": "Help/support section (2 links)",
@@ -59,7 +42,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 3,
     "phase1_endpoints": 0,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

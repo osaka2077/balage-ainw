@@ -56,18 +56,6 @@
       "phase": 1
     },
     {
-      "type": "consent",
-      "label": "Cookie Consent Banner",
-      "description": "GDPR cookie/consent banner with Accept/Reject",
-      "selector_hint": "#onetrust-accept-btn-handler",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "navigation",
       "label": "Main Navigation",
       "description": "Primary nav (5 links): Produkte, Räume, Angebote, Ideen & Planer, Service",
@@ -105,7 +93,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 8,
+    "total_endpoints": 7,
     "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

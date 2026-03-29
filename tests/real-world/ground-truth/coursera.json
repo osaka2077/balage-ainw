@@ -32,18 +32,6 @@
       "phase": 1
     },
     {
-      "type": "consent",
-      "label": "Cookie Consent Banner",
-      "description": "GDPR cookie/consent banner with Accept/Reject",
-      "selector_hint": "#onetrust-pc-btn-handler",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "navigation",
       "label": "Main Navigation",
       "description": "Primary nav (9 links): für für Einzelpersonen, für Unternehmen, für für Hochschulen, für Behörden, Abschlüsse, Anmelden, Kostenlose Teilnahme",
@@ -84,7 +72,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 5,
     "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

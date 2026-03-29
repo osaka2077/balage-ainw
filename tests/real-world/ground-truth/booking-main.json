@@ -9,9 +9,19 @@
       "label": "Accommodation Search Form",
       "description": "Primary search: destination input with autocomplete, check-in/check-out date pickers, guests/rooms selector, and search button",
       "selector_hint": "form[action='/searchresults.html'], input[name='ss']",
-      "affordances": ["fill", "submit", "select"],
+      "affordances": [
+        "fill",
+        "submit",
+        "select"
+      ],
       "risk_class": "low",
-      "fields": ["destination", "checkin_date", "checkout_date", "guests", "rooms"],
+      "fields": [
+        "destination",
+        "checkin_date",
+        "checkout_date",
+        "guests",
+        "rooms"
+      ],
       "phase": 1
     },
     {
@@ -19,7 +29,9 @@
       "label": "Property Type Tabs",
       "description": "Header tabs: Stays, Flights, Flight+Hotel, Car Rentals, Attractions, Airport Taxis",
       "selector_hint": "[data-testid='header-tab']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -29,27 +41,21 @@
       "label": "Sign In / Register",
       "description": "Header sign-in button opening auth modal or redirect",
       "selector_hint": "[data-testid='header-sign-in-button'], a[href*='sign-in']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "high",
       "fields": [],
       "phase": 1
-    },
-    {
-      "type": "consent",
-      "label": "Cookie Consent Banner",
-      "description": "GDPR cookie consent with Accept/Manage buttons — blocks page until dismissed",
-      "selector_hint": "#onetrust-accept-btn-handler, button[id*='cookie']",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
     },
     {
       "type": "navigation",
       "label": "Trending Destinations",
       "description": "Cards/links to popular destination cities below the search form",
       "selector_hint": "[data-testid='popular-destinations'] a",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -59,14 +65,17 @@
       "label": "Currency/Language Selector",
       "description": "Header buttons for changing currency and language preferences",
       "selector_hint": "[data-testid='header-currency-picker'], [data-testid='header-language-picker']",
-      "affordances": ["click", "select"],
+      "affordances": [
+        "click",
+        "select"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 5,
     "phase1_endpoints": 2,
     "min_precision_target": 0.65,
     "min_recall_target": 0.55

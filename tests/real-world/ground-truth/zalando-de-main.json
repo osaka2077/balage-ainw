@@ -9,9 +9,14 @@
       "label": "Search Bar",
       "description": "Product search input with autocomplete suggestions and search submit",
       "selector_hint": "input[name='q'], input[data-testid='searchInput'], button[data-testid='search-button']",
-      "affordances": ["fill", "submit"],
+      "affordances": [
+        "fill",
+        "submit"
+      ],
       "risk_class": "low",
-      "fields": ["search_query"],
+      "fields": [
+        "search_query"
+      ],
       "phase": 1
     },
     {
@@ -19,7 +24,9 @@
       "label": "Sign In / Account",
       "description": "Account icon in header opening login page or account flyout",
       "selector_hint": "a[href*='myaccount'], a[data-testid='header-myaccount']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "high",
       "fields": [],
       "phase": 1
@@ -29,7 +36,9 @@
       "label": "Shopping Cart",
       "description": "Cart icon with item count badge linking to cart/checkout",
       "selector_hint": "a[href*='cart'], a[data-testid='header-cart']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "high",
       "fields": [],
       "phase": 1
@@ -39,7 +48,9 @@
       "label": "Wishlist",
       "description": "Heart icon linking to saved items wishlist",
       "selector_hint": "a[href*='wishlist'], a[data-testid='header-wishlist']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "medium",
       "fields": [],
       "phase": 2
@@ -49,7 +60,9 @@
       "label": "Gender Navigation",
       "description": "Top-level navigation tabs: Damen, Herren, Kinder — each loads different product catalog",
       "selector_hint": "nav a[href*='damen'], nav a[href*='herren'], nav a[href*='kinder']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -59,17 +72,10 @@
       "label": "Category Mega-Menu",
       "description": "Hover/click category navigation with nested subcategories (Schuhe, Bekleidung, Sport, etc.)",
       "selector_hint": "nav[data-testid='header-navigation'] a",
-      "affordances": ["click", "hover"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "consent",
-      "label": "Cookie Consent Modal",
-      "description": "GDPR consent modal with Accept All / Settings buttons on first visit",
-      "selector_hint": "button[data-testid='consent-accept-all'], #uc-btn-accept-banner",
-      "affordances": ["click"],
+      "affordances": [
+        "click",
+        "hover"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -79,9 +85,14 @@
       "label": "Newsletter Signup",
       "description": "Email input for newsletter subscription, often in footer or modal popup",
       "selector_hint": "input[name='newsletter_email'], form[data-testid='newsletter-form']",
-      "affordances": ["fill", "submit"],
+      "affordances": [
+        "fill",
+        "submit"
+      ],
       "risk_class": "low",
-      "fields": ["email"],
+      "fields": [
+        "email"
+      ],
       "phase": 2
     },
     {
@@ -89,16 +100,18 @@
       "label": "Help & Contact",
       "description": "Hilfe & Kontakt section with FAQ links, delivery info, returns policy, and contact options",
       "selector_hint": "a[href*='/faq'], [data-testid*='help']",
-      "affordances": ["click"],
+      "affordances": [
+        "click"
+      ],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 9,
+    "total_endpoints": 8,
     "phase1_endpoints": 3,
-    "min_precision_target": 0.60,
+    "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }
 }

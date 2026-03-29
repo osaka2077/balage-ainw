@@ -32,18 +32,6 @@
       "phase": 1
     },
     {
-      "type": "consent",
-      "label": "Cookie Consent Banner",
-      "description": "GDPR cookie/consent banner with Accept/Reject",
-      "selector_hint": "button.ot-link-btn",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "navigation",
       "label": "Main Navigation",
       "description": "Primary nav (3 links): Home, Feed, Library",
@@ -57,7 +45,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 3,
     "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

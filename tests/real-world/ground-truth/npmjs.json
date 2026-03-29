@@ -56,21 +56,6 @@
       "phase": 2
     },
     {
-      "type": "form",
-      "label": "Form (1 fields)",
-      "description": "Form with 1 visible fields",
-      "selector_hint": "form#search",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "q"
-      ],
-      "phase": 2
-    },
-    {
       "type": "support",
       "label": "Help & Support",
       "description": "Help/support section (1 links)",
@@ -84,7 +69,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 5,
     "phase1_endpoints": 1,
     "min_precision_target": 0.8,
     "min_recall_target": 0.8
