@@ -106,28 +106,20 @@ export function applyTypeCorrections(
   const hasSearchboxDom = SEARCHBOX_DOM_EVIDENCE.test(segText);
 
   for (const candidate of candidates) {
-    // checkout -> search (Booking/Travel)
-    if (candidate.type === "checkout" && !cartEv) {
-      if (searchEv || bookingSearch) {
+    // checkout -> search (Booking/Travel with search evidence)
+    // Use preciseCartEv: generic "checkout" in text (= check-out date on travel
+    // sites) must NOT block this correction. Only real cart UI should.
+    if (candidate.type === "checkout" && !preciseCartEv) {
+      if (searchEv || bookingSearch || hasSearchboxDom) {
         candidate.type = "search";
       }
     }
-    // checkout/commerce -> search (Searchbox-DOM-Evidence ohne praezise Cart)
-    // Travel-Sites wie Booking.com haben "checkout" im Text (= Check-out-Datum),
-    // das den generischen cartEv-Check triggert. Searchbox-DOM-Patterns wie
-    // data-testid="searchbox-*" sind starke Evidence fuer Search, nicht Cart.
-    if ((candidate.type === "checkout" || candidate.type === "commerce") && !preciseCartEv) {
-      if (hasSearchboxDom || (searchEv && bookingSearch)) {
-        candidate.type = "search";
-        candidate.confidence *= 0.95;
-      }
-    }
-    // checkout -> search (label-based)
+    // checkout -> search (label-based: candidate says "search" in label)
     if (candidate.type === "checkout") {
       const hasSearchLabel = SEARCH_LABEL.test(
         `${candidate.label} ${candidate.description}`,
       );
-      if (hasSearchLabel && !cartEv) {
+      if (hasSearchLabel && !preciseCartEv) {
         candidate.type = "search";
         candidate.confidence *= 0.95;
       }

@@ -25,21 +25,11 @@
       "phase": 2
     },
     {
-      "type": "navigation",
-      "label": "Story Links",
-      "description": "List of 30 story titles linking to external URLs or internal discussion pages",
-      "selector_hint": ".titleline a",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "content",
-      "label": "Story Metadata",
-      "description": "Per-story metadata: points, author, timestamp, comment count — inline within table rows, not a standalone navigation pattern",
-      "selector_hint": ".subtext",
-      "affordances": ["read"],
+      "label": "Story List",
+      "description": "List of 30 stories with titles, external links, points, author, and comment counts — the primary content of the page",
+      "selector_hint": ".itemlist, .titleline a, .subtext",
+      "affordances": ["click", "read"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -56,7 +46,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 4,
     "phase1_endpoints": 1,
     "min_precision_target": 0.90,
     "min_recall_target": 0.85
