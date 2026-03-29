@@ -101,8 +101,13 @@ const HEURISTIC_RULES: HeuristicRule[] = [
   {
     name: "price-with-buy-button-implies-checkout",
     correctedType: "checkout",
-    check: (segment) =>
-      hasPriceElements(segment.nodes) && hasBuyButton(segment.nodes),
+    check: (segment, candidate) => {
+      // Don't override if the candidate's label explicitly says "search" — travel
+      // sites like booking.com have price elements + buy buttons in search segments.
+      const hasExplicitSearch = candidateMatchesContext(candidate, EXPLICIT_SEARCH_PATTERNS);
+      if (hasExplicitSearch) return false;
+      return hasPriceElements(segment.nodes) && hasBuyButton(segment.nodes);
+    },
   },
   {
     name: "settings-controls-not-search",

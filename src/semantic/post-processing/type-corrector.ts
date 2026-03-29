@@ -115,11 +115,14 @@ export function applyTypeCorrections(
       }
     }
     // checkout -> search (label-based: candidate says "search" in label)
+    // If the candidate's OWN label explicitly says "search"/"find"/"suche",
+    // it overrides even precise cart evidence. "Accommodation Search" on
+    // booking.com has "cart" in the page but the endpoint itself is search.
     if (candidate.type === "checkout") {
-      const hasSearchLabel = SEARCH_LABEL.test(
-        `${candidate.label} ${candidate.description}`,
-      );
-      if (hasSearchLabel && !preciseCartEv) {
+      const candidateLabelDesc = `${candidate.label} ${candidate.description}`;
+      const hasSearchLabel = SEARCH_LABEL.test(candidateLabelDesc);
+      const hasExplicitSearch = /\bsearch\b|\bsuche\b|\bfind\b/i.test(candidateLabelDesc);
+      if (hasSearchLabel && (!preciseCartEv || hasExplicitSearch)) {
         candidate.type = "search";
         candidate.confidence *= 0.95;
       }
