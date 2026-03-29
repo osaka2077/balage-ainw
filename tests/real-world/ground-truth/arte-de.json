@@ -1,0 +1,82 @@
+{
+  "url": "https://www.arte.tv/de/",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "ARTE Mediathek | Viel mehr als TV",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "a[href*=\"/de/profile/auth/register\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (4 links): TV-Programm, Live, Bald online, ARTE Concert",
+      "selector_hint": "[aria-label=\"Sekundäre Navigation\"] a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 39 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Newsletter Signup",
+      "description": "Email subscription form",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "newsletterEmail",
+        "newsletterZoneCheckbox-replay_banner"
+      ],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Newsletter Signup",
+      "description": "Email subscription form",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "newsletterEmail",
+        "newsletterZoneCheckbox-replay_footer"
+      ],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 0,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

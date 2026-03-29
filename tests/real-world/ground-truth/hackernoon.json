@@ -1,0 +1,66 @@
+{
+  "url": "https://hackernoon.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "HackerNoon - read, write and learn about any technology",
+  "endpoints": [
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "input.ais-SearchBox-input",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (6 links): READ, TOP BLOGS, WRITE NOW, BUSINESS BLOGGING, HACKATHONS, ABOUT",
+      "selector_hint": "nav.bg-secondary a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 30 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Newsletter Signup",
+      "description": "Email subscription form",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 4,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

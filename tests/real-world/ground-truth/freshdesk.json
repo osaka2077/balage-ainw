@@ -1,0 +1,98 @@
+{
+  "url": "https://freshdesk.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "Freshdesk: AI-powered platform for modern customer service | Freshworks",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "[aria-label=\"Try it free\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "#vendor-search-handler",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie/consent banner with Accept/Reject",
+      "selector_hint": "#onetrust-reject-all-handler",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (19 links): English, Deutsch, Nederlands, Français, Svenska, Español (España), Español (América Latina), Português",
+      "selector_hint": "nav.sc-6293d692-0 a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 45 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Newsletter Signup",
+      "description": "Email subscription form",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "first-name",
+        "last-name",
+        "email",
+        "company",
+        "webinar-slot",
+        "disclaimer-checkbox",
+        "consent-checkbox"
+      ],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

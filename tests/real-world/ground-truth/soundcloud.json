@@ -1,0 +1,65 @@
+{
+  "url": "https://soundcloud.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "Stream and listen to music online for free with SoundCloud",
+  "endpoints": [
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "[aria-label=\"Search\"]",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "checkout",
+      "label": "Shopping Cart",
+      "description": "Cart icon/link to basket or checkout",
+      "selector_hint": "a[href*=\"/artist\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie/consent banner with Accept/Reject",
+      "selector_hint": "button.ot-link-btn",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (3 links): Home, Feed, Library",
+      "selector_hint": "nav.left a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 4,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}
