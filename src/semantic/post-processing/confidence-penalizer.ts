@@ -16,6 +16,7 @@ const CONSENT_EVIDENCE = /cookie|consent|gdpr|privacy|datenschutz|tracking|accep
 const SETTINGS_EVIDENCE_TEXT = /toggle|switch|preference|setting|einstellung|theme|dark.?mode/i;
 const SETTINGS_EVIDENCE_DOM = /type="?checkbox|type="?radio|role="?switch/i;
 const NAV_EVIDENCE = /<nav|role="?navigation|role="?menubar|role="?menu[^i]/i;
+const SUPPORT_EVIDENCE = /submit.?a?.?request|contact.?support|help.?center|get.?help|support.?ticket|open.?ticket|live.?chat|kundenservice/i;
 
 /**
  * Berechnet tiers Penalty: starker Abzug bei niedriger Base-Confidence, milder bei hoher.
@@ -72,6 +73,11 @@ export function applyConfidencePenalties(
     }
     // Navigation from non-nav segment without nav evidence
     if (candidate.type === "navigation" && segmentType !== "navigation" && !NAV_EVIDENCE.test(segText)) {
+      candidate.confidence *= tieredPenalty(candidate.confidence, 0.8, 0.6);
+    }
+    // Support without evidence — model over-detects support (9/20 sites) but
+    // only 1 GT site (zendesk) has support endpoints
+    if (candidate.type === "support" && !SUPPORT_EVIDENCE.test(segText)) {
       candidate.confidence *= tieredPenalty(candidate.confidence, 0.8, 0.6);
     }
   }

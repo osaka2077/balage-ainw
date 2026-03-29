@@ -130,12 +130,22 @@ describe("Fix 2: Support-type correction", () => {
     expect(candidates[0]!.type).toBe("support");
   });
 
-  it("corrects via segment text with 'help center' pattern", () => {
+  it("does NOT convert nav to support via segment text alone", () => {
     const candidates = [
       makeCandidate("navigation", "Resources", 0.8, "Useful links"),
     ];
-    // Kein support-pattern im Label, aber im segText
+    // Segment mentions "help center" but candidate label does not — should stay navigation.
+    // Segment-only conversion was too aggressive (converted all nav endpoints in
+    // any segment mentioning "help").
     applyTypeCorrections(candidates, "welcome to our help center find answers here");
+    expect(candidates[0]!.type).toBe("navigation");
+  });
+
+  it("converts nav to support when candidate label has support keywords", () => {
+    const candidates = [
+      makeCandidate("navigation", "Help Center", 0.8, "Find answers here"),
+    ];
+    applyTypeCorrections(candidates, "generic page content");
     expect(candidates[0]!.type).toBe("support");
   });
 
