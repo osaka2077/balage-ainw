@@ -154,8 +154,8 @@ export async function lookupCache(
             try {
               const simResult = calculateSimilarity(currentFp, cachedFp);
               bestSim = Math.max(bestSim, simResult.score);
-            } catch {
-              // Similarity-Fehler ignorieren
+            } catch (err) {
+              logger.debug({ err }, "Fingerprint similarity calculation failed — skipping pair");
             }
           }
           totalSim += bestSim;

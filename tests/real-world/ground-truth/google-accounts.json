@@ -25,7 +25,7 @@
       "phase": 1
     },
     {
-      "type": "navigation",
+      "type": "auth",
       "label": "Create Account",
       "description": "Link to Google account registration with options for personal, child, or business account",
       "selector_hint": "button[jsname='tJiF1e'], a[href*='signup']",

@@ -25,7 +25,7 @@
       "phase": 1
     },
     {
-      "type": "navigation",
+      "type": "auth",
       "label": "Sign Up",
       "description": "Link to Notion account registration page",
       "selector_hint": "a[href*='signup']",

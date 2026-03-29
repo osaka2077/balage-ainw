@@ -129,8 +129,8 @@ export class BrowserPool {
           await managed.cdpSession.detach().catch(() => {});
         }
         await managed.context.close();
-      } catch {
-        // Context schon geschlossen
+      } catch (err) {
+        this.logger.debug({ ctxId, err }, "Context already closed during release");
       }
       instance.contexts.delete(ctxId);
     }
@@ -348,8 +348,8 @@ export class BrowserPool {
           await managed.cdpSession.detach().catch(() => {});
         }
         await managed.context.close();
-      } catch {
-        // Context schon geschlossen
+      } catch (err) {
+        this.logger.debug({ err }, "Context already closed during destroy");
       }
     }
     instance.contexts.clear();
@@ -357,8 +357,8 @@ export class BrowserPool {
     // Browser schliessen
     try {
       await instance.browser.close();
-    } catch {
-      // Browser schon tot
+    } catch (err) {
+      this.logger.debug({ browserId: id, err }, "Browser already closed during destroy");
     }
 
     this.instances.delete(id);

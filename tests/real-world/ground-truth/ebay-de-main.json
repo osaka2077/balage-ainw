@@ -25,7 +25,7 @@
       "phase": 1
     },
     {
-      "type": "navigation",
+      "type": "auth",
       "label": "Register",
       "description": "Link to eBay account registration",
       "selector_hint": "a[href*='register'], a#gh-ug-reg",

@@ -11,7 +11,10 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import pino from "pino";
 import type { LLMClient, LLMRequest, LLMResponse } from "./llm-client.js";
+
+const logger = pino({ name: "balage:llm-cache", level: process.env["LOG_LEVEL"] ?? "silent" });
 
 // ============================================================================
 // Types
@@ -185,8 +188,8 @@ export class CachedLLMClient implements LLMClient {
           this.cache.set(key, entry);
         }
       }
-    } catch {
-      // Korrupte Datei: selbstheilend — leere Map, kein Crash
+    } catch (err) {
+      logger.warn({ err }, "Corrupt cache file — starting with empty cache");
     }
   }
 
@@ -206,8 +209,8 @@ export class CachedLLMClient implements LLMClient {
         JSON.stringify(file, null, 2),
         "utf-8",
       );
-    } catch {
-      // Write-Fehler: nicht-kritisch, Cache funktioniert weiter im Memory
+    } catch (err) {
+      logger.debug({ err }, "Cache write failed — continuing in-memory only");
     }
   }
 

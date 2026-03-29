@@ -42,9 +42,15 @@ const LABEL_SYNONYMS: Record<string, string> = {
  * content: 3 → 2 — Content-Endpoints sind selten primaere Interaktionspunkte.
  *   Cap 3 erlaubte Over-Detection bei content-lastigen Sites.
  */
+/**
+ * Per-type cap — datengetrieben aus GT-Verteilung (Tag 29 GT-Audit).
+ *
+ * auth: 4 → 3 — Nach GT-Audit hat keine Site mehr als 3 auth-Endpoints.
+ *   Cap 4 erzeugte FP auf Sites mit 1-2 auth (Trello 4 detected / 2 GT).
+ */
 const TYPE_CAPS: Record<string, number> = {
   navigation: 3,
-  auth: 4,
+  auth: 3,
   search: 1,
   commerce: 2,
   checkout: 1,

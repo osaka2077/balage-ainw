@@ -5,7 +5,10 @@
  * Ermoeglicht analyzeFromHTML() ohne Browser-Dependency.
  */
 
+import pino from "pino";
 import type { DomNode } from "./types.js";
+
+const logger = pino({ name: "balage:html-to-dom", level: process.env["LOG_LEVEL"] ?? "silent" });
 
 const INTERACTIVE_TAGS = new Set([
   "input", "select", "textarea", "button", "a",
@@ -59,8 +62,8 @@ export function htmlToDomNode(html: string): DomNode {
       isInteractive: false,
       children,
     };
-  } catch {
-    // Bei jedem unerwarteten Parser-Fehler: leeren Body zurueckgeben
+  } catch (err) {
+    logger.warn({ err, htmlLength: safeHtml.length }, "HTML parser failed — returning empty body (0 endpoints will be detected)");
     return createEmptyBody();
   }
 }

@@ -25,7 +25,7 @@
       "phase": 1
     },
     {
-      "type": "navigation",
+      "type": "auth",
       "label": "Account Links",
       "description": "Can't Log In (account recovery) and Create Account links",
       "selector_hint": "a[href*='iforgot'], a[href*='signup']",

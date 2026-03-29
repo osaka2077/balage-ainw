@@ -25,7 +25,7 @@
       "phase": 2
     },
     {
-      "type": "navigation",
+      "type": "auth",
       "label": "Join Now",
       "description": "Link to LinkedIn registration / sign-up page",
       "selector_hint": "a[href*='signup'], a.join-now",
