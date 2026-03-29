@@ -41,6 +41,9 @@ import {
   applyGapCutoff,
 } from "./post-processing/index.js";
 import { majorityVote, clampMultiRun } from "./multi-run-voter.js";
+import { verifyEndpoints } from "./endpoint-verifier.js";
+
+const VERIFY_ENABLED = process.env["BALAGE_VERIFY"] === "1";
 
 const logger = pino({ level: process.env["LOG_LEVEL"] ?? "silent", name: "semantic:endpoint-generator" });
 
@@ -296,6 +299,23 @@ export async function generateEndpoints(
     { deduped: deduped.length, capped: capped.length },
     "Global endpoint cap applied",
   );
+
+  // 9. Optional: 2-Pass LLM Verification
+  if (VERIFY_ENABLED && capped.length > 0) {
+    const verifyResult = await verifyEndpoints(capped, llmClient, {
+      url: context.url,
+      pageTitle: context.pageTitle,
+      segmentSummaries: pageSegmentSummaries,
+    });
+    totalLlmCalls += verifyResult.llmCalls;
+
+    logger.info(
+      { before: capped.length, after: verifyResult.verified.length },
+      "2-Pass verification applied",
+    );
+
+    return { candidates: verifyResult.verified, llmCalls: totalLlmCalls };
+  }
 
   return { candidates: capped, llmCalls: totalLlmCalls };
 }
