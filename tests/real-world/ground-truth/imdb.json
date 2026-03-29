@@ -2,7 +2,7 @@
   "url": "https://www.imdb.com",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] IMDb: Bewertungen, Rezensionen und Informationen, wo man sich die besten Filme und Serien ansehen kann — 6 endpoints auto-detected. HTML: 2212 KB, 4363 elements. NEEDS MANUAL REVIEW.",
+  "notes": "IMDb homepage. Movie search, sign-in link, main navigation, language selector.",
   "endpoints": [
     {
       "type": "auth",
@@ -54,37 +54,10 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "form",
-      "label": "Form (1 fields)",
-      "description": "Form with 1 visible fields",
-      "selector_hint": "form#nav-search-form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "q"
-      ],
-      "phase": 2
-    },
-    {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (5 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 4,
     "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

@@ -2,7 +2,7 @@
   "url": "https://material.angular.io/components/input/overview",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Input • Angular Material — 4 endpoints auto-detected. HTML: 204 KB, 690 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Input • Angular Material",
   "endpoints": [
     {
       "type": "navigation",

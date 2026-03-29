@@ -2,7 +2,7 @@
   "url": "https://www.dropbox.com/login",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Einloggen oder registrieren – Dropbox — 4 endpoints auto-detected. HTML: 200 KB, 509 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Einloggen oder registrieren – Dropbox",
   "endpoints": [
     {
       "type": "auth",

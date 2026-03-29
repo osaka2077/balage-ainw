@@ -2,7 +2,7 @@
   "url": "https://www.canva.com",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Canva: Die Visual Suite für alle — 5 endpoints auto-detected. HTML: 311 KB, 2604 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Canva.com design platform. Sign up/login, design CTA, feature navigation.",
   "endpoints": [
     {
       "type": "auth",
@@ -51,22 +51,10 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
-    },
-    {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (8 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 4,
     "phase1_endpoints": 0,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

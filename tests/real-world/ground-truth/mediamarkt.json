@@ -2,7 +2,7 @@
   "url": "https://www.mediamarkt.de",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Elektronik, Trends & Technik kaufen im Onlineshop | MediaMarkt — 6 endpoints auto-detected. HTML: 1043 KB, 2526 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Elektronik, Trends & Technik kaufen im Onlineshop | MediaMarkt",
   "endpoints": [
     {
       "type": "search",

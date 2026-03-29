@@ -2,7 +2,7 @@
   "url": "https://www.ikea.com/de/de/",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Frische Einrichtungsideen & erschwingliche Möbel - IKEA Deutschland — 9 endpoints auto-detected. HTML: 771 KB, 2985 elements. NEEDS MANUAL REVIEW.",
+  "notes": "IKEA Germany. Product search, IKEA Family login/signup, cart, navigation, customer service. Cookie consent banner.",
   "endpoints": [
     {
       "type": "auth",
@@ -92,21 +92,6 @@
       "phase": 2
     },
     {
-      "type": "form",
-      "label": "Form (1 fields)",
-      "description": "Form with 1 visible fields",
-      "selector_hint": "form[action='https://www.ikea.com/de/de/search/']",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "q"
-      ],
-      "phase": 2
-    },
-    {
       "type": "support",
       "label": "Help & Support",
       "description": "Help/support section (5 links)",
@@ -120,7 +105,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 9,
+    "total_endpoints": 8,
     "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

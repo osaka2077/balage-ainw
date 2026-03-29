@@ -2,36 +2,62 @@
   "url": "https://www.craigslist.org",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] craigslist: Frankfurt Jobs, Wohnungen, zu verkaufen, Dienstleistungen, Gemeinschaft und Veranstaltungen — 2 endpoints auto-detected. HTML: 58 KB, 1317 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Craigslist Frankfurt homepage. Classic layout with search bar, post-an-ad link, category directory (Community, Immobilien, Jobs, Dienstleistungen, Zum Verkauf, Diskussionsforen), left sidebar with event calendar and info links, footer with Hilfe/Sicherheit/Datenschutz.",
   "endpoints": [
     {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Craigslist durchsuchen search input at the top",
+      "selector_hint": "#query",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "form",
+      "label": "Post an Ad",
+      "description": "Link to create a new classified ad listing (post an ad / Anzeige aufgeben)",
+      "selector_hint": "a#post",
+      "affordances": ["click"],
+      "risk_class": "medium",
+      "fields": [],
+      "phase": 1
+    },
+    {
       "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with 7 links",
-      "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "label": "Category Directory",
+      "description": "Main classified categories: Community, Immobilien, Jobs, Dienstleistungen, Zum Verkauf, Diskussionsforen",
+      "selector_hint": ".community, .housing, .jobs, .for-sale",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (6 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
+      "type": "auth",
+      "label": "Account Link",
+      "description": "My account / sign in link in the header area",
+      "selector_hint": "a[href*='account'], a[href*='login']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer links: Hilfe, Sicherheit, Datenschutz, Nutzungsbedingungen, Impressum",
+      "selector_hint": "footer a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 2,
-    "phase1_endpoints": 0,
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

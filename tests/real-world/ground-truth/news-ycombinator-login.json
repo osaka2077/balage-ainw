@@ -2,7 +2,7 @@
   "url": "https://news.ycombinator.com/login",
   "captured_at": "2026-03-29",
   "difficulty": "easy",
-  "notes": "[AUTO-GENERATED] news-ycombinator-login — 1 endpoints auto-detected. HTML: 1 KB, 42 elements. NEEDS MANUAL REVIEW.",
+  "notes": "news-ycombinator-login",
   "endpoints": [
     {
       "type": "auth",

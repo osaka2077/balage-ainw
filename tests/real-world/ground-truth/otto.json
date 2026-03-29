@@ -2,88 +2,62 @@
   "url": "https://www.otto.de",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] OTTO - Mode, Möbel & Technik » Zum Online-Shop — 6 endpoints auto-detected. HTML: 808 KB, 4244 elements. NEEDS MANUAL REVIEW.",
+  "notes": "OTTO e-commerce homepage. Search bar, login/account link, shopping cart icon, extensive category navigation, product tiles, footer. Cookie consent may render. SSO and Create Account merged into single auth endpoint since they share the account area.",
   "endpoints": [
-    {
-      "type": "auth",
-      "label": "Social/SSO Login",
-      "description": "36 OAuth/SSO provider buttons",
-      "selector_hint": "a[href*=\"/accessoires/uhren/\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "high",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "#to-login-link",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
     {
       "type": "search",
       "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "[data-testid=\"squirrel-searchfield\"]",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "Product search input field at the top",
+      "selector_hint": "[data-testid='squirrel-searchfield']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
       "phase": 1
     },
     {
-      "type": "consent",
-      "label": "Cookie Consent Banner",
-      "description": "GDPR cookie/consent banner with Accept/Reject",
-      "selector_hint": "button.ot-link-btn",
-      "affordances": [
-        "click"
-      ],
+      "type": "auth",
+      "label": "Account Login",
+      "description": "Login/account link in header (Anmelden)",
+      "selector_hint": "#to-login-link",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "checkout",
+      "label": "Shopping Cart",
+      "description": "Cart icon in header linking to basket",
+      "selector_hint": "[aria-label='Warenkorb'], a[href*='warenkorb']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Category mega-navigation: Mode, Multimedia, Haushalt, etc.",
+      "selector_hint": "nav a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
       "type": "navigation",
-      "label": "Main Navigation",
-      "description": "Primary nav (500 links): Uhren, Brillen, Autozubehör, Babykleidung, Sanitär, Kaminöfen, Heizungen, WCs",
-      "selector_hint": "nav a",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "form",
-      "label": "Form (1 fields)",
-      "description": "Form with 1 visible fields",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "label": "Footer Navigation",
+      "description": "Footer with service links, legal info, payment methods",
+      "selector_hint": "footer a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
-    "phase1_endpoints": 1,
+    "total_endpoints": 5,
+    "phase1_endpoints": 3,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

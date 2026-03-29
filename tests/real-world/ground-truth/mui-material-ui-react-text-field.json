@@ -2,7 +2,7 @@
   "url": "https://mui.com/material-ui/react-text-field/",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] React Text Field component - Material UI — 5 endpoints auto-detected. HTML: 902 KB, 4214 elements. NEEDS MANUAL REVIEW.",
+  "notes": "React Text Field component - Material UI",
   "endpoints": [
     {
       "type": "auth",

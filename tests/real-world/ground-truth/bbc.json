@@ -2,7 +2,7 @@
   "url": "https://www.bbc.com",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] BBC Home - Breaking News, World News, US News, Sports, Business, Innovation, Climate, Culture, Travel, Video & Audio — 4 endpoints auto-detected. HTML: 445 KB, 2476 elements. NEEDS MANUAL REVIEW.",
+  "notes": "BBC homepage. News navigation, sign-in/register links, content articles. Heavy SSR with JS enhancement.",
   "endpoints": [
     {
       "type": "auth",
@@ -41,16 +41,14 @@
       "phase": 2
     },
     {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (1 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
+      "type": "auth",
+      "label": "Sign In",
+      "description": "Sign In link in header for BBC account",
+      "selector_hint": "a[href*='signin'], a[href*='account']",
+      "affordances": ["click"],
+      "risk_class": "high",
       "fields": [],
-      "phase": 2
+      "phase": 1
     }
   ],
   "expected_metrics": {

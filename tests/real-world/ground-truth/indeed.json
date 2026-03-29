@@ -2,7 +2,7 @@
   "url": "https://www.indeed.com",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Jobbörse Indeed.com | Deutschlands Jobsuche — 6 endpoints auto-detected. HTML: 614 KB, 937 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Jobbörse Indeed.com | Deutschlands Jobsuche",
   "endpoints": [
     {
       "type": "search",

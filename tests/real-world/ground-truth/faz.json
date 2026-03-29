@@ -2,17 +2,24 @@
   "url": "https://www.faz.net",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Aktuelle Nachrichten online - FAZ.NET — 3 endpoints auto-detected. HTML: 1978 KB, 5222 elements. NEEDS MANUAL REVIEW.",
+  "notes": "FAZ news homepage. Dense content layout with search, login/subscribe links, extensive topic navigation, article listings, and footer. Model detects more than original GT expected.",
   "endpoints": [
     {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Site-wide article search input",
+      "selector_hint": "input[type='search'], form[action*='suche']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
       "type": "auth",
-      "label": "Login Form",
-      "description": "Username/email + password login form",
-      "selector_hint": "form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "label": "Login Link",
+      "description": "Link to FAZ login/subscriber area (Anmelden/Mein Abo)",
+      "selector_hint": "a[href*='mein'], a[href*='login']",
+      "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
       "phase": 1
@@ -20,31 +27,37 @@
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (13 links): Politik, Wirtschaft, Finanzen, Feuilleton, Karriere, Sport, Gesellschaft, Stil",
+      "description": "Primary topic navigation: Politik, Wirtschaft, Finanzen, Feuilleton, Sport, etc.",
       "selector_hint": "#department-list-label a",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (4 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer links with legal, impressum, datenschutz, contact",
+      "selector_hint": "footer a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "content",
+      "label": "Article Listings",
+      "description": "Teaser articles and headlines linking to full articles across sections",
+      "selector_hint": "article a, [class*='teaser'] a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
-    "phase1_endpoints": 1,
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

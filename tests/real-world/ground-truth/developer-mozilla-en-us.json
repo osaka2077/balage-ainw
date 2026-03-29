@@ -2,7 +2,7 @@
   "url": "https://developer.mozilla.org/en-US/",
   "captured_at": "2026-03-29",
   "difficulty": "medium",
-  "notes": "[AUTO-GENERATED] MDN Web Docs — 3 endpoints auto-detected. HTML: 70 KB, 740 elements. NEEDS MANUAL REVIEW.",
+  "notes": "MDN Web Docs",
   "endpoints": [
     {
       "type": "navigation",

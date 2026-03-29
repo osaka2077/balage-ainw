@@ -2,7 +2,7 @@
   "url": "https://www.npmjs.com",
   "captured_at": "2026-03-29",
   "difficulty": "easy",
-  "notes": "[AUTO-GENERATED] npm | Home — 6 endpoints auto-detected. HTML: 29 KB, 146 elements. NEEDS MANUAL REVIEW.",
+  "notes": "npm | Home",
   "endpoints": [
     {
       "type": "auth",

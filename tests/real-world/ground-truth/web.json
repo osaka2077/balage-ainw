@@ -2,65 +2,61 @@
   "url": "https://web.dev",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] web.dev — 4 endpoints auto-detected. HTML: 126 KB, 907 elements. NEEDS MANUAL REVIEW.",
+  "notes": "web.dev homepage (Google's web developer resource). Search bar, topic navigation tabs (HTML, CSS, JS, Performance, etc.), course links (HTML lernen, CSS lernen), newsletter signup form at bottom, footer. No login or account creation on this page.",
   "endpoints": [
     {
-      "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
-      "selector_hint": "a[href*=\"/articles/passkey-registration\"]",
-      "affordances": [
-        "click"
-      ],
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Site search input for articles and documentation",
+      "selector_hint": "input[type='search'], form[action*='results']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Topic Navigation",
+      "description": "Top tabs: HTML, CSS, JavaScript, Performance, Accessibility, etc.",
+      "selector_hint": "[aria-label='Obere Tabs'] a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
-      "type": "search",
-      "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "[aria-label=\"Suche\"]",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
-      "phase": 1
-    },
-    {
       "type": "navigation",
-      "label": "Main Navigation",
-      "description": "Primary nav (23 links): HTML, CSS, JavaScript, Leistung, Bedienungshilfen, Identität, HTML lernen, CSS lernen",
-      "selector_hint": "[aria-label=\"Obere Tabs\"] a",
-      "affordances": [
-        "click"
-      ],
+      "label": "Course Links",
+      "description": "Learning path cards: HTML lernen, CSS lernen, JavaScript lernen",
+      "selector_hint": "a[href*='learn']",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
       "type": "form",
-      "label": "Form (1 fields)",
-      "description": "Form with 1 visible fields",
-      "selector_hint": "form[action='https://web.dev/s/results?hl=de']",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "label": "Developer Newsletter Signup",
+      "description": "Newsletter subscription form for web developers at the bottom of the page",
+      "selector_hint": "form[action*='newsletter'], input[type='email']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "q"
-      ],
+      "fields": ["email"],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer links including terms, privacy, other Google developer resources",
+      "selector_hint": "footer a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 5,
     "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

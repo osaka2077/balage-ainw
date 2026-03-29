@@ -2,7 +2,7 @@
   "url": "https://www.twitch.tv",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "[AUTO-GENERATED] Twitch — 3 endpoints auto-detected. HTML: 343 KB, 2191 elements. NEEDS MANUAL REVIEW.",
+  "notes": "Twitch.tv streaming platform. Stream search, auth, sidebar navigation, content cards.",
   "endpoints": [
     {
       "type": "search",
@@ -32,20 +32,16 @@
       "phase": 2
     },
     {
-      "type": "form",
-      "label": "Form (2 fields)",
-      "description": "Form with 2 visible fields",
-      "selector_hint": "form",
+      "type": "auth",
+      "label": "Sign Up / Log In",
+      "description": "Header sign up and login buttons",
+      "selector_hint": "button[data-a-target=\"login-button\"], a[href*=\"signup\"]",
       "affordances": [
-        "fill",
-        "submit"
+        "click"
       ],
-      "risk_class": "low",
-      "fields": [
-        "tw-abbe738b378347a6bf28c1fbdde50fbd",
-        "tw-abbe738b378347a6bf28c1fbdde50fbd-hidden"
-      ],
-      "phase": 2
+      "risk_class": "high",
+      "fields": [],
+      "phase": 1
     }
   ],
   "expected_metrics": {
