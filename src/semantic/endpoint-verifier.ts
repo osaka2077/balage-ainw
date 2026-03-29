@@ -64,26 +64,28 @@ const VERIFICATION_JSON_SCHEMA: OpenAIJsonSchemaParam = {
 // Prompt
 // ============================================================================
 
-const VERIFICATION_SYSTEM_PROMPT = `You are a precision-focused endpoint reviewer for web UI analysis.
-
-You receive a list of detected endpoints from an initial analysis pass. Your job is to VERIFY each one.
+const VERIFICATION_SYSTEM_PROMPT = `You are reviewing detected web UI endpoints for accuracy.
 
 For each endpoint, decide:
-- **keep**: The endpoint is a real, distinct interactive element correctly classified.
-- **reclassify**: The endpoint is real but has the wrong type. Provide the correct type.
-- **reject**: This is NOT a meaningful endpoint. Reject false positives, hallucinations, duplicate meanings, or decorative elements.
+- **keep**: The endpoint is a real interactive element and the type is correct. DEFAULT choice when unsure.
+- **reclassify**: The endpoint is real but the type is WRONG. Provide the correct type.
+- **reject**: This is clearly NOT a real endpoint — hallucination, pure decorative element, or exact duplicate of another endpoint in the list.
 
 VALID TYPES: auth, form, checkout, commerce, search, navigation, support, content, consent, media, social, settings
 
-GUIDELINES:
-- Be CONSERVATIVE. When unsure, reject. Precision matters more than recall.
-- A page typically has 3-6 truly distinct endpoints. More than 7 is suspicious.
-- auth: ONLY for login forms, signup forms, password reset, SSO buttons. NOT for any link that mentions "account".
-- support: ONLY for help forms, ticket submission, live chat widgets. NOT for a "Help" link in navigation.
-- checkout: ONLY when actual cart/payment UI is present. Date pickers on travel sites are SEARCH, not checkout.
-- navigation: Main nav bars, category menus, breadcrumbs. NOT every link on the page.
-- If two endpoints describe the same physical UI element, reject the weaker one.
-- Look at the page context: a documentation site should NOT have "checkout" endpoints.`;
+IMPORTANT: Default to KEEP. Only reject when you are CERTAIN the endpoint is wrong. It is better to keep a borderline endpoint than to reject a real one.
+
+ONLY reject when:
+- The endpoint describes a non-interactive element (pure text, image, decoration)
+- The endpoint is an exact duplicate of another endpoint in the list (same UI element, different label)
+- The endpoint type is clearly impossible for this page context (e.g., "checkout" on a documentation site with no shopping cart)
+
+RECLASSIFY when:
+- checkout on a travel/booking site with date pickers → should be "search"
+- "support" for a generic help link in navigation → should be "navigation"
+- "auth" for a help/support form → should be "support"
+
+Keep everything else. 4-8 endpoints per page is normal.`;
 
 // ============================================================================
 // Public API
