@@ -3,11 +3,11 @@ SESSION TAG 30 — COMPLETE
   Tag 30: 9 Commits | 648 Tests | F1 77.3% (Train 80.0%)
   Baseline Tag 28: 70.3% | Delta: +7.0pp aggregate, +10pp train
 
-  F1:        77.3% aggregate / 80.0% train / 76.2% holdout
-  Precision: 80.1% (von 68.3%, +11.8pp)
-  Recall:    77.3% (von 75.3%, +2.0pp)
-  TypeAcc:   86.2%
-  Tests:     648 stabil
+  Single-Run: F1 ~77% / Train ~80% / Holdout ~76%
+  3-Run:      F1 78.5% (stabil, majority vote)
+  Precision:  80-89% (von 68.3%)
+  Recall:     77-88% (von 75.3%)
+  Tests:      649 stabil
   Overfitting: 3.8pp gap (Schwelle: 8pp) — KEIN OVERFITTING
 
   Was Tag 30 gebracht hat:
