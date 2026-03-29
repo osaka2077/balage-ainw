@@ -1,0 +1,67 @@
+{
+  "url": "https://docs.github.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] GitHub Docs — 4 endpoints auto-detected. HTML: 81 KB, 519 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "a[href*=\"/signup\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 10 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (3 fields)",
+      "description": "Form with 3 visible fields",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "survey-token",
+        "survey-vote",
+        "survey-vote"
+      ],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (2 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 4,
+    "phase1_endpoints": 0,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

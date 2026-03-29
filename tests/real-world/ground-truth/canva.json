@@ -1,0 +1,74 @@
+{
+  "url": "https://www.canva.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] Canva: Die Visual Suite für alle — 5 endpoints auto-detected. HTML: 311 KB, 2604 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Social/SSO Login",
+      "description": "2 OAuth/SSO provider buttons",
+      "selector_hint": "a[href*=\"/de_de/business/features/security-sso/\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "a[href*=\"/de_de/signup/\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (158 links): E-Mail, Sheets, Docs, Whiteboards, Präsentationen, Social, Foto-Editor, Videos",
+      "selector_hint": "nav.BMOCzQ a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 231 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (8 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 0,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

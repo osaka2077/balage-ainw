@@ -1,0 +1,90 @@
+{
+  "url": "https://www.otto.de",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] OTTO - Mode, Möbel & Technik » Zum Online-Shop — 6 endpoints auto-detected. HTML: 808 KB, 4244 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Social/SSO Login",
+      "description": "36 OAuth/SSO provider buttons",
+      "selector_hint": "a[href*=\"/accessoires/uhren/\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "high",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "#to-login-link",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "[data-testid=\"squirrel-searchfield\"]",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie/consent banner with Accept/Reject",
+      "selector_hint": "button.ot-link-btn",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (500 links): Uhren, Brillen, Autozubehör, Babykleidung, Sanitär, Kaminöfen, Heizungen, WCs",
+      "selector_hint": "nav a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (1 fields)",
+      "description": "Form with 1 visible fields",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

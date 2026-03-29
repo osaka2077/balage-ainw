@@ -1,0 +1,97 @@
+{
+  "url": "https://mui.com/material-ui/react-text-field/",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] React Text Field component - Material UI — 5 endpoints auto-detected. HTML: 902 KB, 4214 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Form",
+      "description": "Username/email + password login form",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "high",
+      "fields": [
+        "outlined-required",
+        "outlined-disabled",
+        "outlined-password-input",
+        "outlined-read-only-input",
+        "outlined-search",
+        "outlined-helperText",
+        "filled-required",
+        "filled-disabled",
+        "filled-password-input",
+        "filled-read-only-input",
+        "filled-search",
+        "filled-helperText",
+        "standard-required",
+        "standard-disabled",
+        "standard-password-input",
+        "standard-read-only-input",
+        "standard-search",
+        "standard-helperText"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "#outlined-search",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (80 links): Getting started, Components, All components, Autocomplete, Button, Button Group, Checkbox, Floating Action Button",
+      "selector_hint": "[aria-label=\"documentation\"] a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 10 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (5 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

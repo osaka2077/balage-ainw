@@ -1,0 +1,50 @@
+{
+  "url": "https://developer.mozilla.org/en-US/",
+  "captured_at": "2026-03-29",
+  "difficulty": "medium",
+  "notes": "[AUTO-GENERATED] MDN Web Docs — 3 endpoints auto-detected. HTML: 70 KB, 740 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (87 links): MDN, HTML: Markup language, Elements, Global attributes, Attributes, See all…, Responsive images, HTML cheatsheet",
+      "selector_hint": "nav.navigation a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 31 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (1 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 3,
+    "phase1_endpoints": 0,
+    "min_precision_target": 0.7,
+    "min_recall_target": 0.65
+  }
+}

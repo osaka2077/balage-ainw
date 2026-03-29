@@ -1,0 +1,92 @@
+{
+  "url": "https://www.npmjs.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "easy",
+  "notes": "[AUTO-GENERATED] npm | Home — 6 endpoints auto-detected. HTML: 29 KB, 146 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "#signup",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "[aria-label=\"Search packages\"]",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (4 links): Pro, Teams, Pricing, Documentation",
+      "selector_hint": "[aria-label=\"Product Navigation\"] a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 13 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (1 fields)",
+      "description": "Form with 1 visible fields",
+      "selector_hint": "form#search",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "q"
+      ],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (1 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.8,
+    "min_recall_target": 0.8
+  }
+}

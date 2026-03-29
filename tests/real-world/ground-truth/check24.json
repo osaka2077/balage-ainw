@@ -1,0 +1,112 @@
+{
+  "url": "https://www.check24.de",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] CHECK24 | Das Vergleichsportal — 7 endpoints auto-detected. HTML: 3518 KB, 2044 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Create Account",
+      "description": "Link to registration page",
+      "selector_hint": "a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "#c24-search-header",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie/consent banner with Accept/Reject",
+      "selector_hint": "[class*=\"cookie-consent\"] button",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 23 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (1 fields)",
+      "description": "Form with 1 visible fields",
+      "selector_hint": "form#c24-search-form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "q"
+      ],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (6 fields)",
+      "description": "Form with 6 visible fields",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "return-location",
+        "return-location",
+        "dep_destination_title",
+        "pickup-time",
+        "dropoff-time",
+        "customer_age"
+      ],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (2 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 7,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

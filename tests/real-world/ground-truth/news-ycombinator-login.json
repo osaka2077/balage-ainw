@@ -1,0 +1,30 @@
+{
+  "url": "https://news.ycombinator.com/login",
+  "captured_at": "2026-03-29",
+  "difficulty": "easy",
+  "notes": "[AUTO-GENERATED] news-ycombinator-login — 1 endpoints auto-detected. HTML: 1 KB, 42 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Form",
+      "description": "Username/email + password login form",
+      "selector_hint": "form[action='login']",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "high",
+      "fields": [
+        "acct",
+        "pw"
+      ],
+      "phase": 1
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 1,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.8,
+    "min_recall_target": 0.8
+  }
+}

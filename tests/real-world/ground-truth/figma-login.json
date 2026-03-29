@@ -1,0 +1,30 @@
+{
+  "url": "https://www.figma.com/login",
+  "captured_at": "2026-03-29",
+  "difficulty": "medium",
+  "notes": "[AUTO-GENERATED] Login | Figma — 1 endpoints auto-detected. HTML: 155 KB, 313 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "auth",
+      "label": "Login Form",
+      "description": "Username/email + password login form",
+      "selector_hint": "form#auth-view-page",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "high",
+      "fields": [
+        "email",
+        "password"
+      ],
+      "phase": 1
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 1,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.7,
+    "min_recall_target": 0.65
+  }
+}

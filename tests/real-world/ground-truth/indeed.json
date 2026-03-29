@@ -1,0 +1,93 @@
+{
+  "url": "https://www.indeed.com",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] Jobbörse Indeed.com | Deutschlands Jobsuche — 6 endpoints auto-detected. HTML: 614 KB, 937 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "#text-input-what",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "GDPR cookie/consent banner with Accept/Reject",
+      "selector_hint": "#onetrust-pc-btn-handler",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (16 links): Startseite, Unternehmensbewertungen, Gehälter finden, Anmelden, Anmelden, Arbeitgeber/Jobschaltung, Startseite, Unternehmensbewertungen",
+      "selector_hint": "#gnav-main-container a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with 17 links",
+      "selector_hint": "footer a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (2 fields)",
+      "description": "Form with 2 visible fields",
+      "selector_hint": "form#jobsearch",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "q",
+        "l"
+      ],
+      "phase": 2
+    },
+    {
+      "type": "support",
+      "label": "Help & Support",
+      "description": "Help/support section (6 links)",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 6,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "url": "https://httpbin.org/forms/post",
+  "captured_at": "2026-03-29",
+  "difficulty": "easy",
+  "notes": "[AUTO-GENERATED] httpbin-forms-post — 1 endpoints auto-detected. HTML: 1 KB, 46 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "form",
+      "label": "Comment Form",
+      "description": "Comment/reply form",
+      "selector_hint": "form[action='/post']",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "custname",
+        "custtel",
+        "custemail",
+        "size",
+        "size",
+        "size",
+        "topping",
+        "topping",
+        "topping",
+        "topping",
+        "delivery",
+        "comments"
+      ],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 1,
+    "phase1_endpoints": 0,
+    "min_precision_target": 0.8,
+    "min_recall_target": 0.8
+  }
+}

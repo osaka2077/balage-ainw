@@ -1,0 +1,57 @@
+{
+  "url": "https://www.twitch.tv",
+  "captured_at": "2026-03-29",
+  "difficulty": "hard",
+  "notes": "[AUTO-GENERATED] Twitch — 3 endpoints auto-detected. HTML: 343 KB, 2191 elements. NEEDS MANUAL REVIEW.",
+  "endpoints": [
+    {
+      "type": "search",
+      "label": "Search Bar",
+      "description": "Search input",
+      "selector_hint": "#tw-abbe738b378347a6bf28c1fbdde50fbd",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "search_query"
+      ],
+      "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Primary nav (10 links): ",
+      "selector_hint": "#side-nav a",
+      "affordances": [
+        "click"
+      ],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Form (2 fields)",
+      "description": "Form with 2 visible fields",
+      "selector_hint": "form",
+      "affordances": [
+        "fill",
+        "submit"
+      ],
+      "risk_class": "low",
+      "fields": [
+        "tw-abbe738b378347a6bf28c1fbdde50fbd",
+        "tw-abbe738b378347a6bf28c1fbdde50fbd-hidden"
+      ],
+      "phase": 2
+    }
+  ],
+  "expected_metrics": {
+    "total_endpoints": 3,
+    "phase1_endpoints": 1,
+    "min_precision_target": 0.6,
+    "min_recall_target": 0.55
+  }
+}
