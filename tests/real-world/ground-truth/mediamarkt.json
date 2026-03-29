@@ -2,31 +2,34 @@
   "url": "https://www.mediamarkt.de",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "Elektronik, Trends & Technik kaufen im Onlineshop | MediaMarkt",
+  "notes": "MediaMarkt e-commerce homepage. Search bar, account/login link, shopping cart, category navigation bar, product deal tiles, newsletter signup, extensive footer. The 'Form (1 fields)' was a phantom duplicate of the search form. Model detects 8 endpoints here, performing well.",
   "endpoints": [
     {
       "type": "search",
       "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "#search-form",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "description": "Product search input in header",
+      "selector_hint": "#search-form, input[name='query']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
+      "type": "auth",
+      "label": "Account Login",
+      "description": "Mein Konto / Anmelden link in header",
+      "selector_hint": "a[href*='login'], a[href*='account']",
+      "affordances": ["click"],
+      "risk_class": "high",
+      "fields": [],
       "phase": 1
     },
     {
       "type": "checkout",
       "label": "Shopping Cart",
-      "description": "Cart icon/link to basket or checkout",
-      "selector_hint": "[aria-label=\"Warenkorb\"]",
-      "affordances": [
-        "click"
-      ],
+      "description": "Warenkorb icon in header linking to basket",
+      "selector_hint": "[aria-label='Warenkorb'], a[href*='basket']",
+      "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
       "phase": 1
@@ -34,50 +37,29 @@
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (12 links): Computer & Büro, TV & Audio, Smartphone & Tarife, Haushaltsgroßgeräte, Haushalt & Wohnen, Gaming & VR, Angebote, OUTLET%",
-      "selector_hint": "[aria-label=\"Main Navigation\"] a",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "navigation",
-      "label": "Footer Navigation",
-      "description": "Footer with 108 links",
-      "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "description": "Category nav bar: Computer & Buero, TV & Audio, Smartphone & Tarife, Gaming & VR, Angebote, OUTLET%",
+      "selector_hint": "[aria-label='Main Navigation'] a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     },
     {
       "type": "form",
-      "label": "Form (1 fields)",
-      "description": "Form with 1 visible fields",
-      "selector_hint": "form#storybook-form-1",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "label": "Newsletter Signup",
+      "description": "Email newsletter subscription form in the lower section of the page",
+      "selector_hint": "form[action*='newsletter'], input[type='email']",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search-form"
-      ],
+      "fields": ["email"],
       "phase": 2
     },
     {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (3 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Extensive footer: service links, payment methods, legal info, store locator",
+      "selector_hint": "footer a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -85,7 +67,7 @@
   ],
   "expected_metrics": {
     "total_endpoints": 6,
-    "phase1_endpoints": 2,
+    "phase1_endpoints": 3,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

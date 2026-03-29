@@ -2,43 +2,34 @@
   "url": "https://www.indeed.com",
   "captured_at": "2026-03-29",
   "difficulty": "hard",
-  "notes": "Jobbörse Indeed.com | Deutschlands Jobsuche",
+  "notes": "Indeed DE job search homepage. Two-field job search form (Jobtitel + Ort), sign-in link, main nav (Startseite, Unternehmensbewertungen, Gehaelter finden), CTA button, footer. The 'Form (2 fields)' was a duplicate of the search form. Screenshot shows no cookie consent overlay in this capture.",
   "endpoints": [
     {
       "type": "search",
-      "label": "Search Bar",
-      "description": "Search input",
-      "selector_hint": "#text-input-what",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
+      "label": "Job Search Form",
+      "description": "Two-field job search: Jobtitel/Stichworte + Stadt/Bundesland/PLZ with Jobs finden button",
+      "selector_hint": "#text-input-what, #text-input-where, form#jobsearch",
+      "affordances": ["fill", "submit"],
       "risk_class": "low",
-      "fields": [
-        "search_query"
-      ],
+      "fields": ["job_title", "location"],
       "phase": 1
     },
     {
-      "type": "consent",
-      "label": "Cookie Consent Banner",
-      "description": "GDPR cookie/consent banner with Accept/Reject",
-      "selector_hint": "#onetrust-pc-btn-handler",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
+      "type": "auth",
+      "label": "Sign In Link",
+      "description": "Anmelden link in the top-right header",
+      "selector_hint": "a[href*='login'], a[href*='anmelden']",
+      "affordances": ["click"],
+      "risk_class": "high",
       "fields": [],
-      "phase": 2
+      "phase": 1
     },
     {
       "type": "navigation",
       "label": "Main Navigation",
-      "description": "Primary nav (16 links): Startseite, Unternehmensbewertungen, Gehälter finden, Anmelden, Anmelden, Arbeitgeber/Jobschaltung, Startseite, Unternehmensbewertungen",
+      "description": "Top nav: Startseite, Unternehmensbewertungen, Gehaelter finden, Arbeitgeber/Jobschaltung",
       "selector_hint": "#gnav-main-container a",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -46,47 +37,17 @@
     {
       "type": "navigation",
       "label": "Footer Navigation",
-      "description": "Footer with 17 links",
+      "description": "Footer links: Hiring Lab, Karriere-Guide, Jobs finden, Hilfe, etc.",
       "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
-      "type": "form",
-      "label": "Form (2 fields)",
-      "description": "Form with 2 visible fields",
-      "selector_hint": "form#jobsearch",
-      "affordances": [
-        "fill",
-        "submit"
-      ],
-      "risk_class": "low",
-      "fields": [
-        "q",
-        "l"
-      ],
-      "phase": 2
-    },
-    {
-      "type": "support",
-      "label": "Help & Support",
-      "description": "Help/support section (6 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
-    "phase1_endpoints": 1,
+    "total_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }
