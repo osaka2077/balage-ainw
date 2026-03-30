@@ -115,3 +115,12 @@ REFACTORING-WAVE-PLAN.md
 ERRORS.md
 AGENTS.md
 tests/real-world/benchmark-baseline-*.json
+
+# Internal strategy & planning docs
+docs/strategy/
+docs/plans/
+docs/security/THREAT-MODEL-*
+docs/TEAM-ANALYSIS-*
+docs/customer-discovery/*-draft.md
+tests/real-world/benchmark-results-*-cache-report.md
+tests/real-world/benchmark-results-*-fixture-report.md
