@@ -25,6 +25,14 @@ export interface BalageEnvConfig {
   maxTokensPerRequest: number;
   maxCostPerRunUsd: number;
   hasAnyApiKey: boolean;
+
+  // Firecrawl (FC-008)
+  firecrawlApiKey: string | undefined;
+  firecrawlApiUrl: string;
+  firecrawlEnabled: boolean;
+  firecrawlMaxResponseSizeMb: number;
+  firecrawlTimeoutMs: number;
+  allowHttp: boolean;
 }
 
 // ============================================================================
@@ -49,6 +57,19 @@ function loadEnvConfig(): BalageEnvConfig {
     process.env["BALAGE_MAX_COST_PER_RUN_USD"] ?? "1.00",
   );
 
+  // Firecrawl Config (FC-008)
+  const firecrawlApiKey = process.env["BALAGE_FIRECRAWL_API_KEY"] || undefined;
+  const firecrawlApiUrl = process.env["BALAGE_FIRECRAWL_API_URL"] ?? "https://api.firecrawl.dev";
+  const firecrawlEnabled = process.env["BALAGE_FIRECRAWL_ENABLED"] === "true";
+  const firecrawlMaxResponseSizeMb = parseFloat(
+    process.env["BALAGE_FIRECRAWL_MAX_RESPONSE_SIZE_MB"] ?? "5",
+  );
+  const firecrawlTimeoutMs = parseInt(
+    process.env["BALAGE_FIRECRAWL_TIMEOUT_MS"] ?? "30000",
+    10,
+  );
+  const allowHttp = process.env["BALAGE_ALLOW_HTTP"] === "true";
+
   return {
     openaiApiKey,
     anthropicApiKey,
@@ -58,6 +79,14 @@ function loadEnvConfig(): BalageEnvConfig {
     maxTokensPerRequest: Number.isFinite(maxTokensPerRequest) ? maxTokensPerRequest : 4096,
     maxCostPerRunUsd: Number.isFinite(maxCostPerRunUsd) ? maxCostPerRunUsd : 1.0,
     hasAnyApiKey: !!(openaiApiKey || anthropicApiKey),
+
+    // Firecrawl (FC-008)
+    firecrawlApiKey,
+    firecrawlApiUrl,
+    firecrawlEnabled,
+    firecrawlMaxResponseSizeMb: Number.isFinite(firecrawlMaxResponseSizeMb) ? firecrawlMaxResponseSizeMb : 5,
+    firecrawlTimeoutMs: Number.isFinite(firecrawlTimeoutMs) ? firecrawlTimeoutMs : 30_000,
+    allowHttp,
   };
 }
 

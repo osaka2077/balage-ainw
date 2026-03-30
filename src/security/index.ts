@@ -39,6 +39,14 @@ export type {
   ValidationRule,
 } from "./types.js";
 
+// URL Validation (FC-001, FC-002)
+export {
+  isPrivateHost,
+  validateFetchUrl,
+  validateRedirectUrl,
+} from "./url-validator.js";
+export type { UrlValidationResult } from "./url-validator.js";
+
 // Error-Klassen
 export {
   SecurityError,
