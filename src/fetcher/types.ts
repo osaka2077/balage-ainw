@@ -1,11 +1,21 @@
 /**
  * PageFetcher Interface + Types (FC-005)
  *
- * Unified interface fuer Page-Fetching.
- * Implementierungen: FirecrawlFetcher, PlaywrightFetcher.
+ * Unified abstraction for fetching rendered web pages. All page fetchers
+ * (Firecrawl, Playwright, future providers) implement the {@link PageFetcher}
+ * interface, enabling transparent provider switching.
  *
- * Zod-first Schemas — Typen werden inferred statt manuell definiert.
- * z.input = User-facing (alles optional), z.output = resolved Defaults.
+ * **Type system:** Zod-first schemas with inferred TypeScript types.
+ * `z.input` types represent the user-facing API (all fields optional),
+ * `z.output` types have all defaults resolved.
+ *
+ * **Key types:**
+ * - {@link PageFetcher} — The interface all fetchers implement
+ * - {@link FetchOptions} — User-facing options (timeouts, viewport, headers)
+ * - {@link FetchResult} — Return type with HTML, metadata, and timing
+ * - {@link FetcherProvider} — `"firecrawl" | "playwright" | "auto"`
+ *
+ * @module fetcher/types
  */
 
 import { z } from "zod";
@@ -83,20 +93,37 @@ export type FetchTiming = z.output<typeof FetchTimingSchema>;
 // FetchResult
 // ============================================================================
 
+/**
+ * Result of a page fetch operation.
+ *
+ * Always contains `html` and `metadata`. The `screenshot` and `markdown`
+ * fields are populated based on the fetcher's capabilities and the requested
+ * options.
+ *
+ * Firecrawl always returns both `html` and `markdown`. Playwright returns
+ * `html` only (and optionally `screenshot` if requested).
+ */
 export interface FetchResult {
-  /** Raw HTML-String der vollstaendig gerenderten Seite. */
+  /** Raw HTML string of the fully-rendered page (JavaScript executed). */
   html: string;
 
-  /** Screenshot als base64-encoded PNG. Nur wenn screenshot=true. */
+  /**
+   * Screenshot as a base64-encoded PNG string.
+   * Only populated when `screenshot: true` was passed in {@link FetchOptions}.
+   */
   screenshot?: string;
 
-  /** Markdown-Representation der Seite (wenn vom Fetcher unterstuetzt). */
+  /**
+   * Markdown representation of the page content.
+   * Populated by Firecrawl (always) and optionally by other fetchers.
+   * Used by the Markdown-Context feature (FC-018/019) to enrich LLM prompts.
+   */
   markdown?: string;
 
-  /** Metadata ueber den Fetch (finale URL, Status, Bot-Protection). */
+  /** Metadata about the fetch: final URL, status code, bot protection status. */
   metadata: FetchMetadata;
 
-  /** Timing-Informationen. */
+  /** Timing breakdown for the fetch operation. */
   timing: FetchTiming;
 }
 
@@ -104,24 +131,70 @@ export interface FetchResult {
 // PageFetcher Interface
 // ============================================================================
 
+/**
+ * Unified interface for page fetching providers.
+ *
+ * Every fetcher implementation (Firecrawl, Playwright, future providers)
+ * must implement this interface. Use {@link createFetcher} from
+ * `src/fetcher/create-fetcher.ts` to instantiate the right implementation
+ * based on environment configuration.
+ *
+ * **Lifecycle:** Call `fetch()` one or more times, then `close()` to release
+ * resources. The `close()` method is idempotent and safe to call multiple times.
+ *
+ * **Error handling:** All fetchers throw typed errors from `src/fetcher/errors.ts`.
+ * Use `instanceof` checks to handle specific failure modes.
+ *
+ * @example
+ * ```typescript
+ * import { createFetcher } from "balage/fetcher";
+ *
+ * const fetcher = createFetcher({ provider: "auto" });
+ * try {
+ *   const result = await fetcher.fetch("https://example.com");
+ *   console.log(result.html);
+ *   console.log(result.metadata.fetcherType); // "firecrawl" or "playwright"
+ * } finally {
+ *   await fetcher.close();
+ * }
+ * ```
+ */
 export interface PageFetcher {
   /**
-   * Fetcht eine Seite und gibt deren HTML zurueck.
+   * Fetch a web page and return its rendered HTML.
    *
-   * @throws {FetchTimeoutError} bei Timeout
-   * @throws {FetchBotProtectionError} bei erkannter Bot-Protection
-   * @throws {FetchNetworkError} bei Netzwerk-Fehlern
-   * @throws {FetchError} fuer alle anderen Fetch-Fehler
+   * The returned HTML represents the fully-rendered page (JavaScript executed,
+   * dynamic content loaded). For Firecrawl, this is server-side rendered.
+   * For Playwright, this is captured from a headless browser.
+   *
+   * @param url - The URL to fetch. Must pass SSRF validation.
+   * @param options - Fetch options (timeout, viewport, headers).
+   *   All fields are optional with sensible defaults.
+   * @returns The fetched page with HTML, metadata, and timing information.
+   *
+   * @throws {FetchTimeoutError} When the page load exceeds the configured timeout.
+   * @throws {FetchBotProtectionError} When bot protection is detected
+   *   (Cloudflare, DataDome, etc.) and cannot be bypassed.
+   * @throws {FetchNetworkError} When a network-level error occurs
+   *   (DNS failure, connection refused, TLS error).
+   * @throws {FetchRateLimitError} When the cost limiter rejects the request.
+   * @throws {FetchResponseTooLargeError} When the response exceeds the size limit.
+   * @throws {FetchError} For all other fetch-related errors.
    */
   fetch(url: string, options?: FetchOptions): Promise<FetchResult>;
 
   /**
-   * Gibt alle gehaltenen Ressourcen frei (Browser-Instanzen, Connections).
-   * Mehrfach-Aufruf sicher. No-Op nach dem ersten Aufruf.
+   * Release all held resources (browser instances, connections, handles).
+   *
+   * Idempotent: safe to call multiple times. The second and subsequent calls
+   * are no-ops. Always call this in a `finally` block to prevent resource leaks.
    */
   close(): Promise<void>;
 
-  /** Human-readable Name fuer Logging. */
+  /**
+   * Human-readable name for logging and diagnostics (e.g., `"firecrawl"`,
+   * `"playwright"`).
+   */
   readonly name: string;
 }
 
@@ -129,4 +202,11 @@ export interface PageFetcher {
 // Provider Type
 // ============================================================================
 
+/**
+ * Available fetcher providers.
+ *
+ * - `"firecrawl"` — Firecrawl Cloud or self-hosted. Requires API key.
+ * - `"playwright"` — Local headless Chromium. Requires `playwright` package.
+ * - `"auto"` — Firecrawl if API key is configured and enabled, otherwise Playwright.
+ */
 export type FetcherProvider = "firecrawl" | "playwright" | "auto";

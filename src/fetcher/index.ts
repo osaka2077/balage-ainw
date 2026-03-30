@@ -38,9 +38,26 @@ export {
 export { createFetcher } from "./create-fetcher.js";
 export type { CreateFetcherOptions } from "./create-fetcher.js";
 
-// Implementations (FC-009)
+// Implementations (FC-009, FC-015)
 export { FirecrawlFetcher } from "./firecrawl-fetcher.js";
 export type { FirecrawlFetcherConfig } from "./firecrawl-fetcher.js";
+
+/**
+ * FC-015 / FC-017: PlaywrightFetcher — Einmalige, isolierte Page-Fetches.
+ *
+ * UNTERSCHIED zu BrowserAdapter (src/adapter/browser-adapter.ts):
+ *   BrowserAdapter  = Langlebige Browser-Sessions mit Context-Management,
+ *                     CDP-Zugriff, und Multi-Context-Pool. Fuer wiederholte
+ *                     Interaktionen ueber laengere Zeit.
+ *   PlaywrightFetcher = Einmalige Fetch-Operationen via PageFetcher Interface.
+ *                       Ein Browser wird lazy gestartet, pro fetch() ein neuer
+ *                       Context erstellt und danach geschlossen.
+ *
+ * Beide Klassen sind SEPARAT und unabhaengig voneinander.
+ * BrowserAdapter bleibt unveraendert.
+ */
+export { PlaywrightFetcher } from "./playwright-fetcher.js";
+export type { PlaywrightFetcherConfig } from "./playwright-fetcher.js";
 
 // Cost-Limiter (FC-014)
 export { CostLimiter } from "./cost-limiter.js";

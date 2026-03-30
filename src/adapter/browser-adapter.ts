@@ -1,6 +1,19 @@
 /**
  * BrowserAdapter — Hauptklasse fuer Browser-Steuerung.
  * Orchestriert Playwright + CDP, Context-Management, Graceful Shutdown.
+ *
+ * FC-017: INTEROP-HINWEIS
+ * BrowserAdapter ist fuer LANGLEBIGE Browser-Sessions mit Context-Management,
+ * CDP-Zugriff, und Multi-Context-Pool. Er wird NICHT durch PlaywrightFetcher
+ * ersetzt.
+ *
+ * PlaywrightFetcher (src/fetcher/playwright-fetcher.ts) ist eine SEPARATE
+ * Klasse fuer einmalige, isolierte Page-Fetches via PageFetcher Interface.
+ * Sie hat einen eigenen Browser-Lifecycle (lazy launch, close nach Gebrauch).
+ *
+ * Beide Klassen nutzen Playwright, aber fuer unterschiedliche Zwecke:
+ *   BrowserAdapter     → Wiederholte Interaktionen, langlebige Sessions
+ *   PlaywrightFetcher  → Einmalige Fetches, PageFetcher-Vertrag
  */
 
 import {

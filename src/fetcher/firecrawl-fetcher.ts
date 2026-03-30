@@ -1,21 +1,50 @@
 /**
- * FirecrawlFetcher (FC-009)
+ * FirecrawlFetcher — Firecrawl API Integration (FC-009)
  *
- * Implementiert PageFetcher Interface fuer die Firecrawl API.
- * Nutzt nativen fetch() — kein @mendable/firecrawl-js SDK noetig.
+ * {@link PageFetcher} implementation that fetches rendered HTML from the
+ * [Firecrawl API](https://firecrawl.dev). Uses native `fetch()` — no
+ * `@mendable/firecrawl-js` SDK dependency required.
  *
- * API: POST /v1/scrape an Firecrawl
- * Formate: html + markdown (immer beide)
+ * **API endpoint:** `POST /v1/scrape` on the configured Firecrawl instance.
+ * Always requests both `html` and `markdown` formats.
  *
- * Security:
- *  - validateFetchUrl() VOR jedem Call (SSRF-Schutz)
- *  - Response-Size-Limit (default 5MB)
- *  - API Key wird nie in Errors/Logs geleakt (redactApiKeys)
- *  - Cost-Limiter (max 10/min, max 100/h)
+ * **Security layers:**
+ * - {@link validateFetchUrl} is called before every API request (SSRF protection)
+ * - Response size is checked against a configurable limit (default: 5 MB)
+ * - API keys are redacted from all error messages via {@link redactApiKeys}
+ * - {@link CostLimiter} enforces per-minute and per-hour call limits
  *
- * Resilience:
- *  - Retry mit Exponential Backoff (max 2 retries, base 1s) bei 429/5xx
- *  - Timeout via AbortController
+ * **Resilience:**
+ * - Automatic retry with exponential backoff on 429 (rate limit) and 5xx errors
+ * - Configurable max retries (default: 2) and base delay (default: 1000 ms)
+ * - Timeout via `AbortController` (default: 30 seconds)
+ * - No retry on timeouts or oversized responses (fail fast)
+ *
+ * **Usage:**
+ * Typically created via {@link createFetcher} rather than directly.
+ *
+ * @example Direct instantiation (advanced)
+ * ```typescript
+ * import { FirecrawlFetcher } from "balage/fetcher";
+ *
+ * const fetcher = new FirecrawlFetcher({
+ *   apiKey: process.env.BALAGE_FIRECRAWL_API_KEY!,
+ *   apiUrl: "https://api.firecrawl.dev",
+ *   maxRetries: 2,
+ *   maxResponseSizeMb: 5,
+ * });
+ *
+ * try {
+ *   const result = await fetcher.fetch("https://github.com/login");
+ *   console.log(result.html.length);        // raw HTML
+ *   console.log(result.markdown?.length);    // Markdown representation
+ *   console.log(result.metadata.fetcherType); // "firecrawl"
+ * } finally {
+ *   await fetcher.close();
+ * }
+ * ```
+ *
+ * @module firecrawl-fetcher
  */
 
 import pino from "pino";
@@ -40,26 +69,66 @@ const logger = pino({
 // Config
 // ============================================================================
 
+/**
+ * Configuration for {@link FirecrawlFetcher}.
+ *
+ * Only `apiKey` is required. All other fields have sensible defaults
+ * suitable for production use with Firecrawl Cloud.
+ *
+ * For self-hosted Firecrawl instances, set `apiUrl` to your endpoint.
+ *
+ * @example
+ * ```typescript
+ * const config: FirecrawlFetcherConfig = {
+ *   apiKey: process.env.BALAGE_FIRECRAWL_API_KEY!,
+ *   apiUrl: "https://firecrawl.internal.company.com",  // self-hosted
+ *   maxRetries: 3,
+ *   maxResponseSizeMb: 10,
+ * };
+ * ```
+ */
 export interface FirecrawlFetcherConfig {
-  /** Firecrawl API Key. Erforderlich. */
+  /** Firecrawl API key. Required. Obtain from https://firecrawl.dev. */
   apiKey: string;
 
-  /** Firecrawl API Base URL. Default: https://api.firecrawl.dev */
+  /**
+   * Firecrawl API base URL.
+   * @default "https://api.firecrawl.dev"
+   */
   apiUrl?: string;
 
-  /** Max Retries bei 429/5xx. Default: 2 */
+  /**
+   * Maximum number of retries on 429 (rate limit) or 5xx (server error).
+   * Uses exponential backoff: `retryBaseMs * 2^attempt`.
+   * @default 2
+   */
   maxRetries?: number;
 
-  /** Basis-Wartezeit fuer Exponential Backoff in ms. Default: 1000 */
+  /**
+   * Base delay for exponential backoff in milliseconds.
+   * Actual delay: `retryBaseMs * 2^attempt` (e.g., 1000, 2000, 4000).
+   * @default 1000
+   */
   retryBaseMs?: number;
 
-  /** Max Response Size in MB. Default: 5 */
+  /**
+   * Maximum allowed response size in megabytes. Responses exceeding this
+   * limit are rejected with {@link FetchResponseTooLargeError}.
+   * @default 5
+   */
   maxResponseSizeMb?: number;
 
-  /** HTTP URLs erlauben (nur fuer lokale Entwicklung). Default: false */
+  /**
+   * Allow `http://` URLs (no TLS). **Never enable in production.**
+   * Only for local development against `http://localhost`.
+   * @default false
+   */
   allowHttp?: boolean;
 
-  /** Cost-Limiter Konfiguration. Default: 10/min, 100/h */
+  /**
+   * In-memory rate limiter configuration. Prevents runaway API usage.
+   * @default { maxPerMinute: 10, maxPerHour: 100 }
+   */
   costLimiter?: Partial<CostLimiterConfig>;
 }
 

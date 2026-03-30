@@ -1,17 +1,19 @@
 /**
- * Fetcher Factory / Auto-Detection (FC-007)
+ * Fetcher Factory / Auto-Detection (FC-007, updated FC-016)
  *
  * createFetcher() erzeugt den richtigen PageFetcher basierend auf:
  *  1. Expliziter provider-Angabe
- *  2. Auto-Detection (Firecrawl wenn Key vorhanden, sonst Playwright)
+ *  2. Auto-Detection (Firecrawl wenn Key + enabled, sonst Playwright)
  *
- * Keine harten Runtime-Dependencies — beide Fetcher werden lazy importiert.
+ * Keine harten Runtime-Dependencies — PlaywrightFetcher wird lazy importiert.
+ * Wenn playwright nicht installiert ist, gibt es einen klaren Error statt crash.
  */
 
 import pino from "pino";
 import type { PageFetcher, FetcherProvider } from "./types.js";
 import { FetchConfigError } from "./errors.js";
 import { FirecrawlFetcher } from "./firecrawl-fetcher.js";
+import { PlaywrightFetcher } from "./playwright-fetcher.js";
 
 const logger = pino({
   name: "fetcher:factory",
@@ -40,6 +42,9 @@ export interface CreateFetcherOptions {
 
   /** HTTP URLs erlauben (nur fuer lokale Entwicklung). Default: false */
   allowHttp?: boolean;
+
+  /** Playwright Headless-Modus. Default: true */
+  playwrightHeadless?: boolean;
 }
 
 // ============================================================================
@@ -51,8 +56,8 @@ export interface CreateFetcherOptions {
  *
  * Provider-Logik:
  *  - 'firecrawl': Erfordert API Key → FirecrawlFetcher
- *  - 'playwright': Erfordert playwright Paket → PlaywrightFetcher
- *  - 'auto' (default): Firecrawl wenn Key + enabled, sonst Playwright, sonst Error
+ *  - 'playwright': PlaywrightFetcher (playwright muss installiert sein)
+ *  - 'auto' (default): Firecrawl wenn Key + enabled, sonst Playwright
  */
 export function createFetcher(options?: CreateFetcherOptions): PageFetcher {
   const provider = options?.provider ?? "auto";
@@ -68,7 +73,7 @@ export function createFetcher(options?: CreateFetcherOptions): PageFetcher {
       return createFirecrawlFetcher(options, firecrawlApiKey);
 
     case "playwright":
-      return createPlaywrightFetcher();
+      return createPlaywrightFetcherInstance(options);
 
     case "auto":
       return autoDetectFetcher(options, firecrawlApiKey, firecrawlEnabled);
@@ -106,13 +111,18 @@ function createFirecrawlFetcher(
   });
 }
 
-function createPlaywrightFetcher(): PageFetcher {
-  // Lazy import — PlaywrightFetcher wird in Phase 3 (FC-015) implementiert.
-  // TODO(FC-015): Lazy import von PlaywrightFetcher implementieren
-  throw new FetchConfigError(
-    "PlaywrightFetcher is not yet implemented via PageFetcher interface. " +
-    "Use BrowserAdapter directly or wait for Phase 3 (FC-015).",
-  );
+/**
+ * FC-015 / FC-016: PlaywrightFetcher Instanz erstellen.
+ *
+ * playwright wird beim ersten fetch() lazy importiert (dynamic import in
+ * PlaywrightFetcher.ensureBrowser()). Wenn playwright nicht installiert ist,
+ * gibt der fetch()-Call einen klaren Error — kein crash beim Import.
+ */
+function createPlaywrightFetcherInstance(options?: CreateFetcherOptions): PageFetcher {
+  return new PlaywrightFetcher({
+    allowHttp: options?.allowHttp,
+    headless: options?.playwrightHeadless,
+  });
 }
 
 function autoDetectFetcher(
@@ -126,7 +136,7 @@ function autoDetectFetcher(
     return createFirecrawlFetcher(options, firecrawlApiKey);
   }
 
-  // Fallback: Playwright
+  // Fallback: Playwright (lazy import — crasht erst beim fetch() wenn nicht installiert)
   logger.info("Auto-detect: Falling back to Playwright");
-  return createPlaywrightFetcher();
+  return createPlaywrightFetcherInstance(options);
 }
