@@ -160,6 +160,8 @@ const ENDPOINT_RESPONSE_JSON_SCHEMA: OpenAIJsonSchemaParam = {
 
 export interface EndpointGeneratorOptions {
   llmClient: LLMClient;
+  /** Separate LLM client for 2-pass verification (defaults to llmClient if not set) */
+  verifyLlmClient?: LLMClient;
   pruneOptions?: PruneForLLMOptions;
   maxRetries?: number;
   maxConcurrency?: number;
@@ -301,8 +303,10 @@ export async function generateEndpoints(
   );
 
   // 9. Optional: 2-Pass LLM Verification
+  // Uses dedicated verify client if provided, otherwise falls back to extraction client
   if (VERIFY_ENABLED && capped.length > 0) {
-    const verifyResult = await verifyEndpoints(capped, llmClient, {
+    const verifyClient = options.verifyLlmClient ?? llmClient;
+    const verifyResult = await verifyEndpoints(capped, verifyClient, {
       url: context.url,
       pageTitle: context.pageTitle,
       segmentSummaries: pageSegmentSummaries,

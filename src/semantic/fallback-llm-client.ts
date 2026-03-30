@@ -367,6 +367,48 @@ export async function createFallbackLLMClient(
 }
 
 // ============================================================================
+// Verify-Client Factory (Hybrid Mode)
+// ============================================================================
+
+/**
+ * Erstellt einen separaten LLM-Client fuer die 2-Pass Verification.
+ * Wird nur erstellt wenn BALAGE_VERIFY_MODEL gesetzt ist.
+ * Der Verify-Client teilt das Cost-Tracking mit dem Haupt-Client
+ * indem er die gleiche costLog-Referenz verwendet.
+ *
+ * Typischer Use-Case: Extraktion auf gpt-4o-mini, Verification auf gpt-4o.
+ */
+export async function createVerifyLLMClient(
+  options: FallbackLLMClientOptions & { costLog?: CostRecord[] },
+): Promise<FallbackLLMClient | null> {
+  const { envConfig: cfg } = options;
+
+  // Kein Verify-Model konfiguriert → kein separater Client noetig
+  if (!cfg.verifyModel) return null;
+
+  const verifyProvider = cfg.verifyProvider ?? cfg.llmProvider;
+  const verifyModel = cfg.verifyModel;
+
+  logger.info(
+    { verifyProvider, verifyModel },
+    "Creating separate LLM client for verification",
+  );
+
+  // Override: temporaer das Model im envConfig aendern fuer createFallbackLLMClient
+  const verifyEnvConfig = {
+    ...cfg,
+    llmModel: verifyModel,
+    llmFallbackModel: verifyModel, // Kein Fallback beim Verify-Client
+    llmProvider: verifyProvider,
+  };
+
+  return createFallbackLLMClient({
+    ...options,
+    envConfig: verifyEnvConfig,
+  });
+}
+
+// ============================================================================
 // Helpers
 // ============================================================================
 

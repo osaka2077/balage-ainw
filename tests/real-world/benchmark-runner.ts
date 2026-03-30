@@ -17,7 +17,7 @@ import {
   generateEndpoints,
   candidateToEndpoint,
 } from "../../src/semantic/endpoint-generator.js";
-import { createFallbackLLMClient } from "../../src/semantic/fallback-llm-client.js";
+import { createFallbackLLMClient, createVerifyLLMClient } from "../../src/semantic/fallback-llm-client.js";
 import type { FallbackLLMClient } from "../../src/semantic/fallback-llm-client.js";
 import { CachedLLMClient } from "../../src/semantic/cached-llm-client.js";
 import { envConfig } from "../../src/config/env.js";
@@ -89,6 +89,8 @@ interface BenchmarkReport {
     provider: string;
     model: string;
     fallbackModel: string;
+    verifyModel?: string;
+    verifyProvider?: string;
   };
   results: BenchmarkResult[];
   aggregate: {
@@ -576,6 +578,7 @@ async function runPipeline(
   effectiveLlmClient: LLMClient,
   url: string,
   file: string,
+  verifyLlmClient?: LLMClient,
 ): Promise<{ endpoints: Endpoint[]; errors: string[] }> {
   const contextId = await adapter.newContext();
   const endpoints: Endpoint[] = [];
@@ -726,6 +729,7 @@ async function runPipeline(
 
     const genResult = await generateEndpoints(relevantSegments, context, {
       llmClient: effectiveLlmClient,
+      verifyLlmClient,
     });
     const candidates = genResult.candidates;
     log(`    Candidates from LLM: ${candidates.length}`);
@@ -895,6 +899,10 @@ function printFinalReport(report: BenchmarkReport): void {
   console.log("  BENCHMARK FINAL REPORT");
   console.log(`  Date: ${report.runDate}`);
   console.log(`  Model: ${report.config.model} (fallback: ${report.config.fallbackModel})`);
+  if (report.config.verifyModel) {
+    console.log(`  Verify: ${report.config.verifyModel} (provider: ${report.config.verifyProvider ?? report.config.provider})`);
+    console.log("  MODE: HYBRID (extraction + verification use different models)");
+  }
   printSeparator("═");
 
   // Pro-Website-Tabelle
@@ -1026,6 +1034,15 @@ async function runSingleBenchmark(): Promise<BenchmarkReport> {
   });
   log(`Provider: ${envConfig.llmProvider} | Model: ${envConfig.llmModel} | Fallback: ${envConfig.llmFallbackModel}`);
 
+  // Optional: Separater Verify-Client fuer Hybrid-Mode (z.B. mini Extraktion + 4o Verification)
+  const verifyLlmClient = await createVerifyLLMClient({
+    envConfig,
+    maxCostUsd: 5.0,
+  });
+  if (verifyLlmClient) {
+    log(`[HYBRID] Verify model: ${envConfig.verifyModel} (provider: ${envConfig.verifyProvider ?? envConfig.llmProvider})`);
+  }
+
   // Optional: LLM-Response-Cache wrappen (spart Kosten bei wiederholten Runs)
   // WICHTIG: Bei Multi-Run-Modus wird der Cache NICHT aktiviert,
   // da sonst alle Runs dasselbe Ergebnis liefern wuerden.
@@ -1063,7 +1080,7 @@ async function runSingleBenchmark(): Promise<BenchmarkReport> {
       // Timeout-Wrapper
       const fileId = basename(file, ".json");
       const pipelineResult = await Promise.race([
-        runPipeline(adapter, llmClient, effectiveLlmClient, gt.url, fileId),
+        runPipeline(adapter, llmClient, effectiveLlmClient, gt.url, fileId, verifyLlmClient ?? undefined),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("TIMEOUT")), WEBSITE_TIMEOUT_MS[gt.difficulty] ?? DEFAULT_TIMEOUT_MS),
         ),
@@ -1141,7 +1158,7 @@ async function runSingleBenchmark(): Promise<BenchmarkReport> {
     printWebsiteResult(result);
 
     // Inkrementell speichern: nach jeder Website Zwischenergebnis sichern
-    const partialReport = buildReport(results, runDate, runStart, llmClient);
+    const partialReport = buildReport(results, runDate, runStart, llmClient, verifyLlmClient);
     const outPath = join(import.meta.dirname!, `benchmark-results-${runDate}.json`);
     writeFileSync(outPath, JSON.stringify(partialReport, null, 2), "utf-8");
     log(`  (partial results saved — ${results.length}/${groundTruths.length} sites)`);
@@ -1154,7 +1171,7 @@ async function runSingleBenchmark(): Promise<BenchmarkReport> {
   log("Shutting down browser ...");
   await adapter.shutdown();
 
-  const report = buildReport(results, runDate, runStart, llmClient);
+  const report = buildReport(results, runDate, runStart, llmClient, verifyLlmClient);
   printFinalReport(report);
 
   // LLM-Cache-Statistiken loggen
@@ -1311,12 +1328,23 @@ function buildReport(
   runDate: string,
   runStart: number,
   llmClient: FallbackLLMClient,
+  verifyClient?: FallbackLLMClient | null,
 ): BenchmarkReport {
   const successResults = results.filter((r) => r.status === "success");
   const aggAll = aggregateMetrics(successResults, "all");
   const aggPhase1 = aggregateMetrics(successResults, "phase1Only");
   const totalTime = Date.now() - runStart;
   const finalSummary = llmClient.summary();
+  // Merge verify-client costs into total if present
+  const verifySummary = verifyClient?.summary();
+  if (verifySummary) {
+    finalSummary.totalCalls += verifySummary.totalCalls;
+    finalSummary.totalCostUsd += verifySummary.totalCostUsd;
+    finalSummary.totalTokens += verifySummary.totalTokens;
+    for (const [model, count] of Object.entries(verifySummary.callsByModel)) {
+      finalSummary.callsByModel[model] = (finalSummary.callsByModel[model] ?? 0) + count;
+    }
+  }
 
   return {
     runDate,
@@ -1324,6 +1352,7 @@ function buildReport(
       provider: envConfig.llmProvider,
       model: envConfig.llmModel,
       fallbackModel: envConfig.llmFallbackModel,
+      ...(envConfig.verifyModel ? { verifyModel: envConfig.verifyModel, verifyProvider: envConfig.verifyProvider ?? envConfig.llmProvider } : {}),
     },
     results,
     aggregate: {

@@ -26,6 +26,10 @@ export interface BalageEnvConfig {
   maxCostPerRunUsd: number;
   hasAnyApiKey: boolean;
 
+  // Hybrid-Mode: separates Model fuer Verification (2-Pass)
+  verifyModel: string | undefined;
+  verifyProvider: "openai" | "anthropic" | undefined;
+
   // Firecrawl (FC-008)
   firecrawlApiKey: string | undefined;
   firecrawlApiUrl: string;
@@ -48,6 +52,13 @@ function loadEnvConfig(): BalageEnvConfig {
 
   const llmModel = process.env["BALAGE_LLM_MODEL"] ?? "gpt-4o-mini";
   const llmFallbackModel = process.env["BALAGE_LLM_FALLBACK_MODEL"] ?? "gpt-4o";
+
+  // Hybrid-Mode: separates Model/Provider fuer 2-Pass Verification
+  const verifyModel = process.env["BALAGE_VERIFY_MODEL"] || undefined;
+  const verifyProviderRaw = process.env["BALAGE_VERIFY_PROVIDER"];
+  const verifyProvider = verifyProviderRaw === "anthropic" ? "anthropic" as const
+    : verifyProviderRaw === "openai" ? "openai" as const
+    : undefined;
 
   const maxTokensPerRequest = parseInt(
     process.env["BALAGE_MAX_TOKENS_PER_REQUEST"] ?? "4096",
@@ -79,6 +90,10 @@ function loadEnvConfig(): BalageEnvConfig {
     maxTokensPerRequest: Number.isFinite(maxTokensPerRequest) ? maxTokensPerRequest : 4096,
     maxCostPerRunUsd: Number.isFinite(maxCostPerRunUsd) ? maxCostPerRunUsd : 1.0,
     hasAnyApiKey: !!(openaiApiKey || anthropicApiKey),
+
+    // Hybrid-Mode
+    verifyModel,
+    verifyProvider,
 
     // Firecrawl (FC-008)
     firecrawlApiKey,
