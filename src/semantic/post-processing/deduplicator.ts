@@ -57,8 +57,8 @@ const TYPE_CAPS: Record<string, number> = {
   consent: 1,
   settings: 2,
   support: 2,
-  content: 2,
-  media: 2,
+  content: 1,
+  media: 1,
   social: 1,
   form: 2,
 };

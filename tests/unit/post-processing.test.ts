@@ -453,7 +453,7 @@ describe("deduplicateCandidates — navigation cap", () => {
     expect(navItems).toHaveLength(3);
   });
 
-  it("limits content endpoints to 2 (down from 3)", () => {
+  it("limits content endpoints to 1", () => {
     const candidates = [
       makeCandidate("content", "Accordion A", 0.9),
       makeCandidate("content", "Tabs B", 0.85),
@@ -461,7 +461,7 @@ describe("deduplicateCandidates — navigation cap", () => {
     ];
     const result = deduplicateCandidates(candidates);
     const contentItems = result.filter(c => c.type === "content");
-    expect(contentItems).toHaveLength(2);
+    expect(contentItems).toHaveLength(1);
   });
 });
 

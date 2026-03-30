@@ -27,7 +27,7 @@ const SEARCH_EVIDENCE_METHOD = /method="?get/i;
 const BOOKING_STYLE_DATE = /check.?in|departure|arrival/i;
 const BOOKING_STYLE_DEST = /destination|where.*going|guests?|rooms?|reiseziel/i;
 
-const CONSENT_LABEL = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept\s*all|reject\s*all|alle\s*akzeptieren|alle\s*ablehnen/i;
+const CONSENT_LABEL = /cookie|consent|gdpr|privacy|datenschutz|tracking|accept\s*all|reject\s*all|alle\s*akzeptieren|alle\s*ablehnen|manage\s*cookies|cookie\s*management|cookie\s*settings|cookie\s*einstellungen|cookie\s*verwalten/i;
 const CONSENT_SEGMENT = /cookie|consent|gdpr|datenschutz|accept\s*all|reject\s*all|alle\s*akzeptieren|onetrust|cookielaw|sp-cc/i;
 
 /**
@@ -165,6 +165,41 @@ export function applyTypeCorrections(
         candidate.confidence *= 0.95;
       }
     }
+    // auth/checkout/commerce with navigation/menu keywords in label -> navigation
+    // LLM sometimes classifies navigation links as auth or checkout
+    if (candidate.type === "auth" || candidate.type === "checkout" || candidate.type === "commerce") {
+      const labelLower = `${candidate.label} ${candidate.description}`.toLowerCase();
+      const hasNavKeywords = /\bnavigat|menu\b|shortcuts|kategorie|category|links\s*navigation/i.test(labelLower);
+      const hasRealAuth = /login|sign[\s-]?in|password|credential|passwort|anmeld/i.test(labelLower);
+      if (hasNavKeywords && !hasRealAuth) {
+        candidate.type = "navigation";
+        candidate.confidence *= 0.9;
+      }
+    }
+
+    // auth with subscription/abo keywords -> commerce (not auth)
+    // Subscription CTAs on news sites are monetization, not authentication
+    if (candidate.type === "auth") {
+      const labelLower = `${candidate.label} ${candidate.description}`.toLowerCase();
+      const hasSubKeywords = /subscri|abo\b|abonnement|premium|plus\+|mitglied|member/i.test(labelLower);
+      const hasRealAuth = /login|sign[\s-]?in|password|passwort|anmeld|log[\s-]?in/i.test(labelLower);
+      if (hasSubKeywords && !hasRealAuth) {
+        candidate.type = "commerce";
+        candidate.confidence *= 0.9;
+      }
+    }
+
+    // search with newsletter/subscription keywords -> form
+    // Newsletter signups are forms, not search
+    if (candidate.type === "search") {
+      const labelLower = `${candidate.label} ${candidate.description}`.toLowerCase();
+      const hasFormKeywords = /newsletter|subscribe|signup|registrier|anmeld.*newsletter|email.*list|mailing/i.test(labelLower);
+      if (hasFormKeywords) {
+        candidate.type = "form";
+        candidate.confidence *= 0.95;
+      }
+    }
+
     // any type -> support (support keywords in label, description, OR anchor texts)
     // Checks candidate's own label/description AND anchor textContent/ariaLabels.
     // Needed because LLMs sometimes give generic labels ("Global Navigation Primary")

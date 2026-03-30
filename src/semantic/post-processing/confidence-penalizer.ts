@@ -75,10 +75,17 @@ export function applyConfidencePenalties(
     if (candidate.type === "navigation" && segmentType !== "navigation" && !NAV_EVIDENCE.test(segText)) {
       candidate.confidence *= tieredPenalty(candidate.confidence, 0.8, 0.6);
     }
-    // Support without evidence — model over-detects support (9/20 sites) but
-    // only 1 GT site (zendesk) has support endpoints
+    // Support without evidence — model over-detects support
     if (candidate.type === "support" && !SUPPORT_EVIDENCE.test(segText)) {
-      candidate.confidence *= tieredPenalty(candidate.confidence, 0.8, 0.6);
+      candidate.confidence *= 0.5;
+    }
+    // Media without evidence — rarely a real endpoint
+    if (candidate.type === "media" && !/video|audio|player|stream|podcast|play.*button/i.test(segText)) {
+      candidate.confidence *= 0.5;
+    }
+    // Social without evidence — share buttons are rarely primary endpoints
+    if (candidate.type === "social" && !/share|tweet|facebook|linkedin|social.*button/i.test(segText)) {
+      candidate.confidence *= 0.5;
     }
   }
 }
