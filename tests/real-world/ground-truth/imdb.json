@@ -6,15 +6,13 @@
   "endpoints": [
     {
       "type": "auth",
-      "label": "Create Account",
-      "description": "Link to registration page",
+      "label": "Sign In / Create Account",
+      "description": "Anmelden link in header for sign-in and account creation",
       "selector_hint": "a[href*=\"/de/registration/signin/\"]",
-      "affordances": [
-        "click"
-      ],
-      "risk_class": "low",
+      "affordances": ["click"],
+      "risk_class": "medium",
       "fields": [],
-      "phase": 2
+      "phase": 1
     },
     {
       "type": "search",
@@ -58,7 +56,7 @@
   ],
   "expected_metrics": {
     "total_endpoints": 4,
-    "phase1_endpoints": 1,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

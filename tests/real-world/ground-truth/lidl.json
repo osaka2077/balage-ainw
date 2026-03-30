@@ -33,10 +33,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "consent",
+      "label": "Cookie Consent Banner",
+      "description": "Cookie consent overlay with accept/settings options at bottom of page",
+      "selector_hint": "[class*='consent'] button, #onetrust-accept-btn-handler",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
+    "total_endpoints": 4,
     "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

@@ -35,26 +35,6 @@
       "phase": 2
     },
     {
-      "type": "checkout",
-      "label": "Cart Drawer",
-      "description": "Slide-over cart panel showing items, quantities, subtotal, and checkout button",
-      "selector_hint": "cart-drawer, a[href='/cart']",
-      "affordances": ["click", "fill", "submit"],
-      "risk_class": "high",
-      "fields": ["quantity"],
-      "phase": 1
-    },
-    {
-      "type": "navigation",
-      "label": "Product Cards",
-      "description": "Grid of product cards linking to product detail pages with images, titles, prices",
-      "selector_hint": ".product-card a, .card__heading a",
-      "affordances": ["click"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "navigation",
       "label": "Footer Navigation",
       "description": "Footer links: Quick links, Info, Policies, Social media icons",
@@ -66,8 +46,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
-    "phase1_endpoints": 3,
+    "total_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.70,
     "min_recall_target": 0.65
   }

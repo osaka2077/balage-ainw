@@ -63,10 +63,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "settings",
+      "label": "Store Locator",
+      "description": "Markt waehlen button in header to select local MediaMarkt store for pickup/availability",
+      "selector_hint": "[data-testid='store-locator'], a[href*='markt']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 6,
+    "total_endpoints": 7,
     "phase1_endpoints": 3,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

@@ -25,20 +25,10 @@
       "phase": 2
     },
     {
-      "type": "content",
-      "label": "Story List",
-      "description": "List of 30 stories with titles, external links, points, author, and comment counts — the primary content of the page",
-      "selector_hint": ".itemlist, .titleline a, .subtext",
-      "affordances": ["click", "read"],
-      "risk_class": "low",
-      "fields": [],
-      "phase": 2
-    },
-    {
       "type": "navigation",
-      "label": "More Link (Pagination)",
-      "description": "Bottom 'More' link for loading next page of stories",
-      "selector_hint": "a.morelink",
+      "label": "Footer Navigation",
+      "description": "Bottom links: More (pagination), Guidelines, FAQ, Lists, API, Security, Legal, Apply to YC, Contact",
+      "selector_hint": "a.morelink, .yclinks a",
       "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
@@ -46,7 +36,7 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 3,
     "phase1_endpoints": 1,
     "min_precision_target": 0.90,
     "min_recall_target": 0.85

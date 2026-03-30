@@ -43,10 +43,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "form",
+      "label": "Newsletter Signup",
+      "description": "SPIEGEL Newsletter subscription section with email input",
+      "selector_hint": "form[action*='newsletter'], input[type='email']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["email"],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 5,
     "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

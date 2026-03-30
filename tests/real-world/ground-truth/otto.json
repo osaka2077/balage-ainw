@@ -43,10 +43,20 @@
       "risk_class": "high",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Category navigation bar: Mode, Schuhe, Multimedia, Wohnen, Sport, etc.",
+      "selector_hint": "nav a, [data-testid='header-nav'] a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
+    "total_endpoints": 5,
     "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

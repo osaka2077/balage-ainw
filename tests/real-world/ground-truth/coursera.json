@@ -33,10 +33,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Footer Navigation",
+      "description": "Footer with columns: Kategorien, Bescheinigungen, Kurse & Spezialisierungen, Karriere-Ressourcen, Coursera company links",
+      "selector_hint": "footer a",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
+    "total_endpoints": 4,
     "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55

@@ -5,13 +5,31 @@
   "notes": "GitHub Docs",
   "endpoints": [
     {
+      "type": "search",
+      "label": "Search Documentation",
+      "description": "Search input in header for searching GitHub docs",
+      "selector_hint": "input[type='search'], [data-testid='search']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
       "type": "auth",
       "label": "Create Account",
-      "description": "Link to registration page",
+      "description": "Registrieren link in header for GitHub signup",
       "selector_hint": "a[href*=\"/signup\"]",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
+    },
+    {
+      "type": "navigation",
+      "label": "Main Navigation",
+      "description": "Category grid: Erste Schritte, Gemeinsames Schreiben von Code, GitHub Copilot, CI/CD und DevOps, Sicherheit, Client-Anwendungen, Projektverwaltung, etc.",
+      "selector_hint": "main nav a, [data-testid='product-picker'] a",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -19,11 +37,9 @@
     {
       "type": "navigation",
       "label": "Footer Navigation",
-      "description": "Footer with 10 links",
+      "description": "Footer with legal links: Impressum, Kontakt, Datenschutz, etc.",
       "selector_hint": "footer a",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
@@ -31,19 +47,17 @@
     {
       "type": "support",
       "label": "Help & Support",
-      "description": "Help/support section (2 links)",
-      "selector_hint": "a[href*=\"help\"], a[href*=\"faq\"]",
-      "affordances": [
-        "click"
-      ],
+      "description": "Hilfe und Support section with survey feedback and community links",
+      "selector_hint": "a[href*=\"help\"], a[href*=\"community\"]",
+      "affordances": ["click"],
       "risk_class": "low",
       "fields": [],
       "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
-    "phase1_endpoints": 0,
+    "total_endpoints": 5,
+    "phase1_endpoints": 1,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

@@ -53,10 +53,20 @@
       "risk_class": "low",
       "fields": [],
       "phase": 2
+    },
+    {
+      "type": "settings",
+      "label": "Delivery Location",
+      "description": "Delivery location selector in header (Lieferung an / PLZ waehlen)",
+      "selector_hint": "#nav-global-location-popover-link, #glow-ingress-line2",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": ["postal_code"],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 5,
+    "total_endpoints": 6,
     "phase1_endpoints": 3,
     "min_precision_target": 0.65,
     "min_recall_target": 0.60

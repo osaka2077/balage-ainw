@@ -5,6 +5,16 @@
   "notes": "MUI documentation page for React Text Field component. Contains interactive demo forms (Outlined, Filled, Standard variants with text inputs), sidebar docs navigation, table of contents, code examples, footer. The 'Login Form' was a false positive: the demo inputs are component examples, not an actual auth form. The 'Search Bar' was a demo input labeled 'Search', not a site search. No real Help & Support section.",
   "endpoints": [
     {
+      "type": "search",
+      "label": "Documentation Search",
+      "description": "Search input in header (Cmd+K shortcut) for searching MUI documentation",
+      "selector_hint": "input[type='search'], [aria-label='Search']",
+      "affordances": ["fill", "submit"],
+      "risk_class": "low",
+      "fields": ["search_query"],
+      "phase": 1
+    },
+    {
       "type": "form",
       "label": "TextField Demo Forms",
       "description": "Interactive demo forms showcasing Outlined, Filled, and Standard text field variants with various input types",
@@ -46,8 +56,8 @@
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 4,
-    "phase1_endpoints": 1,
+    "total_endpoints": 5,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }

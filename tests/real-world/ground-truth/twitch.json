@@ -34,19 +34,27 @@
     {
       "type": "auth",
       "label": "Sign Up / Log In",
-      "description": "Header sign up and login buttons",
+      "description": "Header sign up and login buttons (Anmelden / Registrieren)",
       "selector_hint": "button[data-a-target=\"login-button\"], a[href*=\"signup\"]",
-      "affordances": [
-        "click"
-      ],
+      "affordances": ["click"],
       "risk_class": "high",
       "fields": [],
       "phase": 1
+    },
+    {
+      "type": "navigation",
+      "label": "Sidebar Navigation",
+      "description": "Left sidebar with recommended channels and followed channels list",
+      "selector_hint": "#side-nav a, [data-a-target='side-nav']",
+      "affordances": ["click"],
+      "risk_class": "low",
+      "fields": [],
+      "phase": 2
     }
   ],
   "expected_metrics": {
-    "total_endpoints": 3,
-    "phase1_endpoints": 1,
+    "total_endpoints": 4,
+    "phase1_endpoints": 2,
     "min_precision_target": 0.6,
     "min_recall_target": 0.55
   }
