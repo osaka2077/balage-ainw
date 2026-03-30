@@ -1,0 +1,288 @@
+{
+  "generatedAt": "2026-03-30T12:56:49.767Z",
+  "pricing": {
+    "computerUse": {
+      "screenshotTokens": 1300,
+      "responseTokens": 200,
+      "inputPricePerMTok": 3,
+      "outputPricePerMTok": 15,
+      "latencyPerStepMs": 3000,
+      "errorRatePerStep": 0.12,
+      "retryMultiplier": 1.15
+    },
+    "balage": {
+      "llmInputTokens": 800,
+      "llmOutputTokens": 150,
+      "llmInputPricePerMTok": 0.15,
+      "llmOutputPricePerMTok": 0.6
+    }
+  },
+  "tasks": [
+    {
+      "id": "login-github",
+      "name": "Login auf GitHub",
+      "category": "auth",
+      "computerUseSteps": 4,
+      "computerUse": {
+        "totalCostUsd": 0.0345,
+        "inputCostUsd": 0.0195,
+        "outputCostUsd": 0.015,
+        "totalLatencyMs": 15000,
+        "llmCalls": 5,
+        "effectiveSteps": 5
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 5218,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 15.131578947368423,
+      "speedFactor": 2.874664622460713,
+      "llmCallReduction": 4,
+      "balageF1": 0.857
+    },
+    {
+      "id": "login-linkedin",
+      "name": "Login auf LinkedIn",
+      "category": "auth",
+      "computerUseSteps": 4,
+      "computerUse": {
+        "totalCostUsd": 0.0345,
+        "inputCostUsd": 0.0195,
+        "outputCostUsd": 0.015,
+        "totalLatencyMs": 15000,
+        "llmCalls": 5,
+        "effectiveSteps": 5
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 5142,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 15.131578947368423,
+      "speedFactor": 2.9171528588098017,
+      "llmCallReduction": 4,
+      "balageF1": 1
+    },
+    {
+      "id": "search-amazon",
+      "name": "Produkt auf Amazon suchen",
+      "category": "search",
+      "computerUseSteps": 3,
+      "computerUse": {
+        "totalCostUsd": 0.0276,
+        "inputCostUsd": 0.0156,
+        "outputCostUsd": 0.012,
+        "totalLatencyMs": 12000,
+        "llmCalls": 4,
+        "effectiveSteps": 4
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 8406,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 12.105263157894736,
+      "speedFactor": 1.4275517487508922,
+      "llmCallReduction": 3,
+      "balageF1": 0.8
+    },
+    {
+      "id": "navigate-ebay",
+      "name": "Kategorie-Navigation auf eBay",
+      "category": "navigation",
+      "computerUseSteps": 5,
+      "computerUse": {
+        "totalCostUsd": 0.0414,
+        "inputCostUsd": 0.0234,
+        "outputCostUsd": 0.018,
+        "totalLatencyMs": 18000,
+        "llmCalls": 6,
+        "effectiveSteps": 6
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 7519,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 18.157894736842106,
+      "speedFactor": 2.393935363745179,
+      "llmCallReduction": 5,
+      "balageF1": 0.875
+    },
+    {
+      "id": "checkout-shopify",
+      "name": "Checkout auf Shopify starten",
+      "category": "commerce",
+      "computerUseSteps": 5,
+      "computerUse": {
+        "totalCostUsd": 0.0414,
+        "inputCostUsd": 0.0234,
+        "outputCostUsd": 0.018,
+        "totalLatencyMs": 18000,
+        "llmCalls": 6,
+        "effectiveSteps": 6
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00249,
+        "inputCostUsd": 0.00024,
+        "outputCostUsd": 0.00018,
+        "totalLatencyMs": 24516,
+        "llmCalls": 2,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 16.626506024096386,
+      "speedFactor": 0.7342143906020558,
+      "llmCallReduction": 4,
+      "balageF1": 0.667
+    },
+    {
+      "id": "cookie-otto",
+      "name": "Cookie-Banner auf Otto.de dismissen",
+      "category": "consent",
+      "computerUseSteps": 3,
+      "computerUse": {
+        "totalCostUsd": 0.0276,
+        "inputCostUsd": 0.0156,
+        "outputCostUsd": 0.012,
+        "totalLatencyMs": 12000,
+        "llmCalls": 4,
+        "effectiveSteps": 4
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00207,
+        "inputCostUsd": 0,
+        "outputCostUsd": 0,
+        "totalLatencyMs": 2816,
+        "llmCalls": 0,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 13.333333333333334,
+      "speedFactor": 4.261363636363637,
+      "llmCallReduction": 4,
+      "balageF1": 0.75
+    },
+    {
+      "id": "support-zendesk",
+      "name": "Support-Ticket auf Zendesk erstellen",
+      "category": "support",
+      "computerUseSteps": 6,
+      "computerUse": {
+        "totalCostUsd": 0.0483,
+        "inputCostUsd": 0.0273,
+        "outputCostUsd": 0.021,
+        "totalLatencyMs": 21000,
+        "llmCalls": 7,
+        "effectiveSteps": 7
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 5009,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 21.18421052631579,
+      "speedFactor": 4.192453583549611,
+      "llmCallReduction": 6,
+      "balageF1": 0.6
+    },
+    {
+      "id": "booking-search",
+      "name": "Hotel auf Booking.com suchen",
+      "category": "search",
+      "computerUseSteps": 8,
+      "computerUse": {
+        "totalCostUsd": 0.069,
+        "inputCostUsd": 0.039,
+        "outputCostUsd": 0.03,
+        "totalLatencyMs": 30000,
+        "llmCalls": 10,
+        "effectiveSteps": 10
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 7496,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 30.263157894736846,
+      "speedFactor": 4.00213447171825,
+      "llmCallReduction": 9,
+      "balageF1": 0.889
+    },
+    {
+      "id": "settings-zalando",
+      "name": "Sprache/Land auf Zalando wechseln",
+      "category": "settings",
+      "computerUseSteps": 5,
+      "computerUse": {
+        "totalCostUsd": 0.0414,
+        "inputCostUsd": 0.0234,
+        "outputCostUsd": 0.018,
+        "totalLatencyMs": 18000,
+        "llmCalls": 6,
+        "effectiveSteps": 6
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 6524,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 18.157894736842106,
+      "speedFactor": 2.7590435315757205,
+      "llmCallReduction": 5,
+      "balageF1": 0.857
+    },
+    {
+      "id": "newsletter-freshdesk",
+      "name": "Account/Newsletter auf Freshdesk abonnieren",
+      "category": "form",
+      "computerUseSteps": 5,
+      "computerUse": {
+        "totalCostUsd": 0.0414,
+        "inputCostUsd": 0.0234,
+        "outputCostUsd": 0.018,
+        "totalLatencyMs": 18000,
+        "llmCalls": 6,
+        "effectiveSteps": 6
+      },
+      "balageAssisted": {
+        "totalCostUsd": 0.00228,
+        "inputCostUsd": 0.00012,
+        "outputCostUsd": 0.00009,
+        "totalLatencyMs": 6911,
+        "llmCalls": 1,
+        "effectiveSteps": 1
+      },
+      "costSavingFactor": 18.157894736842106,
+      "speedFactor": 2.6045434814064534,
+      "llmCallReduction": 5,
+      "balageF1": 0.8
+    }
+  ],
+  "summary": {
+    "avgCostFactor": 17.824931304164025,
+    "avgSpeedFactor": 2.816705768898231,
+    "totalLLMCallsSaved": 49,
+    "avgBalageF1": 0.8095000000000001
+  }
+}
