@@ -31,6 +31,7 @@ import { BalageInputError, BalageLLMError } from "./types.js";
 import { VERSION } from "./index.js";
 import { randomUUID } from "node:crypto";
 import { runHeuristicAnalysis, classifySegmentHeuristically } from "./heuristic-analyzer.js";
+import { CredentialGuard } from "../security/credential-guard.js";
 
 const logger = pino({ name: "balage:core", level: process.env["LOG_LEVEL"] ?? "silent" });
 
@@ -164,6 +165,7 @@ export async function analyzeFromHTML(
     const multiRun = options.multiRun ?? parseInt(process.env["BALAGE_RUNS"] ?? "1", 10);
     const llmResult = await runLLMAnalysis(
       segments, llm, url, minConfidence, maxEndpoints, multiRun,
+      options.markdownSummary, options.pageType,
     );
 
     // Phase 3: Ensemble-Merge mit Confidence-Boost bei Uebereinstimmung
@@ -180,6 +182,9 @@ export async function analyzeFromHTML(
       segments, dom, minConfidence, maxEndpoints,
     );
   }
+
+  // FC-021: CredentialGuard auf Endpoint-Output — Credentials in Endpoint-Feldern redacten
+  endpoints = scanEndpointsForCredentials(endpoints);
 
   const totalMs = Math.round(performance.now() - start);
 
@@ -292,6 +297,8 @@ async function runLLMAnalysis(
   minConfidence: number,
   maxEndpoints: number,
   multiRun: number = 1,
+  markdownSummary?: string,
+  pageType?: string,
 ): Promise<{ endpoints: DetectedEndpoint[]; llmCalls: number }> {
   // Lazy-load LLM modules (prevents "Cannot find module 'openai'" for heuristic-only users)
   const { generateEndpoints, classifyEndpoint, createOpenAIClient, createAnthropicClient } = await loadLLMModules();
@@ -319,7 +326,7 @@ async function runLLMAnalysis(
   try {
     const result = await generateEndpoints(
       segments,
-      { url, siteId: url, sessionId: randomUUID() },
+      { url, siteId: url, sessionId: randomUUID(), markdownSummary, pageType },
       { llmClient, maxConcurrency: 6, multiRun },
     );
     candidates = result.candidates;
@@ -371,6 +378,93 @@ async function runLLMAnalysis(
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * FC-021: Scannt alle Endpoint-Felder auf Credentials und redactet sie.
+ *
+ * Prueft: label, description, selector, evidence-Strings.
+ * Bei Fund: Feld wird redacted, Confidence auf 0.3 gesetzt.
+ */
+function scanEndpointsForCredentials(endpoints: DetectedEndpoint[]): DetectedEndpoint[] {
+  const guard = new CredentialGuard();
+  const result: DetectedEndpoint[] = [];
+
+  for (const ep of endpoints) {
+    let hasCredentials = false;
+    let label = ep.label;
+    let description = ep.description;
+    let selector = ep.selector;
+    let evidence = [...ep.evidence];
+
+    // Label scannen
+    const labelScan = guard.scan(label);
+    if (labelScan.hasCredentials) {
+      label = redactFindings(label, labelScan.findings);
+      hasCredentials = true;
+    }
+
+    // Description scannen
+    const descScan = guard.scan(description);
+    if (descScan.hasCredentials) {
+      description = redactFindings(description, descScan.findings);
+      hasCredentials = true;
+    }
+
+    // Selector scannen
+    if (selector) {
+      const selScan = guard.scan(selector);
+      if (selScan.hasCredentials) {
+        selector = redactFindings(selector, selScan.findings);
+        hasCredentials = true;
+      }
+    }
+
+    // Evidence scannen
+    evidence = evidence.map((e) => {
+      const scan = guard.scan(e);
+      if (scan.hasCredentials) {
+        hasCredentials = true;
+        return redactFindings(e, scan.findings);
+      }
+      return e;
+    });
+
+    if (hasCredentials) {
+      logger.warn(
+        { endpointType: ep.type, label: ep.label },
+        "Credentials found in endpoint output — redacting (FC-021)",
+      );
+      result.push({
+        ...ep,
+        label,
+        description,
+        selector,
+        evidence,
+        confidence: 0.3,
+      });
+    } else {
+      result.push(ep);
+    }
+  }
+
+  return result;
+}
+
+/** Redacted alle Findings aus einem String (rueckwaerts fuer korrekte Positionen). */
+function redactFindings(
+  text: string,
+  findings: Array<{ position: number; length: number }>,
+): string {
+  const sorted = [...findings].sort((a, b) => b.position - a.position);
+  let result = text;
+  for (const finding of sorted) {
+    result =
+      result.slice(0, finding.position) +
+      "[CREDENTIAL_REDACTED]" +
+      result.slice(finding.position + finding.length);
+  }
+  return result;
+}
 
 function createEmptyResult(
   options: AnalyzeOptions,

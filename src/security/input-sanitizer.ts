@@ -19,6 +19,7 @@ const DEFAULT_CONFIG: SanitizerConfig = {
 };
 
 // ReDoS-sichere Patterns: keine verschachtelten Quantifizierer
+const HTML_COMMENT_RE = /<!--[\s\S]*?-->/g;
 const SCRIPT_TAG_RE = /<script\b[^>]*>[\s\S]*?<\/script>/gi;
 const NOSCRIPT_TAG_RE = /<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi;
 const STYLE_TAG_RE = /<style\b[^>]*>[\s\S]*?<\/style>/gi;
@@ -201,9 +202,32 @@ export class InputSanitizer {
     };
   }
 
+  /**
+   * Entfernt HTML-Kommentare aus einem String (FC-020).
+   *
+   * Security-first: ALLE Kommentare werden entfernt, auch harmlose wie
+   * `<!-- copyright 2024 -->`, weil Kommentare ein Injection-Vektor sind
+   * (z.B. `<!-- ignore previous instructions -->`).
+   */
+  stripHtmlComments(html: string): string {
+    HTML_COMMENT_RE.lastIndex = 0;
+    const matches = html.match(HTML_COMMENT_RE);
+    if (!matches || matches.length === 0) {
+      return html;
+    }
+    logger.info(
+      { count: matches.length },
+      "Stripped HTML comments",
+    );
+    return html.replace(HTML_COMMENT_RE, "");
+  }
+
   sanitizeForLLM(input: string): string {
-    const result = this.sanitize(input);
-    let text = result.sanitized;
+    // FC-020: HTML-Kommentare VOR allem anderen entfernen
+    let text = this.stripHtmlComments(input);
+
+    const result = this.sanitize(text);
+    text = result.sanitized;
 
     // Verdaechtige Code-Bloecke die wie Prompt Injections aussehen markieren
     text = text.replace(

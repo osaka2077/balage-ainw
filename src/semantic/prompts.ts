@@ -496,7 +496,20 @@ export function buildExtractionPrompt(
   if (context.pageTitle) {
     parts.push(`Title: ${context.pageTitle}`);
   }
+  if (context.pageType && context.pageType !== "generic") {
+    parts.push(`Page Type: ${context.pageType}`);
+  }
   parts.push("");
+
+  // Markdown-Context (FC-018): Wenn verfuegbar, als zusaetzlichen Kontext anhaengen
+  if (context.markdownSummary) {
+    parts.push("## Page Summary (from Markdown)");
+    parts.push("Use this summary as additional context to better understand the page's purpose and content.");
+    parts.push("Do NOT extract endpoints from this summary — only from the UI segment below.");
+    parts.push("");
+    parts.push(context.markdownSummary);
+    parts.push("");
+  }
 
   // Page Overview: alle Segmente als Kontext, damit das LLM die Seite versteht
   if (allSegments && allSegments.length > 1) {

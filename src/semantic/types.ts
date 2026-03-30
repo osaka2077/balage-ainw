@@ -68,6 +68,10 @@ export interface GenerationContext {
   siteId: string;
   sessionId: string;
   pageTitle?: string;
+  /** Markdown-Summary der Seite fuer zusaetzlichen LLM-Kontext (FC-018). */
+  markdownSummary?: string;
+  /** Regelbasiert klassifizierter Page-Type (FC-018). */
+  pageType?: string;
 }
 
 /** LLM-Antwort fuer Endpoint-Extraktion (parsed) */

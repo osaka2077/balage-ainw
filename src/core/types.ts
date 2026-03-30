@@ -81,6 +81,12 @@ export interface AnalyzeOptions {
    * Falls back to BALAGE_RUNS env var. Range: 1-5. Default: 1 (no multi-run).
    */
   multiRun?: number;
+
+  /** Markdown-Summary fuer zusaetzlichen LLM-Kontext (FC-018). Gesetzt via analyzeFromURL. */
+  markdownSummary?: string;
+
+  /** Regelbasiert klassifizierter Page-Type (FC-018). Gesetzt via analyzeFromURL. */
+  pageType?: string;
 }
 
 export interface FingerprintCacheOptions {
