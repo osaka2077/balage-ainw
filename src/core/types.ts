@@ -132,5 +132,30 @@ export interface AnalysisResult {
     cached?: boolean;
     cacheSimilarity?: number;
     fingerprintHash?: string;
+    /** Welcher Fetcher genutzt wurde (nur bei analyzeFromURL). */
+    fetcherType?: "firecrawl" | "playwright";
+    /** Fetch-Timing in ms (nur bei analyzeFromURL). */
+    fetchTimingMs?: number;
   };
+}
+
+// ============================================================================
+// analyzeFromURL Options (FC-010)
+// ============================================================================
+
+export interface AnalyzeFromURLOptions extends AnalyzeOptions {
+  /** Welcher Fetcher-Provider. Default: 'auto' (Firecrawl wenn Key vorhanden). */
+  fetcherProvider?: "firecrawl" | "playwright" | "auto";
+
+  /** Firecrawl API Key. Alternativ: BALAGE_FIRECRAWL_API_KEY env var. */
+  firecrawlApiKey?: string;
+
+  /** Firecrawl API Base URL. Default: https://api.firecrawl.dev */
+  firecrawlApiUrl?: string;
+
+  /** Max Response Size in MB. Default: 5 */
+  maxResponseSizeMb?: number;
+
+  /** HTTP URLs erlauben (nur Entwicklung). Default: false */
+  allowHttp?: boolean;
 }

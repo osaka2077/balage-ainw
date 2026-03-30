@@ -2,7 +2,7 @@
  * Fetcher — Public API
  *
  * PageFetcher Abstraction Layer.
- * Exportiert Interface, Types, Errors und Factory.
+ * Exportiert Interface, Types, Errors, Factory und Implementierungen.
  */
 
 // Interface + Types (FC-005)
@@ -37,3 +37,11 @@ export {
 // Factory (FC-007)
 export { createFetcher } from "./create-fetcher.js";
 export type { CreateFetcherOptions } from "./create-fetcher.js";
+
+// Implementations (FC-009)
+export { FirecrawlFetcher } from "./firecrawl-fetcher.js";
+export type { FirecrawlFetcherConfig } from "./firecrawl-fetcher.js";
+
+// Cost-Limiter (FC-014)
+export { CostLimiter } from "./cost-limiter.js";
+export type { CostLimiterConfig } from "./cost-limiter.js";

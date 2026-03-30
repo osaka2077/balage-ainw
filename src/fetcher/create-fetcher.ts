@@ -11,6 +11,7 @@
 import pino from "pino";
 import type { PageFetcher, FetcherProvider } from "./types.js";
 import { FetchConfigError } from "./errors.js";
+import { FirecrawlFetcher } from "./firecrawl-fetcher.js";
 
 const logger = pino({
   name: "fetcher:factory",
@@ -95,12 +96,14 @@ function createFirecrawlFetcher(
     );
   }
 
-  // Lazy import — FirecrawlFetcher wird erst in Phase 2 (FC-009) implementiert.
-  // Bis dahin: Stub der einen klaren Error wirft.
-  // TODO(FC-009): Lazy import von FirecrawlFetcher implementieren
-  throw new FetchConfigError(
-    "FirecrawlFetcher is not yet implemented. Coming in Phase 2 (FC-009).",
-  );
+  // FC-009: FirecrawlFetcher mit nativem fetch() (kein SDK)
+  return new FirecrawlFetcher({
+    apiKey,
+    apiUrl: options?.firecrawlApiUrl,
+    maxRetries: options?.firecrawlMaxRetries,
+    maxResponseSizeMb: options?.maxResponseSizeMb,
+    allowHttp: options?.allowHttp,
+  });
 }
 
 function createPlaywrightFetcher(): PageFetcher {

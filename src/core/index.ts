@@ -17,6 +17,7 @@ export const VERSION = "0.6.0";
 
 // High-Level API
 export { analyzeFromHTML } from "./analyze.js";
+export { analyzeFromURL } from "./analyze-url.js";
 export { verify, verifyFromHTML } from "./verify.js";
 export type { VerifyInput, VerifyOutput } from "./verify.js";
 export { detectFramework } from "./detect-framework.js";
@@ -29,6 +30,7 @@ export { BalageError, BalageInputError, BalageLLMError } from "./types.js";
 // Types
 export type {
   AnalyzeOptions,
+  AnalyzeFromURLOptions,
   AnalysisResult,
   DetectedEndpoint,
   FrameworkDetection,
