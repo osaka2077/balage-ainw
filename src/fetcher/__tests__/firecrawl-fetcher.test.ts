@@ -368,6 +368,86 @@ describe("FirecrawlFetcher", () => {
     });
   });
 
+  describe("redirect-SSRF protection (FC-001a)", () => {
+    it("should reject when Firecrawl reports redirect to private IP", async () => {
+      // Firecrawl folgt dem Redirect serverseitig und liefert sourceURL = interne IP
+      const body = {
+        success: true,
+        data: {
+          html: "<html>AWS metadata</html>",
+          markdown: "# AWS metadata",
+          metadata: {
+            title: "Instance Metadata",
+            statusCode: 200,
+            sourceURL: "http://169.254.169.254/latest/meta-data/",
+          },
+        },
+      };
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+      const fetcher = createFetcher();
+      await expect(
+        fetcher.fetch("https://evil.com/redirect"),
+      ).rejects.toThrow(FetchNetworkError);
+    });
+
+    it("should reject when Firecrawl reports redirect to localhost", async () => {
+      const body = {
+        success: true,
+        data: {
+          html: "<html>internal</html>",
+          markdown: "# internal",
+          metadata: {
+            title: "Internal",
+            statusCode: 200,
+            sourceURL: "http://localhost:9200/_cat/indices",
+          },
+        },
+      };
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+      const fetcher = createFetcher();
+      await expect(
+        fetcher.fetch("https://evil.com/redirect"),
+      ).rejects.toThrow(FetchNetworkError);
+    });
+
+    it("should accept when sourceURL is a valid public redirect", async () => {
+      const body = {
+        success: true,
+        data: {
+          html: "<html>redirected</html>",
+          markdown: "# Redirected",
+          metadata: {
+            title: "Redirected",
+            statusCode: 200,
+            sourceURL: "https://www.example.com/new-page",
+          },
+        },
+      };
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+      const fetcher = createFetcher();
+      const result = await fetcher.fetch("https://example.com/old-page");
+      expect(result.metadata.finalUrl).toBe("https://www.example.com/new-page");
+    });
+  });
+
   describe("name property", () => {
     it("should be 'firecrawl'", () => {
       const fetcher = createFetcher();

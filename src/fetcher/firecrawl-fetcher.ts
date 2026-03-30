@@ -56,7 +56,7 @@ import {
   FirecrawlApiError,
   FetchResponseTooLargeError,
 } from "./errors.js";
-import { validateFetchUrl } from "../security/url-validator.js";
+import { validateFetchUrl, validateRedirectUrl } from "../security/url-validator.js";
 import { CostLimiter } from "./cost-limiter.js";
 import type { CostLimiterConfig } from "./cost-limiter.js";
 
@@ -339,6 +339,21 @@ export class FirecrawlFetcher implements PageFetcher {
       );
     }
 
+    // --- SECURITY: Redirect-SSRF-Check auf finale URL (FC-001a) ---
+    // Firecrawl folgt Redirects serverseitig. Die sourceURL in der Response
+    // ist die finale URL NACH allen Redirects. Diese MUSS validiert werden,
+    // sonst kann ein Angreifer via Redirect auf interne Hosts zugreifen.
+    const finalUrl = data.data.metadata?.sourceURL ?? url;
+    if (finalUrl !== url) {
+      const redirectValidation = validateRedirectUrl(finalUrl, url, { allowHttp: this.allowHttp });
+      if (!redirectValidation.valid) {
+        throw new FetchNetworkError(
+          url,
+          `Redirect URL rejected (${finalUrl}): ${redirectValidation.reason}`,
+        );
+      }
+    }
+
     // --- HTML ist Pflicht ---
     const html = data.data.html ?? "";
     if (html.length === 0) {
@@ -349,7 +364,7 @@ export class FirecrawlFetcher implements PageFetcher {
       html,
       markdown: data.data.markdown,
       metadata: {
-        finalUrl: data.data.metadata?.sourceURL ?? url,
+        finalUrl,
         statusCode: data.data.metadata?.statusCode ?? 200,
         title: data.data.metadata?.title ?? "",
         botProtection: null,
