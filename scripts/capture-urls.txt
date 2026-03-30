@@ -1,0 +1,49 @@
+# BALAGE Fixture Capture URL-Liste
+# 30 neue URLs fuer die Benchmark-Erweiterung
+#
+# Kriterien:
+# - Keine Duplikate mit bestehenden 20 Fixtures
+# - Mix aus Schwierigkeitsgraden (easy/medium/hard/extreme)
+# - Mix aus Branchen und Endpoint-Typen
+# - Internationale Seiten (DE, EN)
+# - Mix aus SPA und SSR
+#
+# Usage: npx tsx scripts/capture-fixtures.ts --urls scripts/capture-urls.txt
+
+# --- Easy (5) — Saubere HTML-Struktur, wenig JS ---
+https://www.reddit.com/login
+https://www.npmjs.com
+https://www.craigslist.org
+https://news.ycombinator.com/login
+https://httpbin.org/forms/post
+
+# --- Medium (10) — Moderate Komplexitaet ---
+https://www.imdb.com
+https://www.twitch.tv
+https://www.indeed.com
+https://www.bbc.com
+https://www.spotify.com/login
+https://www.dropbox.com/login
+https://www.medium.com
+https://www.producthunt.com
+https://www.figma.com/login
+https://www.canva.com
+
+# --- Hard (10) — Schwere SPAs, viel JS, Cookie-Banner ---
+https://www.otto.de
+https://www.mediamarkt.de
+https://www.ikea.com/de/de/
+https://www.saturn.de
+https://www.lidl.de
+https://www.netflix.com
+https://www.disney.com
+https://www.spiegel.de
+https://www.faz.net
+https://www.check24.de
+
+# --- Extreme (5) — Shadow DOM, Multi-Step, Heavy SPA ---
+https://www.salesforce.com/form/signup/freetrial-sales/
+https://web.dev
+https://material.angular.io/components/input/overview
+https://mui.com/material-ui/react-text-field/
+https://docs.github.com
