@@ -33,11 +33,11 @@ build/
 .pytest_cache/
 
 # HTML snapshots from diagnostic runs (may contain tokens/PII)
-tests/real-world/snapshots/*.html
+tests/real-world/snapshots/**/*.html
 !tests/real-world/snapshots/.gitkeep
 
-# HTML fixtures for benchmark (too large for git, generated locally)
-tests/real-world/fixtures/*.html
+# HTML fixtures for benchmark (too large for git, may contain API keys/PII)
+tests/real-world/fixtures/**/*.html
 !tests/real-world/fixtures/.gitkeep
 !tests/real-world/fixtures/README.md
 

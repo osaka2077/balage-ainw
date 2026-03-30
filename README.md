@@ -52,16 +52,16 @@ Complementary to: [browser-use](https://github.com/browser-use/browser-use), [St
 
 ---
 
-## Benchmark (20 Real Production Sites)
+## Benchmark (50 Real Production Sites)
 
 Tested on GitHub, Amazon, Airbnb, Booking.com, eBay, LinkedIn, Stripe, and more.
 
 | Metric | Score | Note |
 |--------|:-----:|------|
-| **F1** | **55-65%** | Varies by LLM run (non-deterministic) |
+| **F1** | **74-77%** | 3-run stabilized (LLM non-deterministic) |
 | Type Accuracy | **94%** | When detected, type is almost always correct |
-| Precision | ~65% | |
-| Recall | ~60% | |
+| Precision | ~78% | |
+| Recall | ~73% | |
 
 With fingerprint cache (known sites): **100% deterministic, 0ms, $0**
 
@@ -118,7 +118,7 @@ Generates CSS selectors with 6 priority levels: form action > element ID > ARIA 
 
 ## Status
 
-This is an **alpha release**. The API may change. F1=66% means it works well on common patterns but has known gaps.
+This is an **alpha release**. The API may change. F1=76% means it works well on common patterns but has known gaps on complex SPAs.
 
 - [Benchmark details](./tests/real-world/)
 - [Core library docs](./packages/core/README.md)

@@ -1,6 +1,6 @@
 {
   "name": "balage",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "AI-native Interface Infrastructure — Semantic & Verified UI Context Layer",
   "license": "MIT",
   "type": "module",
@@ -16,6 +16,11 @@
     "benchmark:fixture": "BALAGE_FIXTURE_MODE=1 BALAGE_LLM_CACHE=1 vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
     "benchmark:train": "BALAGE_SET=train vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
     "benchmark:holdout": "BALAGE_SET=holdout vitest run tests/real-world/benchmark.test.ts --reporter=verbose",
+    "capture": "tsx scripts/capture-fixtures.ts",
+    "capture:dry": "tsx scripts/capture-fixtures.ts --dry-run",
+    "capture:urls": "tsx scripts/capture-fixtures.ts --urls scripts/capture-urls.txt",
+    "gt:generate": "tsx scripts/generate-gt-skeletons.ts",
+    "gt:generate:dry": "tsx scripts/generate-gt-skeletons.ts --dry-run",
     "lint": "eslint src/ packages/mcp/src/",
     "typecheck": "tsc --noEmit"
   },
