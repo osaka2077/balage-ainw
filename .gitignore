@@ -104,3 +104,14 @@ tmp/
 *.tmp
 .mailmap
 .gitnexus
+
+# Internal planning docs (not for public repo)
+F1-MASTER-PLAN.md
+SPRINT-PLAN-*.md
+SESSION-HANDOFF-*.md
+QA-REPORT-*.md
+WAVE*.md
+REFACTORING-WAVE-PLAN.md
+ERRORS.md
+AGENTS.md
+tests/real-world/benchmark-baseline-*.json
